@@ -7,3 +7,6 @@ config.js
 
 # ignorar data
 src/data/data.js
+
+# ignorar actualizacion routes
+src/routes/actulizar.routes.js

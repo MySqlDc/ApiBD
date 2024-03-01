@@ -1,4 +1,3 @@
-import { pool } from '../../conection.js';
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -18,15 +17,14 @@ const registrar = async (clave) => {
     if(!(await archivoExiste())) await crearArchivo()
 
     const datos = await leerDatos();
-    console.log(datos);
     if(datos) {
         datos[clave] = clave;
         await escribirDatos(datos);
     }
 }
 
-const eliminar = async (clave) => {
-    if(!(await archivoExiste())) crearArchivo()
+export const eliminar = async (clave) => {
+    if(!(await archivoExiste())) await crearArchivo()
 
     const datos = await leerDatos();
     if(datos && datos.hasOwnProperty(clave)){
@@ -54,7 +52,7 @@ const crearArchivo = async() => {
     }
 }
 
-const leerDatos = async() => {
+export const leerDatos = async() => {
     try {
         const contenido = await fs.promises.readFile(dataFilePath, 'utf-8');
         const datos = JSON.parse(contenido);
