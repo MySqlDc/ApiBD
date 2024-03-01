@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../../conection.js';
-import { registrarVarios, eliminar } from '../services/data_manage.js'
+import { registrarVarios } from '../services/data_manage.js'
 
 const router = Router();
 
@@ -157,8 +157,6 @@ router.delete('/salida/:codigo', async(req, res) => {
         const {rowCount} = await pool.query("DELETE FROM salidas WHERE factura_id = $1 AND sku = $2", [req.params.codigo, sku]);
 
         if(rowCount === 0) return res.status(200).json({status: 204, mensaje: "la entrada no existia"});
-
-        eliminar(sku);
 
         res.status(200).json({status: 200, confirmacion: "se elimino correctamente la entrada", data: "entradas elimminadas "+rowCount})
     } catch (error) {

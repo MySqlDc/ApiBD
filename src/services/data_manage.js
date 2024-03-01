@@ -14,14 +14,8 @@ export const registrarVarios = async (registros) => {
     });
 }
 
-export const eliminarVarios = async (registros) => {
-    registros.forEach(registro => {
-        eliminar(registro)
-    });
-}
-
 const registrar = async (clave) => {
-    if(!(await archivoExiste())) crearArchivo()
+    if(!(await archivoExiste())) await crearArchivo()
 
     const datos = await leerDatos();
     console.log(datos);
@@ -31,7 +25,7 @@ const registrar = async (clave) => {
     }
 }
 
-export const eliminar = async (clave) => {
+const eliminar = async (clave) => {
     if(!(await archivoExiste())) crearArchivo()
 
     const datos = await leerDatos();
@@ -62,11 +56,9 @@ const crearArchivo = async() => {
 
 const leerDatos = async() => {
     try {
-
         const contenido = await fs.promises.readFile(dataFilePath, 'utf-8');
         const datos = JSON.parse(contenido);
         return datos;
-
     } catch (error) {
         console.log(`error al leer los datos en el archivo ${dataFilePath}: ${error}`)
         return null;
