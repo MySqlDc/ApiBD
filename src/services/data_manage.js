@@ -24,9 +24,9 @@ const registrar = async (clave) => {
     if(!(await archivoExiste())) crearArchivo()
 
     const datos = await leerDatos();
+    console.log(datos);
     if(datos) {
         datos[clave] = clave;
-        console.log(datos)
         await escribirDatos(datos);
     }
 }
@@ -53,7 +53,7 @@ const archivoExiste = async () => {
 const crearArchivo = async() => {
     try {
         await fs.promises.mkdir(dataFolderPath, { recursive: true});
-        await fs.promises.writeFile(dataFilePath, 'export const data = {}')
+        await fs.promises.writeFile(dataFilePath, '{}')
         console.log(`Archivo ${dataFilePath} creado exitosamente.`)
     } catch (error) {
         console.error(`Error al crear el archivo ${dataFilePath}: ${error}`)
@@ -64,7 +64,7 @@ const leerDatos = async() => {
     try {
 
         const contenido = await fs.promises.readFile(dataFilePath, 'utf-8');
-        const datos = eval(contenido);
+        const datos = JSON.parse(contenido);
         return datos;
 
     } catch (error) {
@@ -75,7 +75,7 @@ const leerDatos = async() => {
 
 const escribirDatos = async(datos) => {
     try {
-        const contenido = `export const data = ${JSON.stringify(datos, null, 2)};\n`;
+        const contenido = `${JSON.stringify(datos, null, 2)}\n`;
         await fs.promises.writeFile(dataFilePath, contenido);
         console.log(`Datos escritos en el archivo ${dataFilePath} exitosamente`);
     } catch (error) {
