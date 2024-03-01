@@ -26,6 +26,7 @@ const registrar = async (clave) => {
     const datos = await leerDatos();
     if(datos) {
         datos[clave] = clave;
+        console.log(datos)
         await escribirDatos(datos);
     }
 }
@@ -62,7 +63,7 @@ const crearArchivo = async() => {
 const leerDatos = async() => {
     try {
 
-        const contenido = await fs.promises.readFile(dataFilePath, 'urf-8');
+        const contenido = await fs.promises.readFile(dataFilePath, 'utf-8');
         const datos = eval(contenido);
         return datos;
 
@@ -75,8 +76,8 @@ const leerDatos = async() => {
 const escribirDatos = async(datos) => {
     try {
         const contenido = `export const data = ${JSON.stringify(datos, null, 2)};\n`;
-        await fs.promises.writeFile(dataFilePath, contenido)<
-        console.log(`Datos escritos en el archivo ${dataFilePath} exitosamente`)
+        await fs.promises.writeFile(dataFilePath, contenido);
+        console.log(`Datos escritos en el archivo ${dataFilePath} exitosamente`);
     } catch (error) {
         console.log(`error al escribir los datos en el archivo ${dataFilePath}: ${error}`)
     }

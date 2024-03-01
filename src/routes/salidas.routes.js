@@ -110,9 +110,13 @@ router.post('/salidas', async(req, res) => {
                 case 'sku_producto':
                     errores.push({status: 400, mensaje: "el sku ingresado no existe", detalles: error.detail});break;
                 case 'salidas_pkey':
-                    errores.push({status: 400, mensaje: "el producyo ya esta asociado a la factura", detalles: error.detail});break;
+                    errores.push({status: 400, mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
                 default:
-                    errores.push(error)
+                    if(error.code === 'P0001'){
+                        errores.push({status: 400, mensaje: "No hay suficientes unidades de un producto"})
+                    } else {
+                        errores.push(error)
+                    }
             }
         }
     }
