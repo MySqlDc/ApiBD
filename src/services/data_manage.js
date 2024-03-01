@@ -1,9 +1,10 @@
 import { pool } from '../../conection.js';
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
-const currentDir = path.dirname(new URL(import.meta.url).pathname);
-const dataFolderPath = path.resolve(currentDir, '..', 'data');
+const __filename = fileURLToPath(import.meta.url)
+const dataFolderPath = path.resolve(__filename, '../..', 'data');
 const dataFilePath = path.join(dataFolderPath, 'data.js')
 
 
@@ -50,7 +51,7 @@ const archivoExiste = async () => {
 
 const crearArchivo = async() => {
     try {
-        await fs.promises.mkdir(dataFilePath, { recursive: true});
+        await fs.promises.mkdir(dataFolderPath, { recursive: true});
         await fs.promises.writeFile(dataFilePath, 'export const data = {}')
         console.log(`Archivo ${dataFilePath} creado exitosamente.`)
     } catch (error) {
