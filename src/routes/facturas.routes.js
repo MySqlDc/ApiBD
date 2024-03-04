@@ -74,6 +74,80 @@ router.post('/factura', async(req, res) => {
     }
 });
 
+router.put('/picking', async(req,res) => {
+    const { id, codigo, usuario } = req.body;
+
+    if(!usuario) return res.json(400).json({status: 400, mensaje: "Se debe enviar el usuario del cliente"})
+
+    let query = "UPDATE facturas_salidas SET status = 2, picking = CURRENT_TIMESTAMP AT TIME ZONE 'America/Lima', usuario_picking = $1 WHERE id = $2 RETURNING *";
+    let params = [usuario, id]
+
+    if(codigo) {
+        query = "UPDATE facturas_salidas SET status = 2, picking = CURRENT_TIMESTAMP AT TIME ZONE 'America/Lima', usuario_picking = $1 WHERE codigo = $2 RETURNING *";
+        params = [usuario, codigo]
+    }
+
+    try {
+        const {rows} = await pool.query(query, params);
+
+        if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se pudo colocar la hora de picking no coincide con ningun DATO"})
+
+        res.status(200).json({status: 200, confirmacion: "se ha colocado la hora de picking", data: rows[0]})
+    } catch (error) {
+        res.status(400).json(error);
+    }
+});
+
+router.put('/packing', async(req,res) => {
+    const { id, codigo, usuario } = req.body;
+
+    if(!usuario) return res.json(400).json({status: 400, mensaje: "Se debe enviar el usuario del cliente"});
+
+    let query = "UPDATE facturas_salidas SET status = 3, packing = CURRENT_TIMESTAMP AT TIME ZONE 'America/Lima', usuario_packing = $1 WHERE id = $2 RETURNING *";
+    let params = [usuario, id]
+
+    if(codigo) {
+        query = "UPDATE facturas_salidas SET status = 3, packing = CURRENT_TIMESTAMP AT TIME ZONE 'America/Lima', usuario_packing = $1 WHERE codigo = $2 RETURNING *";
+        params = [usuario, codigo]
+    }
+
+    try {
+        const {rows} = await pool.query(query, params);
+
+        if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se pudo colocar la hora de packing no coincide con ningun DATO"})
+
+        res.status(200).json({status: 200, confirmacion: "se ha colocado la hora de packing", data: rows[0]})
+    } catch (error) {
+        res.status(400).json(error);
+    }
+});
+
+router.put('/status', async(req, res) => {
+    const {id, codigo, status } = req.body;
+
+    if(!status || !Number.isInteger(status)) return res.json(400).json({status: 400, mensaje: "Se debe enviar el status que adquirira la factura"})
+
+    if(status <= 3) return res.json(400).json({status: 400, mensaje: "Este estatus esta reservado y no se puede colocar"})
+
+    let query = "UPDATE facturas_salidas SET status = $1 WHERE id = $2 RETURNING *";
+    let params = [status, id]
+
+    if(codigo) {
+        query = "UPDATE facturas_salidas SET status = $1 WHERE codigo = $2 RETURNING *";
+        params = [status, codigo]
+    }
+
+    try {
+        const {rows} = await pool.query(query, params);
+
+        if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se pudo colocar el status no coincide con ningun DATO"})
+
+        res.status(200).json({status: 200, confirmacion: "se ha colocado el status", data: rows[0]})
+    } catch (error) {
+        res.status(400).json(error);
+    }
+});
+
 router.delete('/factura/:codigo', async(req, res) => {
     try {
         await pool.query("DELETE FROM factura_entradas WHERE codigo = $1", [req.params.codigo])
