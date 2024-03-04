@@ -129,11 +129,11 @@ router.put('/status', async(req, res) => {
 
     if(status <= 3) return res.json(400).json({status: 400, mensaje: "Este estatus esta reservado y no se puede colocar"})
 
-    let query = "UPDATE facturas_salidas SET status = $1 WHERE id = $2 RETURNING *";
+    let query = "UPDATE facturas SET status = $1 WHERE id = $2 RETURNING *";
     let params = [status, id]
 
     if(codigo) {
-        query = "UPDATE facturas_salidas SET status = $1 WHERE codigo = $2 RETURNING *";
+        query = "UPDATE facturas SET status = $1 WHERE codigo = $2 RETURNING *";
         params = [status, codigo]
     }
 
