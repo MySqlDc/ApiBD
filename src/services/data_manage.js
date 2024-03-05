@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const dataFolderPath = path.resolve(__filename, '../..', 'data');
-const dataFilePath = path.join(dataFolderPath, 'data.js')
+const dataFilePath = path.join(dataFolderPath, 'data.js');
 
 
 export const registrarVarios = async (registros) => {

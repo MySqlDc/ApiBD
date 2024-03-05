@@ -9,4 +9,4 @@ config.js
 src/data/data.js
 
 # ignorar actualizacion routes
-src/routes/actulizar.routes.js
+src/routes/actualizar.routes.js
