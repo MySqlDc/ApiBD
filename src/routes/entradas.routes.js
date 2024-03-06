@@ -106,6 +106,8 @@ router.post('/entradas', async(req, res) =>{
                     errores.push({status: 400, mensaje: "el sku ingresado no existe", detalles: error.detail});break;
                 case 'entradas_pkey':
                     errores.push({status: 400, mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
+                case 'entradas_factura':
+                    errores.push({status: 400, mensaje: "esta intentando hacer una entrada en una factura de salidas", detalles: error.detail});break;
                 default:
                     errores.push(error)
             }
