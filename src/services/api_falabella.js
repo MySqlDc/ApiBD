@@ -60,7 +60,6 @@ const encodeURL = (parametros) => {
 }
 
 const requestBody = async (skus) =>{
-    console.log(skus)
     let request = "<Request>";
     try {
         const {rows} = await pool.query('SELECT sku, unidades FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)', [skus]);
