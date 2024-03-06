@@ -13,8 +13,14 @@ export const api_mercadoLibre = async (sku) => {
 
     if(rows.length === 0) return;
 
+    for(let i = 0; i<rows.length; i++){
+        await actualizarStock(rows[i])
+    }
+}
+
+const actualizarStock = async (publicacion) => {
     let data = {
-        available_quantity: rows[0].unidades
+        available_quantity: publicacion.unidades
     }
 
     let options = {
@@ -26,22 +32,23 @@ export const api_mercadoLibre = async (sku) => {
         body:JSON.stringify(data)
     }
 
-    let url = "https://api.mercadolibre.com/items/MCO"+rows[0].mco;
+    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.mco;
 
-    if(rows[0].variante) url +="/variations/"+rows[0].variante;
+    if(publicacion.variante) url +="/variations/"+publicacion.variante;
 
     const response = await fetch(url, options);
 
-    if(response.status === 200) console.log("hecho");
+    if(response.status === 200) console.log("hecho, publicacion "+publicacion.mco+"-"+publicacion.variante);
 
     if(response.status === 400 || response.status === 404) console.log("Hubo un error", response.statusText);
 
     if(response.status === 403){
         await token_ml();
 
-        api_mercadoLibre(sku);
+        await actualizarStock(sku);
     }
 }
+
 
 const token_ml = async() =>{
     const data = {
