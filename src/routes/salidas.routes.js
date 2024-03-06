@@ -58,13 +58,20 @@ router.post('/salida', async(req, res) => {
         const {rows} = await pool.query("INSERT INTO salidas(sku,cantidad,factura_id) VALUES ($1,$2,$3) RETURNING *", [sku, cantidad, factura])
         res.status(201).json({status: 201, confirmacion:"se creo la salida exitosamente", data: rows[0]})
     } catch (error) {
-        if(error.constraint==="sku_producto") return res.status(400).json({status: 400, mensaje: "el sku ingresado no existe"});
-
-        if(error.constraint==="salidas_pkey") return res.status(400).json({status:400, mensaje: "El producto ya esta asociado a la factura"});
-
-        if(error.code === "P0001") return res.status(400).json({status: 400, mensaje: "No hay suficientes unidades para generar esta salida"});
-
-        res.status(400).json({status: 400, mensaje: error});
+        switch(error.constraint){
+            case 'sku_producto':
+                res.status(400).json({status: 400, mensaje: "el sku ingresado no existe", detalles: error.detail});break;
+            case 'salidas_pkey':
+                res.status(400).json({status: 400, mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
+            case 'salidas_factura':
+                res.status(400).json({status: 400, mensaje: "esta intentando hacer una salida en una factura de entrada", detalles: error.detail});break;
+            default:
+                if(error.code === 'P0001'){
+                    res.status(400).json({status: 400, mensaje: "No hay suficientes unidades de un producto"})
+                } else {
+                    res.status(400).json({status: 400, mensaje: error});
+                }
+        }
     }
 });
 

@@ -58,11 +58,16 @@ router.post('/entrada', async(req, res) => {
         res.status(201).json({status: 201, confirmacion:"se creo el producto", data: rows[0]})
     } catch(error){
 
-        if(error.constraint==="sku_producto") return res.status(400).json({status: 400, mensaje: "el sku ingresado no existe"});
-
-        if(error.constraint==="entradas_pkey") return res.status(400).json({status:400, mensaje: "El producto ya esta asociado a la factura"})
-
-        res.status(400).json({status: 400, mensaje: error});
+        switch(error.constraint){
+            case 'sku_producto':
+                res.status(400).json({status: 400, mensaje: "el sku ingresado no existe", detalles: error.detail});break;
+            case 'entradas_pkey':
+                res.status(400).json({status: 400, mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
+            case 'entradas_factura':
+                res.status(400).json({status: 400, mensaje: "esta intentando hacer una entrada en una factura de salidas", detalles: error.detail});break;
+            default:
+                res.status(400).json({status: 400, mensaje: error});
+        }
     }
 });
 
