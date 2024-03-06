@@ -7,9 +7,9 @@ router.get('/skus', async(req, res) => {
     try {
         const {rows} = await pool.query('SELECT id, sku, nombre, marca FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id ')
 
-        res.json({status: 200, data: rows})
+        res.status(200).json({status: 200, data: rows})
     } catch (error) {
-        res.status(400).json(error)
+        res.status(400).json({status: 400, mensaje: error})
     }
 });
 
