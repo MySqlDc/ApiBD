@@ -14,7 +14,7 @@ export const api_mercadoLibre = async (sku) => {
     if(rows.length === 0) return;
 
     for(let i = 0; i<rows.length; i++){
-        await actualizarStock(rows[i])
+        await actualizarStock(rows[i]);
     }
 }
 
