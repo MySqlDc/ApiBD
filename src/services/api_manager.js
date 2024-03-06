@@ -13,6 +13,7 @@ export const actualizarInventario = async () => {
             if(Object.hasOwnProperty.call(datos, dato)){
                 //await api_mercadoLibre(dato);
                 skus.push(dato);
+                await eliminar(dato);
             }
         }
 
@@ -21,6 +22,10 @@ export const actualizarInventario = async () => {
     }
 }
 
-export const actualizarInventarioUrgente = (codigo) => {
-
+export const actualizarInventarioUrgente = async (codigo) => {
+    const skus = [codigo];
+    //await api_mercadoLibre(codigo);
+    //await api_rappi(skus, true);
+    await api_falabella(skus)
+    await eliminar(codigo);
 }
