@@ -55,8 +55,11 @@ router.post('/salida', async(req, res) => {
     if(!Number.isInteger(cantidad) || cantidad <= 0) return res.status(400).json({status: 400, mensaje: "el dato de cantidad es erroneo"});
 
     try {
-        const {rows} = await pool.query("INSERT INTO salidas(sku,cantidad,factura_id) VALUES ($1,$2,$3) RETURNING *", [sku, cantidad, factura])
-        res.status(201).json({status: 201, confirmacion:"se creo la salida exitosamente", data: rows[0]})
+        const {rows} = await pool.query("INSERT INTO salidas(sku,cantidad,factura_id) VALUES ($1,$2,$3) RETURNING *", [sku, cantidad, factura]);
+
+        registrarVarios(rows);
+
+        res.status(201).json({status: 201, confirmacion:"se creo la salida exitosamente", data: rows[0]});
     } catch (error) {
         switch(error.constraint){
             case 'sku_producto':

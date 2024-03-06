@@ -55,6 +55,9 @@ router.post('/entrada', async(req, res) => {
 
     try {
         const {rows} = await pool.query("INSERT INTO entradas(sku,cantidad,factura_id) VALUES ($1,$2,$3) RETURNING *", [sku, cantidad, factura])
+        
+        registrarVarios(rows);
+
         res.status(201).json({status: 201, confirmacion:"se creo el producto", data: rows[0]})
     } catch(error){
 
@@ -66,7 +69,11 @@ router.post('/entrada', async(req, res) => {
             case 'entradas_factura':
                 res.status(400).json({status: 400, mensaje: "esta intentando hacer una entrada en una factura de salidas", detalles: error.detail});break;
             default:
-                res.status(400).json({status: 400, mensaje: error});
+                if(error.code === 'P0001'){
+                    res.status(400).json({status: 400, mensaje: "estas intentando agregar una entrada a una factura que ya fue ingresada"})
+                } else {
+                    res.status(400).json({status: 400, mensaje: error});
+                }
         }
     }
 });
@@ -104,6 +111,8 @@ router.post('/entradas', async(req, res) =>{
         try {
             const {rows} = await pool.query(query+" RETURNING *");
 
+            registrarVarios(rows);
+
             creados = creados.concat(rows)
         } catch (error) {
             switch(error.constraint){
@@ -114,7 +123,11 @@ router.post('/entradas', async(req, res) =>{
                 case 'entradas_factura':
                     errores.push({status: 400, mensaje: "esta intentando hacer una entrada en una factura de salidas", detalles: error.detail});break;
                 default:
-                    errores.push(error)
+                    if(error.code === 'P0001'){
+                        errores.push({status: 400, mensaje: "estas intentando agregar una entrada a una factura que ya fue ingresada"})
+                    } else {
+                        errores.push({status: 400, mensaje: error});
+                    }
             }
         }
     }

@@ -112,13 +112,15 @@ router.put('/producto/:id', async(req, res) => {
     if(!usuario) return res.status(400).json({status: 400, mensaje: "Debe dar el nombre de un usuario para registrar"})
 
     try {
-        const respuesta = await pool.query("SELECT unidades FROM productos WHERE id = $1", [req.params.id]);
+        const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1", [req.params.id]);
 
         const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cantidad, req.params.id]);
 
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se actualizo ninguna fila"});
 
         await pool.query("INSERT INTO registro_ajuste(id, nombre_persona, cantidad_ingresada, cantidad_antigua) VALUES ($1, $2, $3, $4)", [req.params.id, usuario, cantidad, respuesta.rows[0].unidades])
+
+        registrarVarios(respuesta.rows);
 
         res.status(200).json({status: 200, data: rows[0]})
     } catch (error) {
