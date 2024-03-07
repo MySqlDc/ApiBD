@@ -86,7 +86,7 @@ router.post('/precios', async (req, res) => {
 
     if(errores.length === 0) return res.status(201).json({status: 201, confirmacion: "Se crearon todos los precios", data: creados});
 
-    res.status(200).json({status: 200, mensaje: "se ccrearon algunos precios", data: creados, error: errores});
+    res.status(200).json({status: 200, mensaje: "se crearon algunos precios", data: creados, error: errores});
 });
 
 router.patch('/precio/:id', async(req,res) => {
@@ -106,6 +106,5 @@ router.patch('/precio/:id', async(req,res) => {
         res.status(400).json({status: 400, mensaje: error})
     }
 });
-
 
 export default router;
