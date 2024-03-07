@@ -89,10 +89,10 @@ router.post('/productos', async(req, res) => {
 });
 
 router.patch('/producto/:id', async(req, res) => {
-    const {nombre, precio, marca} = req.body;
+    const {nombre, marca} = req.body;
 
     try {
-        const {rows} = await pool.query("UPDATE productos SET nombre = COALESCE($1, nombre), precio = COALESCE($2, precio), marca = COALESCE($3, marca) WHERE id = $4 RETURNING *", [nombre, precio, marca, req.params.id])
+        const {rows} = await pool.query("UPDATE productos SET nombre = COALESCE($1, nombre), marca = COALESCE($2, marca) WHERE id = $3 RETURNING *", [nombre, marca, req.params.id])
 
         if(rows.length === 0) return res.status(200).json({"status": 204, "message": "no se actualizo ningúna fila"})
 

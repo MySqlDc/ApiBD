@@ -26,7 +26,7 @@ router.get('/entradas', async(req, res) =>{
         const {rows} = await pool.query(query, params);
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "Ninguna entrada se encontro"})
 
-        res.json({status: 200, data: rows})
+        res.status(200).json({status: 200, data: rows})
     } catch (error) {
         res.status(400).json({status: 400, mensaje: error});  
     }
