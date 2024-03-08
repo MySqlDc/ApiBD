@@ -74,6 +74,26 @@ router.post('/factura', async(req, res) => {
     }
 });
 
+router.post('/facturaFecha', async(req, res) => {
+    const { codigo, tipo, fecha } = req.body;
+
+    if(!codigo) return res.status(400).json({status: 400, mensaje: "Hace falta el codigo de la factura"});
+
+    if(!tipo) return res.status(400).json({status: 400, mensaje: "Hace falta el tipo de factura"});
+
+    let query = "INSERT INTO facturas_entradas(codigo, fecha) VALUES ($1, $2) RETURNING *";
+
+    if(tipo === "salida") query = "INSERT INTO facturas_salidas(codigo, fecha) VALUES ($1, $2) RETURNING *";
+
+    try {
+        const {rows} = await pool.query(query, [codigo, fecha])
+
+        res.status(200).json({status: 200, confirmacion:"se ha creado la factura", data: rows[0]});
+    } catch (error) {
+        res.status(400).json(error);
+    }
+});
+
 router.put('/picking', async(req,res) => {
     const { id, codigo, usuario } = req.body;
 
