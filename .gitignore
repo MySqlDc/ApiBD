@@ -1,10 +1,6 @@
 # ignora modulos
 node_modules
 
-
-# ignorar config
-config.js
-
 # ignorar data
 src/data/data.js
 
