@@ -69,6 +69,10 @@ router.post('/productos', async(req, res) => {
                 query += ",";
             } 
 
+            if(producto.nombre.split("'").length > 1){
+                producto.nombre = producto.nombre.split("'").join("''");
+            }
+
             query+= "('"+producto.nombre+"',"+(producto.unidades>0?producto.unidades:0)+","+producto.marca+")";
         });
 
