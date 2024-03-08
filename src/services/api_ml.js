@@ -1,9 +1,9 @@
-import { pool } from '../../conection.js';
+import { pool } from '../conection.js';
 import {
     API_CLIENT_ML,
     API_REFRESH_ML,
     API_SECRET_ML
-} from '../../config.js'
+} from '../config.js'
 
 let TOKEN = "";
 

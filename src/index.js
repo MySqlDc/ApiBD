@@ -7,7 +7,7 @@ import sku_productosRoutes from './routes/sku_producto.routes.js'
 import facturasRoutes from './routes/facturas.routes.js'
 import actualizarRoutes from './routes/actualizar.routes.js'
 import preciosRoutes from './routes/precios.routes.js'
-import { PORT } from '../config.js'
+import { PORT } from './config.js'
 import {actualizarInventario} from './services/api_manager.js'
 
 

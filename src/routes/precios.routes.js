@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { pool } from '../../conection.js';
+import { pool } from './../conection.js';
 
 const router = Router();
 

@@ -1,8 +1,8 @@
-import { pool } from '../../conection.js';
+import { pool } from '../conection.js';
 import { 
     API_KEY_RAPPI,
     STORE_ID_RAPPI
-} from '../../config.js';
+} from '../config.js';
 
 export const api_rappi = async(skus, delta) => {
     const records = [];
