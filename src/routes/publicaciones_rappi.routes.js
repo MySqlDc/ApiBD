@@ -28,6 +28,9 @@ router.get('/publicacion_rappi/:id', async (req, res) =>{
 router.post('/publicacion_rappi', async(req, res) => {
     const {id, producto_id, nombre } = req.body;
 
+    if(nombre.split("'").length > 1){
+        nombre = nombre.split("'").join("''");
+    }
     try {
         const {rows} = await pool.query("INSERT INTO publicaciones_rappi(id,producto_id,nombre) VALUES ($1,$2,$3) RETURNING *", [id, producto_id, nombre]);
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "No se encontro ningun publicaciones"})
@@ -53,7 +56,11 @@ router.post('/publicaciones_rappi', async(req,res) => {
         ronda.forEach((publicaciones, index) =>{
             if(index !== 0){
                 query += ",";
-            } 
+            }
+             
+            if(producto.nombre.split("'").length > 1){
+                producto.nombre = producto.nombre.split("'").join("''");
+            }
 
             query+= "('"+publicaciones.id+"',"+publicaciones.producto_id+","+publicaciones.nombre+")";
         });

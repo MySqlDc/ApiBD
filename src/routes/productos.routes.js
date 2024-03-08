@@ -34,6 +34,10 @@ router.post('/producto', async(req, res) => {
 
     if(!marca) return res.status(400).json({status: 400, mensaje: "Debe ingresar una marca para el producto"});
 
+    if(nombre.split("'").length > 1){
+        nombre = nombre.split("'").join("''");
+    }
+
     let query = "INSERT INTO productos(nombre,marca) VALUES ($1,$2,$3) RETURNING *";
     let values = [nombre, marca]
 
