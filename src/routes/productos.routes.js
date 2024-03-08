@@ -77,6 +77,7 @@ router.post('/productos', async(req, res) => {
 
             creados = creados.concat(rows)
         } catch (error) {
+            console.log(error);
             errores.push(error);
         }
     }
