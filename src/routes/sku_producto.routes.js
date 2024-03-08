@@ -97,6 +97,7 @@ router.post('/skus', async(req, res) => {
                 default:
                     errores.push({status: 400, mensaje: error})
             }
+            console.log(error)
         }
     }
 

@@ -94,7 +94,7 @@ router.post('/productos', async(req, res) => {
 
     if(errores.length === 0) return res.status(201).json({status: 201, confirmacion: "Se crearon todos los productos", data: creados});
 
-    res.status(200).json({status: 200, mensaje: "se vincularon algunos skus", data: creados, error: errores});
+    res.status(200).json({status: 200, mensaje: "se crearon algunos productos", data: creados, error: errores});
 });
 
 router.patch('/producto/:id', async(req, res) => {
