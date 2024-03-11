@@ -79,7 +79,9 @@ router.post('/skus', async(req, res) => {
                 query += ",";
             }
 
-            query+= "('"+vinculo.sku+"',"+vinculo.id+")";
+            if(vinculo.sku !== '' && Number.isInteger(vinculo.id)){
+                query+= "('"+vinculo.sku+"',"+vinculo.id+")";
+            }
         });
 
         try {
