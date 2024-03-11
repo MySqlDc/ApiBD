@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../conection.js';
+import { registrarVarios } from '../services/data_manage.js'
 
 const router = Router();
 
