@@ -81,6 +81,8 @@ router.post('/skus', async(req, res) => {
 
             if(vinculo.sku !== '' && Number.isInteger(vinculo.id)){
                 query+= "('"+vinculo.sku+"',"+vinculo.id+")";
+            } else {
+                errores.push({status: 400, mensaje: "el sku "+vinculo.sku+" o el id "+vinculo.id+" esta mal"})
             }
         });
 
