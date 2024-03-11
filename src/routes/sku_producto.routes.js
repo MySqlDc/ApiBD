@@ -5,7 +5,7 @@ const router = Router();
 
 router.get('/skus', async(req, res) => {
     try {
-        const {rows} = await pool.query('SELECT id, sku, nombre, marca FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id ')
+        const {rows} = await pool.query('SELECT * FROM sku_producto ORDER BY producto_id')
 
         res.status(200).json({status: 200, data: rows})
     } catch (error) {
