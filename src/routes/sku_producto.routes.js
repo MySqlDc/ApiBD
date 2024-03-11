@@ -79,7 +79,7 @@ router.post('/skus', async(req, res) => {
                 query += ",";
             }
 
-            query+= "("+vinculo.sku+","+vinculo.id+")";
+            query+= "('"+vinculo.sku+"',"+vinculo.id+")";
         });
 
         try {
