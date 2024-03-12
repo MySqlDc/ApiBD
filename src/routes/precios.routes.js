@@ -62,7 +62,7 @@ router.post('/precios', async (req, res) => {
     let errores = []
 
     for(var i = 0; i < Math.ceil(productos.length/30); i++){
-        let query = "INSERT INTO precios(id,costo,precio_venta,precio_mc,precio_shopify,precio_rappi,precio_mayoritsta) VALUES ";
+        let query = "INSERT INTO precios(id,costo,precio_venta,precio_mc,precio_shopify,precio_rappi,precio_linio,precio_mayoritsta) VALUES ";
         var ronda = productos.slice(i*30, ((i*30)+30));
 
         ronda.forEach((producto, index) =>{
@@ -70,7 +70,7 @@ router.post('/precios', async (req, res) => {
                 query += ",";
             } 
 
-            query+= "('"+producto.id+"',"+producto.costo+","+producto.precio_venta+","+producto.precio_ml+","+producto.precio_shopify+","+producto.precio_rappi+","+producto.precio_mayorista+")";
+            query+= "('"+producto.id+"',"+producto.costo+","+producto.precio_venta+","+producto.precio_ml+","+producto.precio_shopify+","+producto.precio_rappi+","+producto.precio_linio+","+producto.precio_mayorista+")";
         });
 
         try {
