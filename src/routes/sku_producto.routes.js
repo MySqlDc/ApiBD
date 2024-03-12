@@ -22,8 +22,7 @@ router.get('/sku', async(req, res) => {
 
     if(sku){
         query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE sku = $1'
-        params.pop();
-        params.push(sku)
+        params = [sku]
     }
 
     try {
