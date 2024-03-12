@@ -37,10 +37,10 @@ router.get('/precio', async(req, res) => {
 });
 
 router.post('/precio/:id', async(req, res) => {
-    const {costo, precio, precio_ml, precio_shopify, precio_rappi, precio_mayorista} = req.body;
+    const {costo, precio, precio_ml, precio_linio, precio_shopify, precio_rappi, precio_mayorista} = req.body;
 
-    let params = [req.params.id, costo, precio, precio_ml, precio_shopify, precio_rappi, precio_mayorista];
-    let query = "INSERT INTO precios(id, costo, precio_venta, precio_ml, precio_shopify, precio_rappi, precio_mayorista) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *"
+    let params = [req.params.id, costo, precio, precio_ml, precio_linio, precio_shopify, precio_rappi, precio_mayorista];
+    let query = "INSERT INTO precios(id, costo, precio_venta, precio_ml, precio_linio, precio_shopify, precio_rappi, precio_mayorista) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *"
 
     try {
         const {rows} = await pool.query(query, params)
@@ -62,7 +62,7 @@ router.post('/precios', async (req, res) => {
     let errores = []
 
     for(var i = 0; i < Math.ceil(productos.length/30); i++){
-        let query = "INSERT INTO precios(id,costo,precio_venta,precio_ml,precio_shopify,precio_rappi,precio_linio,precio_mayoritsta) VALUES ";
+        let query = "INSERT INTO precios(id,costo,precio_venta,precio_ml,precio_linio,precio_shopify,precio_rappi,precio_mayorista) VALUES ";
         var ronda = productos.slice(i*30, ((i*30)+30));
 
         ronda.forEach((producto, index) =>{
