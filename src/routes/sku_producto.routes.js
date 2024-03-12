@@ -14,7 +14,7 @@ router.get('/skus', async(req, res) => {
 });
 
 router.get('/sku', async(req, res) => {
-    const { id, sku } = req.body;
+    const { id, sku } = req.query;
     let query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE id = $1';
     let params = [id]
 
@@ -22,7 +22,7 @@ router.get('/sku', async(req, res) => {
 
     if(sku){
         query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE sku = $1'
-        params = [sku]
+        params = [sku];
     }
 
     try {
