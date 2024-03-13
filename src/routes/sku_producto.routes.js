@@ -15,10 +15,13 @@ router.get('/skus', async(req, res) => {
 
 router.get('/sku', async(req, res) => {
     const { id, sku } = req.query;
-    let query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE id = $1';
-    let params = [id]
 
-    if(!sku && !id) return res.status(400).json({status: 400, mensaje: "No se ingreso un dato para la busqueda"})
+    if(!sku && !id) return res.status(400).json({status: 400, mensaje: "No se ingreso un dato para la busqueda"});
+
+    if(id && !Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del producto no es valido"});
+
+    let query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE id = $1';
+    let params = [id];
 
     if(sku){
         query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE sku = $1'
@@ -38,6 +41,8 @@ router.get('/sku', async(req, res) => {
 
 router.post('/sku', async(req, res) => {
     const { id, sku } = req.body;
+
+    if(!id && !sku) return res.status(400).json({status: 400, mensaje: "error debes ingresar el sku y el identificador del producto"});
 
     if(!Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del producto no es valido"});
 

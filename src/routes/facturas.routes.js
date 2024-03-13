@@ -6,7 +6,7 @@ const router = Router();
 router.get('/facturas', async(req, res) => {
     const {rows} = await pool.query("SELECT * FROM facturas");
 
-    if(rows.length == 0) return res.json({status: 200, message: "no se ha encontrado ningun dato coincidente"})
+    if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ha encontrado ningun dato coincidente"})
 
     res.status(200).json({status: 200, data: rows})
 });

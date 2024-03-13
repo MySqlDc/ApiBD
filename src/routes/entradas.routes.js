@@ -118,16 +118,16 @@ router.post('/entradas', async(req, res) =>{
         } catch (error) {
             switch(error.constraint){
                 case 'sku_producto':
-                    errores.push({status: 400, mensaje: "el sku ingresado no existe", detalles: error.detail});break;
+                    errores.push({mensaje: "el sku ingresado no existe", detalles: error.detail});break;
                 case 'entradas_pkey':
-                    errores.push({status: 400, mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
+                    errores.push({mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
                 case 'entradas_factura':
-                    errores.push({status: 400, mensaje: "esta intentando hacer una entrada en una factura de salidas", detalles: error.detail});break;
+                    errores.push({mensaje: "esta intentando hacer una entrada en una factura de salidas", detalles: error.detail});break;
                 default:
                     if(error.code === 'P0001'){
-                        errores.push({status: 400, mensaje: "estas intentando agregar una entrada a una factura que ya fue ingresada"})
+                        errores.push({mensaje: "estas intentando agregar una entrada a una factura que ya fue ingresada"})
                     } else {
-                        errores.push({status: 400, mensaje: error});
+                        errores.push({mensaje: error});
                     }
             }
         }

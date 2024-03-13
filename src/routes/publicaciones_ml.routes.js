@@ -62,7 +62,7 @@ router.post('/publicaciones_ml', async(req,res) =>{
 
             creados = creados.concat(rows)
         } catch (error) {
-            errores.push(error);
+            errores.push({mensaje: error});
         }
     }
 

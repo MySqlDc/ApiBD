@@ -118,14 +118,14 @@ router.post('/salidas', async(req, res) => {
 
             switch(error.constraint){
                 case 'sku_producto':
-                    errores.push({status: 400, mensaje: "el sku ingresado no existe", detalles: error.detail});break;
+                    errores.push({mensaje: "el sku ingresado no existe", detalles: error.detail});break;
                 case 'salidas_pkey':
-                    errores.push({status: 400, mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
+                    errores.push({mensaje: "el producto ya esta asociado a la factura", detalles: error.detail});break;
                 case 'salidas_factura':
-                    errores.push({status: 400, mensaje: "esta intentando hacer una salida en una factura de entrada", detalles: error.detail});break;
+                    errores.push({mensaje: "esta intentando hacer una salida en una factura de entrada", detalles: error.detail});break;
                 default:
                     if(error.code === 'P0001'){
-                        errores.push({status: 400, mensaje: "No hay suficientes unidades de un producto"})
+                        errores.push({mensaje: "No hay suficientes unidades de un producto"})
                     } else {
                         errores.push(error)
                     }
