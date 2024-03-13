@@ -5,7 +5,7 @@ const router = Router();
 
 router.get('/skusKit', async(req, res) => {
     try {
-        const {rows} = await pool.query('SELECT * FROM kit_sku ORDER BY producto_id')
+        const {rows} = await pool.query('SELECT * FROM kit_sku ORDER BY kit_id')
 
         res.status(200).json({status: 200, data: rows})
     } catch (error) {
@@ -20,7 +20,7 @@ router.get('/skuKit', async(req, res) => {
 
     if(id && !Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
     
-    let query = 'SELECT id, sku, nombre FROM kit_sku INNER JOIN kits ON kit_sku.kit_id = kits.id WHERE id = $1';
+    let query = 'SELECT id, sku, nombre FROM kit_sku INNER JOIN kits ON kit_sku.kit_id = kits.id WHERE kit_id = $1';
     let params = [id];
 
     if(sku){
