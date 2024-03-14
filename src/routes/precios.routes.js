@@ -65,12 +65,19 @@ router.post('/precios', async (req, res) => {
         let query = "INSERT INTO precios(id,costo,precio_venta,precio_ml,precio_linio,precio_shopify,precio_rappi,precio_mayorista) VALUES ";
         var ronda = productos.slice(i*30, ((i*30)+30));
 
+        let coma = false;
+
         ronda.forEach((producto, index) =>{
-            if(index !== 0){
+            if(coma){
                 query += ",";
             } 
 
-            query+= "('"+producto.id+"',"+producto.costo+","+producto.precio_venta+","+producto.precio_ml+","+producto.precio_shopify+","+producto.precio_rappi+","+producto.precio_linio+","+producto.precio_mayorista+")";
+            if(Number.isInteger(producto.id)){
+                query+= "('"+producto.id+"',"+producto.costo+","+producto.precio_venta+","+producto.precio_ml+","+producto.precio_shopify+","+producto.precio_rappi+","+producto.precio_linio+","+producto.precio_mayorista+")";
+                if(!coma) coma = !coma;
+            } else {
+                errores.push({mensaje: "el identificador del producto "+(index+1)+" no es valido "+producto.id});
+            }
         });
 
         try {

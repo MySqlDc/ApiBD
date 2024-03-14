@@ -94,13 +94,16 @@ router.post('/salidas', async(req, res) => {
         let query = "INSERT INTO salidas(sku,cantidad,factura_id) VALUES ";
         var ronda = productos.slice(i*30, ((i*30)+30));
 
+        let coma = false;
+
         ronda.forEach((producto, index) =>{
             if(producto.sku && producto.cantidad){
-                if(index !== 0){
+                if(coma){
                     query += ",";
                 } 
     
                 query+= "('"+producto.sku+"',"+producto.cantidad+","+id+")";
+                if(!coma) coma = !coma;
             } else {
                 if(!producto.sku) errores.push({mensaje: "producto "+(index+1)+" falta por sku"})
 

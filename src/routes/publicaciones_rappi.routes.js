@@ -53,8 +53,10 @@ router.post('/publicaciones_rappi', async(req,res) => {
         let query = "INSERT INTO publicaciones_rappi (id,producto_id,nombre) VALUES ";
         var ronda = publicaciones.slice(i*30, ((i*30)+30));
 
+        let coma = false;
+
         ronda.forEach((publicaciones, index) =>{
-            if(index !== 0){
+            if(coma){
                 query += ",";
             }
              
@@ -63,6 +65,7 @@ router.post('/publicaciones_rappi', async(req,res) => {
             }
 
             query+= "('"+publicaciones.id+"',"+publicaciones.producto_id+","+publicaciones.nombre+")";
+            if(!coma) coma = !coma;
         });
 
         try {

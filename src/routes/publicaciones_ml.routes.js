@@ -49,12 +49,15 @@ router.post('/publicaciones_ml', async(req,res) =>{
         let query = "INSERT INTO publicaciones_ml (id,mco,variante) VALUES ";
         var ronda = publicaciones.slice(i*30, ((i*30)+30));
 
-        ronda.forEach((publicaciones, index) =>{
-            if(index !== 0){
+        let coma = false;
+
+        ronda.forEach(publicaciones =>{
+            if(coma){
                 query += ",";
             } 
 
             query+= "('"+publicaciones.id+"',"+publicaciones.mco+","+publicaciones.variante+")";
+            if(!coma) coma = !coma;
         });
 
         try {

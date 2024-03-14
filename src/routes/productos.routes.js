@@ -68,8 +68,10 @@ router.post('/productos', async(req, res) => {
         let query = "INSERT INTO productos(nombre,unidades,marca) VALUES ";
         var ronda = productos.slice(i*30, ((i*30)+30));
 
-        ronda.forEach((producto, index) =>{
-            if(index !== 0){
+        let coma = false;
+
+        ronda.forEach(producto =>{
+            if(coma){
                 query += ",";
             } 
 
@@ -77,7 +79,12 @@ router.post('/productos', async(req, res) => {
                 producto.nombre = producto.nombre.split("'").join("''");
             }
 
+            if(!Number.isInteger(producto.unidades)){
+                producto.unidades = 0;
+            }
+
             query+= "('"+producto.nombre+"',"+(producto.unidades>0?producto.unidades:0)+","+producto.marca+")";
+            if(!coma) coma = !coma;
         });
 
         try {
