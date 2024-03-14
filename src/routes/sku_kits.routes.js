@@ -7,6 +7,8 @@ router.get('/skusKit', async(req, res) => {
     try {
         const {rows} = await pool.query('SELECT * FROM kit_sku ORDER BY kit_id')
 
+        if(rows.length === 0) return  res.status(200).json({status: 204, mensaje: "no se encontro ningun dato"})
+
         res.status(200).json({status: 200, data: rows})
     } catch (error) {
         res.status(400).json({status: 400, mensaje: error})
@@ -18,7 +20,7 @@ router.get('/skuKit', async(req, res) => {
 
     if(!sku && !id) return res.status(400).json({status: 400, mensaje: "No se ingreso un dato para la busqueda"});
 
-    if(id && !Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
+    if(id && isNaN(parseInt(id))) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
     
     let query = 'SELECT id, sku, nombre FROM kit_sku INNER JOIN kits ON kit_sku.kit_id = kits.id WHERE kit_id = $1';
     let params = [id];
@@ -42,7 +44,7 @@ router.get('/skuKit', async(req, res) => {
 router.post('/skuKit', async(req, res) => {
     const { id, sku } = req.body;
 
-    if(!id && !sku) return res.status(400).json({status: 400, mensaje: "error debes ingresar el sku y el identificador del kit"});
+    if(!id || !sku) return res.status(400).json({status: 400, mensaje: "error debes ingresar el sku y el identificador del kit"});
 
     if(!Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
 
@@ -52,7 +54,14 @@ router.post('/skuKit', async(req, res) => {
         res.status(201).json({status: 201, confirmacion: "se ha agregado correctamente el sku", data: rows})
 
     } catch (error) {
-        res.status(400).json({status: 400, mensaje: error})
+        switch(error.constraint){
+            case "kit_sku_sku_key":
+                res.status(400).json({status: 400, mensaje: "el sku que intenta agregar al kit ya existe"});break;
+            case "fk_kit":
+                res.status(400).json({status: 400, mensaje: "el identificador del kit no existe"});break;
+            default:
+                res.status(400).json({status: 400, mensaje: error})
+        }
     }
 });
 
@@ -68,13 +77,16 @@ router.post('/skusKit', async(req, res) => {
         let query = "INSERT INTO kit_sku (sku, kit_id) VALUES";
         var ronda = skus.slice(i*30, (i*30)+30);
 
+        let coma = false;
+
         ronda.forEach((vinculo, index) =>{
-            if(index !== 0) {
+            if(coma) {
                 query += ",";
             }
 
-            if(vinculo.sku !== '' && Number.isInteger(vinculo.id)){
+            if(vinculo.sku && vinculo.sku !== '' && Number.isInteger(vinculo.id)){
                 query+= "('"+vinculo.sku+"',"+vinculo.id+")";
+                if(!coma) coma = !coma;
             } else {
                 errores.push({mensaje: "el sku "+vinculo.sku+" o el id "+vinculo.id+" esta mal"})
             }
@@ -85,17 +97,14 @@ router.post('/skusKit', async(req, res) => {
 
             creados = creados.concat(rows);
         } catch(error){
-            switch (error.constraint){
-                case 'sku_producto_pkey':
-                    errores.push({mensaje: "el sku ya esta asociado con el producto", error: error.detail});break;
-                case 'sku_producto_sku_key':
-                    errores.push({mensaje: "el sku ya esta asociado a algun producto", error: error.detail});break;
-                case 'fk_producto':
-                    errores.push({mensaje: "el producto no existe, verificar si esta creado o tiene un identificador distinto", error: error.detail});break;
+            switch(error.constraint){
+                case "kit_sku_sku_key":
+                    errores.push({mensaje: "el sku que intenta agregar al kit ya existe"});break;
+                case "fk_kit":
+                    errores.push({mensaje: "el identificador del kit no existe"});break;
                 default:
                     errores.push({mensaje: error})
             }
-            console.log(error)
         }
     }
 

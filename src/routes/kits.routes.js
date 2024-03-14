@@ -16,11 +16,13 @@ router.get('/kit', async(req, res) => {
 
     if(!id && !sku ) return res.status(400).json({status: 400, mensaje: "Para hacer la busqueda se necesita el sku o el id del kit"});
 
+    if(id && isNaN(parseInt(id))) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
+
     let query = "SELECT * FROM kits WHERE id = $1";
     let params = [id]
 
     if(!id && sku){
-        query = "SELECT * FROM kits INNER JOIN kit_sku ON kits.id = kit_sku.kit_id WHERE sku = $1"
+        query = "SELECT kits.* FROM kits INNER JOIN kit_sku ON kits.id = kit_sku.kit_id WHERE sku = $1"
         params = [sku]
     };
 
@@ -36,17 +38,21 @@ router.get('/kit', async(req, res) => {
 });
 
 router.post('/kit', async(req, res) => {
-    const {kit, marca} = req.body;
+    const {nombre, marca} = req.body;
 
-    if(!kit || !marca) return res.status(400).json({status: 400, mensaje: "Debe agregarse los datos del kit nombre o marca"});
+    if(!nombre || !marca) return res.status(400).json({status: 400, mensaje: "Debe agregarse el nombre del kit nombre o marca"});
+
+    if(!Number.isInteger(marca)) return res.status(400).json({status: 400, mensaje: "Debe hacer envio del id de la marca"});
 
     try {
-        const {rows} = await pool.query("INSERT INTO kits(nombre, marca) VALUES ($1,$2) RETURNING * ", [kit, marca]);
+        const {rows} = await pool.query("INSERT INTO kits(nombre, marca) VALUES ($1,$2) RETURNING * ", [nombre, marca]);
 
         if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ingreso ningun kit"});
 
         res.status(200).json({status: 200, data: rows[0]});
     } catch (error) {
+        if(error.constraint === "fk_marca") return res.status(400).json({status: 400, mensaje: "La marca no existes"})
+
         res.status(400).json({status: 400, mensaje: error});
     }
 });
@@ -63,16 +69,22 @@ router.post('/kits', async(req, res) => {
         let query = "INSERT INTO kits(nombre, marca) VALUES "
         var ronda = kits.slice(i*30, ((i*30)+30));
 
+        let coma = false;
+
         ronda.forEach((kit, index) => {
-            if(kit.nombre && kit.marca){
-                if(index !== 0){
+            if(kit.nombre && kit.marca && Number.isInteger(kit.marca)){
+                if(coma){
                     query += ",";
                 }
-                query += "('"+kit.nombre+"',"+kit.marca+")";
-            } else {
-                if(!kit.nombre) errores.push({mensaje: "kit "+(index+1)+"falta por sku"});
 
-                if(!kit.marca) errores.push({mensaje: "producto "+producto.nombre+" falta por marca"});
+                query += "('"+kit.nombre+"',"+kit.marca+")";
+                if(!coma) coma = !coma;
+            } else {
+                if(!kit.nombre) errores.push({mensaje: "kit "+(index+1)+" falta por sku"});
+
+                if(!kit.marca) errores.push({mensaje: "el kit "+kit.nombre+" falta por marca"});
+
+                if(!Number.isInteger(kit.marca)) errores.push({mensaje: "la marca del kit "+kit.nombre+", no es valida"})
             }
         });
 
@@ -81,7 +93,14 @@ router.post('/kits', async(req, res) => {
 
             creados = creados.concat(rows);
         } catch (error) {
-            errores.push({mensaje: error})
+            switch(error.constraint){
+                case "kits_nombre_key":
+                    errores.push({mensaje: "el nombre del kit ya existe", detalles: error.detail}); break;
+                case "fk_marca":
+                    errores.push({mensaje: "la marca introducida no existe", detalles: error.detail});break;
+                default: 
+                    errores.push({mensaje: error});break;
+            }
         }
     }
 

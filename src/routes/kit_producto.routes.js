@@ -7,6 +7,8 @@ router.get('/productosKit', async(req, res) => {
     try {
         const {rows} = await pool.query('SELECT kit_producto.*, productos.nombre, productos.unidades FROM kit_producto INNER JOIN productos ON kit_producto.producto_id = productos.id ORDER BY kit_id')
 
+        if(rows.length === 0) return res.status(200).json({status: 204, data: "no se encontraron datos"})
+
         res.status(200).json({status: 200, data: rows})
     } catch (error) {
         res.status(400).json({status: 400, mensaje: error})
@@ -51,11 +53,18 @@ router.post('/productoKit', async(req, res) => {
     try {
         const {rows} = await pool.query("INSERT INTO kit_producto (kit_id, producto_id) VALUES ($1, $2) RETURNING *", [id, producto_id]);
 
-        await pool.query("SELECT invetario_kit_especifico("+producto_id+")");
+        await pool.query("SELECT inventario_kit_especifico($1)", [id]);
 
         res.status(201).json({status: 201, confirmacion: "se ha agregado correctamente el producto al kit", data: rows})
     } catch (error) {
-        res.status(400).json({status: 400, mensaje: error})
+        switch(error.constraint){
+            case "fk_kit": 
+                res.status(400).json({status: 400, mensaje: "el kit no existe"});break;
+            case "fk_producto":
+                res.status(400).json({status: 400, mensaje: "el producto no existe"});break;
+            default:
+                res.status(400).json({status: 400, mensaje: error})
+        }
     }
 });
 
@@ -68,28 +77,39 @@ router.post('/productosKit', async(req, res) => {
     let errores = []
 
     for(let i = 0; i < Math.ceil(productos.length/30); i++){
-        let query = "INSERT INTO kit_producto (kit_id, kit_producto) VALUES";
+        let query = "INSERT INTO kit_producto (kit_id, producto_id) VALUES ";
         var ronda = productos.slice(i*30, (i*30)+30);
 
+        let coma = false;
+
         ronda.forEach((vinculo, index) =>{
-            if(index !== 0) {
+            if(coma) {
                 query += ",";
             }
 
-            if(vinculo.sku !== '' && Number.isInteger(vinculo.id)){
-                query+= "('"+vinculo.kit+"',"+vinculo.producto+")";
+            if(Number.isInteger(vinculo.kit) && Number.isInteger(vinculo.producto)){
+                query+= "("+vinculo.kit+","+vinculo.producto+")";
+                if(!coma) coma = !coma;
             } else {
-                errores.push({mensaje: "el sku "+vinculo.kit+" o el id "+vinculo.producto+" esta mal"})
+                errores.push({mensaje: "el kit "+vinculo.kit+" o el producto "+vinculo.producto+" esta mal"})
             }
         });
 
         try {
             const {rows} = await pool.query(query+" RETURNING *");
 
+            await pool.query("SELECT inventario_kit_general()");
+
             creados = creados.concat(rows);
         } catch(error){
-            errores.push({mensaje: error})
-            console.log(error)
+            switch(error.constraint){
+                case "fk_kit": 
+                    errores.push({mensaje: "el kit no existe", detalles: error.detail});break;
+                case "fk_producto":
+                    errores.push({mensaje: "el producto no existe", detalles: error.detail});break;
+                default:
+                    errores.push({mensaje: error})
+            }
         }
     }
 
@@ -102,10 +122,17 @@ router.post('/productosKit', async(req, res) => {
 
 router.delete('/productoKit/:kit_id', async(req, res) => {
     const {producto_id} = req.body;
+
+    if(!producto_id) return res.status(400).json({status: 400, mensaje: "debe ingresar el id del producto"});
+
+    if(isNaN(parseInt(req.params.kit_id))) return res.status(400).json({status: 400, mensaje: "el id debe ser un numero"})
+    
     try {
         const {rowCount} = await pool.query("DELETE FROM kit_producto WHERE kit_id = $1 AND producto_id = $2", [req.params.kit_id, producto_id]);
 
         if(rowCount === 0) return res.status(200).json({status: 200, mensaje: "la asociacion no existia"})
+
+        await pool.query("SELECT inventario_kit_especifico($1)", [req.params.kit_id]);
 
         res.status(200).json({status: 200, confirmacion: "Se elimino correctamente el producto del kit", data: "productos elminados "+rowCount})
     } catch(error){
