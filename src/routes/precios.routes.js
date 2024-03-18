@@ -15,13 +15,13 @@ router.get('/precios', async(req, res) => {
 });
 
 router.get('/precio', async(req, res) => {
-    const { id, sku } = req.params;
+    const { id, sku } = req.query;
 
     let query = "SELECT * FROM vista_productos_master WHERE id = $1"
     let params = [id];
 
     if(sku){
-        query = "SELECT * FROM vista_productos_master INNER JOIN sku_producto ON sku_producto.producto_id = vista_prodcutos_master.id WHERE sku = $1";
+        query = "SELECT vista_productos_master.* FROM vista_productos_master INNER JOIN sku_producto ON sku_producto.producto_id = vista_productos_master.id WHERE sku = $1";
         params = [sku];
     }
 

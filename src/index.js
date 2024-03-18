@@ -5,6 +5,8 @@ import salidasRoutes from './routes/salidas.routes.js'
 import entradasRoutes from './routes/entradas.routes.js'
 import sku_productosRoutes from './routes/sku_producto.routes.js'
 import facturasRoutes from './routes/facturas.routes.js'
+import publicacion_mlRoutes from './routes/publicaciones_ml.routes.js'
+import publicacion_rappiRoutes from './routes/publicaciones_rappi.routes.js'
 //import actualizarRoutes from './routes/actualizar.routes.js'
 import preciosRoutes from './routes/precios.routes.js'
 import kitRoutes from './routes/kits.routes.js'
@@ -29,6 +31,8 @@ app.use(preciosRoutes)
 app.use(kitRoutes);
 app.use(kitProductoRoutes);
 app.use(kitSkuRoutes);
+app.use(publicacion_mlRoutes);
+app.use(publicacion_rappiRoutes);
 
 app.use((req, res, next) => {
     res.status(404).json({

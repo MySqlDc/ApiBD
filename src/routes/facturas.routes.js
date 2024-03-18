@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../conection.js';
+import { validarFecha } from '../validation.js';
 
 const router = Router();
 
@@ -18,19 +19,26 @@ router.get('/facturasFecha', async(req, res) => {
     let params = []
 
     if(fecha) { 
+        if(!validarFecha(fecha)) return res.status(400).json({status: 400, mensaje: "la fecha esta en un formato erroneo"});
         query = "SELECT * FROM facturas WHERE fecha = ($1)";
         params.push(fecha);
     } else if(entre){
         let fechas = entre.split("/");
         query = "SELECT * FROM facturas WHERE DATE(fecha) BETWEEN ($1) AND ($2)";
+        if(!validarFecha(fechas[0])) return res.status(400).json({status: 400, mensaje: "la fecha 1 esta en un formato erroneo"});
         params.push(fechas[0]);
+        if(!validarFecha(fechas[1])) return res.status(400).json({status: 400, mensaje: "la fecha 2 esta en un formato erroneo"});
         params.push(fechas[1]);
     } else if(antes){
+        if(!validarFecha(antes)) return res.status(400).json({status: 400, mensaje: "la fecha esta en un formato erroneo"});
         query = "SELECT * FROM facturas WHERE DATE(fecha) < $1";
         params.push(antes);
     } else if(despues){
+        if(!validarFecha(despues)) return res.status(400).json({status: 400, mensaje: "la fecha esta en un formato erroneo"});
         query = "SELECT * FROM facturas WHERE DATE(fecha) > $1";
         params.push(despues)
+    } else {
+        return res.status(400).json({status: 400, mensaje: "Debe ingresar un dato query con fecha para ejecutar la busqueda"})
     }
     
     try {
@@ -76,6 +84,8 @@ router.post('/factura', async(req, res) => {
 
 router.post('/facturaFecha', async(req, res) => {
     const { codigo, tipo, fecha } = req.body;
+
+    if(!validarFecha(fecha)) return res.status(400).json({status: 400, mensaje: "la fecha esta en un formato erroneo"});
 
     if(!codigo) return res.status(400).json({status: 400, mensaje: "Hace falta el codigo de la factura"});
 

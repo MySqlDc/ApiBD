@@ -5,7 +5,7 @@ const router = Router();
 
 router.get('/publicaciones_ml', async(req, res) =>{
     try {
-        const {rows} = await pool.query("SELECT publicaciones_ml.*, publicaciones.nombre FROM publicaciones_ml INNER JOIN publicaciones ON publicaciones_ml.id = publicaciones.id");
+        const {rows} = await pool.query("SELECT publicaciones_ml.*, productos.nombre FROM publicaciones_ml INNER JOIN productos ON publicaciones_ml.id = productos.id");
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "No se encontro ningun publicaciones"})
 
         res.status(200).json({status: 200, data: rows})
@@ -16,7 +16,7 @@ router.get('/publicaciones_ml', async(req, res) =>{
 
 router.get('/publicaciones_ml/:id', async(req, res) =>{
     try {
-        const {rows} = await pool.query("SELECT publicaciones_ml.*, publicaciones.nombre FROM publicaciones_ml INNER JOIN publicaciones ON publicaciones_ml.id = publicaciones.id WHERE id = $1", [req.params.id]);
+        const {rows} = await pool.query("SELECT publicaciones_ml.*, productos.nombre FROM publicaciones_ml INNER JOIN productos ON publicaciones_ml.id = productos.id WHERE id = $1", [req.params.id]);
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "No se encontro ningun publicaciones"})
 
         res.status(200).json({status: 200, data: rows});

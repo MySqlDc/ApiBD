@@ -1,11 +1,15 @@
 import { Router } from 'express';
 import { pool } from '../conection.js';
 import { registrarVarios } from '../services/data_manage.js'
+import { validarFecha } from '../validation.js';
 
 const router = Router();
 
 router.get('/entradas', async(req, res) =>{
-    const { fecha, skus } = req.body;
+    const { fecha, sku } = req.query;
+
+    if(fecha && !validarFecha(fecha)) return res.status(400).json({status: 400, mensaje: "debe ingresar una fecha correcta"})
+
     let query = "SELECT * FROM vista_entradas"
     let params = []
 
@@ -14,13 +18,13 @@ router.get('/entradas', async(req, res) =>{
         params.push(fecha);
     }
 
-    if(skus){
-        query = "SELECT * FROM vista_entradas WHERE sku = ANY($1)";
-        params.push(skus);
+    if(sku){
+        query = "SELECT * FROM vista_entradas WHERE sku = $1";
+        params.push(sku);
     }
 
-    if(skus && fecha){
-        query = "SELECT * FROM vista_entradas WHERE DATE(fecha) = $1 AND sku = ANY($2)";
+    if(sku && fecha){
+        query = "SELECT * FROM vista_entradas WHERE DATE(fecha) = $1 AND sku = $2";
     }
 
     try {
