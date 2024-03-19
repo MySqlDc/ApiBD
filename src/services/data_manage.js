@@ -18,7 +18,11 @@ const registrar = async (clave) => {
 
     const datos = await leerDatos();
     if(datos) {
-        datos[clave] = clave;
+        if(datos.hasOwnProperty(clave)){
+            datos[clave]++;
+        } else {
+            datos[clave] = 1;
+        }
         await escribirDatos(datos);
     }
 }

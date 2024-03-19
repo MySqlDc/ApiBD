@@ -42,8 +42,7 @@ app.use((req, res, next) => {
 })
 
 cron.schedule('0 8-20/2 * * *', () => {
-    console.log('actualizando')
-    //actualizarInventario()
+    console.log('actualizando');
 })
 
 app.listen(PORT)

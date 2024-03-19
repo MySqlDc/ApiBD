@@ -18,7 +18,7 @@ router.get('/sku', async(req, res) => {
 
     if(!sku && !id) return res.status(400).json({status: 400, mensaje: "No se ingreso un dato para la busqueda"});
 
-    if(id && !Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del producto no es valido"});
+    if(id && isNaN(parseInt(id))) return res.status(400).json({status: 400, mensaje: "error el identificador del producto no es valido"});
 
     let query = 'SELECT id, sku, nombre FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE id = $1';
     let params = [id];
