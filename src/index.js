@@ -14,12 +14,16 @@ import kitProductoRoutes from './routes/kit_producto.routes.js'
 import kitSkuRoutes from './routes/sku_kits.routes.js'
 
 import { PORT } from './config.js'
-import {actualizarInventario} from './services/api_manager.js'
+import { actualizarInventario } from './services/api_manager.js'
 
 
 const app = express()
 
 app.use(express.json())
+app.use(function(req, res, next){
+    console.log("Paso por aqui")
+    next();
+});
 
 app.use(productosRoutes)
 app.use(salidasRoutes)

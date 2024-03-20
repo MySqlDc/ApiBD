@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { actualizarInventarioUrgente } from './services/api_manager.js'
+import { actualizarInventarioUrgente } from '../services/api_manager.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const dataFolderPath = path.resolve(__filename, '../..', 'data');
