@@ -13,7 +13,10 @@ import kitRoutes from './routes/kits.routes.js'
 import kitProductoRoutes from './routes/kit_producto.routes.js'
 import kitSkuRoutes from './routes/sku_kits.routes.js'
 
-import { PORT } from './config.js'
+import { 
+    PORT,
+    KEY
+ } from './config.js'
 import { actualizarInventario } from './services/api_manager.js'
 
 
@@ -21,8 +24,12 @@ const app = express()
 
 app.use(express.json())
 app.use(function(req, res, next){
-    console.log("Paso por aqui")
-    next();
+    const {key} = req.headers;
+    if(key === KEY){
+        next();
+    } else {
+        res.status(400).json({status: 400, mensaje: "No tienes Permiso para ingresar a estos datos"})
+    }
 });
 
 app.use(productosRoutes)

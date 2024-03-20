@@ -22,3 +22,6 @@ export const STORE_ID_RAPPI = process.env.STORE_ID_RAPPI;
 //DATOS API falabella
 export const API_KEY_FALABELLA = process.env.API_KEY_FALABELLA;
 export const USER_FALABELLA = process.env.USER_FALABELLA;
+
+//Aceeso Datos
+export const KEY = process.env.KEY;
