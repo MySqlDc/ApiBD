@@ -3,6 +3,7 @@ import { api_falabella } from './api_falabella.js';
 import { api_mercadoLibre } from './api_ml.js'
 import { api_rappi } from './api_rappi.js'
 
+
 export const actualizarInventario = async () => {
     const datos = await leerDatos();
     const skus = [];
@@ -18,14 +19,15 @@ export const actualizarInventario = async () => {
         }
 
         //await api_rappi(skus, true);
-        await api_falabella(skus)
+        //await api_falabella(skus)
     }
 }
 
 export const actualizarInventarioUrgente = async (codigo) => {
     const skus = [codigo];
+    console.log("ActualizacionPrioritaria")
     //await api_mercadoLibre(codigo);
     //await api_rappi(skus, true);
-    await api_falabella(skus)
+    //await api_falabella(skus)
     await eliminar(codigo);
 }

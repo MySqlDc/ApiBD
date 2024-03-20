@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { actualizarInventarioUrgente } from './services/api_manager.js'
+
 const __filename = fileURLToPath(import.meta.url)
 const dataFolderPath = path.resolve(__filename, '../..', 'data');
 const dataFilePath = path.join(dataFolderPath, 'data.js');
@@ -20,6 +22,7 @@ const registrar = async (clave) => {
     if(datos) {
         if(datos.hasOwnProperty(clave)){
             datos[clave]++;
+            if(datos[clave]===10) actualizarInventarioUrgente(clave);
         } else {
             datos[clave] = 1;
         }

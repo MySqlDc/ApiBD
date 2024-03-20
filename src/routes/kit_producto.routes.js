@@ -20,7 +20,7 @@ router.get('/productoKit', async(req, res) => {
 
     if(!sku && !id) return res.status(400).json({status: 400, mensaje: "No se ingreso un dato para la busqueda"});
 
-    if(id && !Number.isInteger(id)) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
+    if(id && isNaN(parseInt(id))) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
     
     let query = 'SELECT kit_producto.*, productos.nombre, productos.unidades FROM kit_producto INNER JOIN productos ON kit_producto.kit_id = productos.id WHERE kit_id = $1';
     let params = [id];
@@ -82,7 +82,7 @@ router.post('/productosKit', async(req, res) => {
 
         let coma = false;
 
-        ronda.forEach((vinculo, index) =>{
+        ronda.forEach(vinculo => {
             if(coma) {
                 query += ",";
             }

@@ -42,6 +42,7 @@ app.use((req, res, next) => {
 })
 
 cron.schedule('0 8-20/2 * * *', () => {
+    actualizarInventario();
     console.log('actualizando');
 })
 

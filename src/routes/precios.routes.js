@@ -16,6 +16,8 @@ router.get('/precios', async(req, res) => {
 
 router.get('/precio', async(req, res) => {
     const { id, sku } = req.query;
+    
+    if(id && isNaN(parseInt(id))) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
 
     let query = "SELECT * FROM vista_productos_master WHERE id = $1"
     let params = [id];

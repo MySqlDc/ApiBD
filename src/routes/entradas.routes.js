@@ -5,7 +5,7 @@ import { validarFecha } from '../validation.js';
 
 const router = Router();
 
-router.get('/entradas', async(req, res) =>{
+router.get('/entradas', async(req, res) => {
     const { fecha, sku } = req.query;
 
     if(fecha && !validarFecha(fecha)) return res.status(400).json({status: 400, mensaje: "debe ingresar una fecha correcta"})
@@ -37,7 +37,7 @@ router.get('/entradas', async(req, res) =>{
     }
 });
 
-router.get('/entrada/:codigo', async(req,res) =>{
+router.get('/entrada/:codigo', async(req,res) => {
     try {
         const {rows} = await pool.query("SELECT * FROM vista_entradas WHERE codigo = $1", [req.params.codigo])
 
@@ -83,7 +83,7 @@ router.post('/entrada', async(req, res) => {
     }
 });
 
-router.post('/entradas', async(req, res) =>{
+router.post('/entradas', async(req, res) => {
     const { productos, id } = req.body;
 
     if(!id) return res.status(400).json({status: 400, mensaje: "no se ingreso el id de la factura"});
@@ -101,7 +101,7 @@ router.post('/entradas', async(req, res) =>{
 
         let coma = false;
 
-        ronda.forEach((producto, index) =>{
+        ronda.forEach((producto, index) => {
             if(producto.sku && producto.cantidad){
                 if(coma){
                     query += ",";
@@ -165,7 +165,7 @@ router.put('/entrada/:codigo', async(req, res) => {
     }
 })
 
-router.delete('/entrada/:codigo', async(req, res) =>{
+router.delete('/entrada/:codigo', async(req, res) => {
     const {sku} = req.body;
 
     if(!sku) return res.status(400).json({status: 400, mensaje: "Debe ingresar un sku por medio del body para eliminar una entrada"});
