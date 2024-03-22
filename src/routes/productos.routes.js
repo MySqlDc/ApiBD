@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { pool } from '../conection.js';
+import { registrarVarios } from '../services/data_manage.js'
 
 const router = Router()
 
@@ -75,7 +76,7 @@ router.post('/productos', async(req, res) => {
                 query += ",";
             } 
 
-            if(producto.nombre.split("'").length > 1){
+            if(producto.nombre && producto.nombre.split("'").length > 1){
                 producto.nombre = producto.nombre.split("'").join("''");
             }
 
@@ -145,7 +146,46 @@ router.put('/producto/:id', async(req, res) => {
 
         res.status(400).json({status: 400, mensaje: error})
     }
-})
+});
+
+router.put('/productos', async(req, res) => {
+    const {productos, usuario} = req.body;
+
+    if(!usuario) return res.status(400).json({status: 400, mensaje: "Debe dar el nombre de un usuario para registrar"})
+
+    if(!productos || productos.length === 0) return res.status(400).json({status: 400, mensaje: "No se envio los datos de los productos"});
+    
+    let creados = []
+    let errores = []
+
+    for(const producto of productos){
+        if(producto.id && producto.cantidad){
+            try {
+                const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1", [producto.id]);
+        
+                const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [producto.cantidad, producto.id]);
+        
+                if(rows.length === 0) errores.push({mensaje: "el producto no existe"});
+        
+                await pool.query("INSERT INTO registro_ajuste(id, nombre_persona, cantidad_ingresada, cantidad_antigua) VALUES ($1, $2, $3, $4)", [producto.id, usuario, producto.cantidad, respuesta.rows[0].unidades])
+        
+                creados.push(rows[0]);
+            } catch (error) {
+        
+                errores.push({mensaje: error})
+            }
+        } else {
+            errores.push({mensaje: "Falta uno de los datos"});
+        }
+    }
+
+    if(creados.length === 0) return res.status(400).json({status: 400, mensaje:"no se creo ningun producto", error: errores});
+
+    if(errores.length === 0) return res.status(201).json({status: 201, confirmacion: "Se crearon todos los productos", data: creados});
+
+    res.status(200).json({status: 200, mensaje: "se crearon algunos productos", data: creados, error: errores});
+});
+
 
 router.delete('/producto/:id', async(req,res) => {
     try {
