@@ -102,7 +102,7 @@ router.patch('/precio/:id', async(req,res) => {
     const {costo, precio, precio_ml, precio_shopify, precio_rappi, precio_mayorista} = req.body;
 
     let params = [req.params.id, costo, precio, precio_ml, precio_shopify, precio_rappi, precio_mayorista];
-    let query = "UPDATE precios SET costo = COALESCE($2,costo), precio_venta = COALESCE($3,precio_venta), precio_shopify = COALESCE($4,precio_shopify), precio_mc COALESCE($5,precio_mc), precio_rappi COALESCE($6,precio_rappi), precio_mayorista COALESCE($7,precio_mayorista) WHERE id = $1 RETURNING *";
+    let query = "UPDATE precios SET costo = COALESCE($2,costo), precio_venta = COALESCE($3,precio_venta), precio_ml = COALESCE($4,precio_ml), precio_shopify = COALESCE($5,precio_shopify), precio_rappi = COALESCE($6,precio_rappi), precio_mayorista = COALESCE($7,precio_mayorista) WHERE id = $1 RETURNING *";
 
     try {
         const {rows} = await pool.query(query, params)
