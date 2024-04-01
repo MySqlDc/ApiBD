@@ -28,7 +28,7 @@ app.use(function(req, res, next){
     if(key === KEY){
         next();
     } else {
-        res.status(400).json({status: 400, mensaje: "No tienes Permiso para ingresar a estos datos"})
+        res.status(400).json({status: 400, mensaje: "No tienes Permiso para ingresar a estos datos", detail: req.headers.key})
     }
 });
 
