@@ -26,7 +26,7 @@ router.get('/publicacion_rappi/:id', async (req, res) =>{
 })
 
 router.post('/publicacion_rappi', async(req, res) => {
-    const {id, producto_id, nombre } = req.body;
+    let {id, producto_id, nombre } = req.body;
 
     if(nombre.split("'").length > 1){
         nombre = nombre.split("'").join("''");
