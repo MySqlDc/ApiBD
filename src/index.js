@@ -12,6 +12,7 @@ import preciosRoutes from './routes/precios.routes.js'
 import kitRoutes from './routes/kits.routes.js'
 import kitProductoRoutes from './routes/kit_producto.routes.js'
 import kitSkuRoutes from './routes/sku_kits.routes.js'
+import pruebasRoutes from './routes/pruebas.routes.js'
 
 import { 
     PORT,
@@ -34,6 +35,7 @@ app.use(function(req, res, next){
     }
 });
 
+app.use(pruebasRoutes)
 app.use(productosRoutes)
 app.use(salidasRoutes)
 app.use(entradasRoutes)
