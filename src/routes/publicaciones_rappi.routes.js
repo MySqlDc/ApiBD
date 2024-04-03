@@ -29,7 +29,7 @@ router.post('/publicacion_rappi', async(req, res) => {
     let {id, producto_id, nombre } = req.body;
 
     if(nombre.split("'").length > 1){
-        nombre = nombre.split("'").join("''");
+        nombre = nombre.split("'").join("'");
     }
     try {
         const {rows} = await pool.query("INSERT INTO publicaciones_rappi(id,producto_id,nombre) VALUES ($1,$2,$3) RETURNING *", [id, producto_id, nombre]);
@@ -37,6 +37,7 @@ router.post('/publicacion_rappi', async(req, res) => {
 
         res.status(200).json({status: 200, data: rows});
     } catch (error) {
+        if(error.detail === "")
         res.status(400).json({status: 400, mensaje: error});  
     }
 });
