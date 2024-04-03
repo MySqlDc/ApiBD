@@ -8,6 +8,8 @@ export const DB_PORT = process.env.DB_PORT;
 export const DB_PASSWORD = process.env.DB_PASSWORD;
 export const DB_DATABASE = process.env.DB_DATABASE;
 
+//Datos de la base de datos - Mongo
+export const DB_URI = process.env.DB_URI;
 
 //Datos API MercadoLIbre
 export const API_CLIENT_ML = process.env.API_CLIENT_ML;

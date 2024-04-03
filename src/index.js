@@ -15,9 +15,11 @@ import kitSkuRoutes from './routes/sku_kits.routes.js'
 
 import { 
     PORT,
-    KEY
+    KEY,
+    DB_URI
  } from './config.js'
 import { actualizarInventario } from './services/api_manager.js'
+import mongoose from 'mongoose'
 
 
 const app = express()
@@ -56,5 +58,7 @@ cron.schedule('0 8-20/2 * * *', () => {
     actualizarInventario();
     console.log('actualizando');
 })
+
+mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
 
 app.listen(PORT)
