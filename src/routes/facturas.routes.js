@@ -12,6 +12,22 @@ router.get('/facturas', async(req, res) => {
     res.status(200).json({status: 200, data: rows})
 });
 
+router.get('/facturaSalidas', async (req, res) => {
+    const { rows } = await pool.query("SELECT * FROM facturas_salidas");
+
+    if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ha encontrado ningun dato coincidente"})
+
+    res.status(200).json({status: 200, data: rows});
+});
+
+router.get('/facturaEntradas', async (req, res) => {
+    const { rows } = await pool.query("SELECT * FROM facturas_entradas");
+
+    if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ha encontrado ningun dato coincidente"})
+
+    res.status(200).json({status: 200, data: rows});
+});
+
 router.get('/facturasFecha', async(req, res) => {
     const { fecha, entre, antes, despues } = req.query;
     

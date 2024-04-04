@@ -13,6 +13,7 @@ import kitRoutes from './routes/kits.routes.js'
 import kitProductoRoutes from './routes/kit_producto.routes.js'
 import kitSkuRoutes from './routes/sku_kits.routes.js'
 import pruebasRoutes from './routes/pruebas.routes.js'
+import informesRoutes from './routes/informes.routes.js'
 
 import { 
     PORT,
@@ -48,6 +49,7 @@ app.use(kitProductoRoutes);
 app.use(kitSkuRoutes);
 app.use(publicacion_mlRoutes);
 app.use(publicacion_rappiRoutes);
+app.use(informesRoutes)
 
 app.use((req, res, next) => {
     res.status(404).json({
