@@ -9,7 +9,7 @@ router.get('/registrar', async (req, res) => {
 
 router.post('/registrar', async (req, res) =>{
     const registros = new registro(req.body);
-    registros.save().then((data) => res.json(data)).catch((error) => res.json({ mensaje: error}));
+    await registros.save().then((data) => res.json(data)).catch((error) => res.json({ mensaje: error}));
 });
 
 export default router;
