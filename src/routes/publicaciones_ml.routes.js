@@ -27,8 +27,16 @@ router.get('/publicaciones_ml/:id', async(req, res) =>{
 
 router.post('/publicacion_ml', async(req,res) =>{
     const {id, mco, variante} = req.body;
+    let params = [id, mco, variante];
+    let query = "INSERT INTO publicaciones_ml (id, mco, variante) VALUES ($1,$2,$3)";
+
+    if(!variante){
+        params = [id, mco]
+        query = "INSERT INTO publicaciones_ml (id, mco) VALUES ($1,$2)";
+    }
+
     try {
-        const {rows} = await pool.query("INSERT INTO publicaciones_ml (id, mco, variante) VALUES ($1,$2,$3)", [id, mco, variante]);
+        const {rows} = await pool.query(query, params);
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "No se encontro ningun publicaciones"})
 
         res.status(200).json({status: 200, data: rows});
