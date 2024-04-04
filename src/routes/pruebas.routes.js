@@ -8,8 +8,8 @@ router.get('/registrar', async (req, res) => {
 });
 
 router.post('/registrar', async (req, res) =>{
-    const user = new registro(req.body);
-    user.save().then((data) => res.json(data)).catch((error) => res.json({ mensaje: error}));
+    const registros = new registro(req.body);
+    registros.save().then((data) => res.json(data)).catch((error) => res.json({ mensaje: error}));
 });
 
 export default router;
