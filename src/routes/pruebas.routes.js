@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import registro from '../models/registro.js'
-import { restart } from 'nodemon';
 
 const router = Router();
 
@@ -9,7 +8,6 @@ router.get('/registrar', async (req, res) => {
 });
 
 router.post('/registrar', async (req, res) =>{
-    
     try {
         const registros = new registro(req.body);
         const data = await registros.save();
