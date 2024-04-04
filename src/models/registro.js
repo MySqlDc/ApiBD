@@ -7,4 +7,6 @@ const registroSchema = mongoose.Schema({
     }
 });
 
-export default registroSchema;
+const registro = mongoose.model('Registro', registroSchema)
+
+export default registro;
