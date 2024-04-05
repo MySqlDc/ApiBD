@@ -194,6 +194,30 @@ router.put('/status', async(req, res) => {
     }
 });
 
+router.put('/plataforma', async(req, res) => {
+    const {id, codigo, plataforma } = req.body;
+
+    if(!plataforma || !Number.isInteger(plataforma)) return res.json(400).json({status: 400, mensaje: "Se debe enviar el status que adquirira la factura"})
+    
+    let query = "UPDATE facturas_salidas SET plataforma = $1 WHERE id = $2 RETURNING *";
+    let params = [plataforma, id]
+
+    if(codigo) {
+        query = "UPDATE facturas_salidas SET plataforma = $1 WHERE codigo = $2 RETURNING *";
+        params = [plataforma, codigo]
+    }
+
+    try {
+        const {rows} = await pool.query(query, params);
+
+        if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se pudo colocar el status no coincide con ningun DATO"})
+
+        res.status(200).json({status: 200, confirmacion: "se ha colocado el status", data: rows[0]})
+    } catch (error) {
+        res.status(400).json(error);
+    }
+});
+
 router.delete('/factura/:codigo', async(req, res) => {
     try {
         await pool.query("DELETE FROM factura_entradas WHERE codigo = $1", [req.params.codigo])
