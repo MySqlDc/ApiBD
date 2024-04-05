@@ -5,9 +5,9 @@ import { validarFecha } from '../validation.js';
 const router = Router();
 
 router.get('/ventas', async (req, res) => {
-    const { fechas, fecha } = req.query;
+    const { fechas, fecha, ordenar} = req.query;
 
-    let query = "SELECT productos.nombre, COUNT(*) AS cantidad FROM salidas JOIN sku_producto ON salidas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON salidas.factura_id = facturas.id "
+    let query = "SELECT productos.nombre, COUNT(*) AS cantidad, SUM(salidas.valor_unitario * salidas.cantidad) AS valor FROM salidas JOIN sku_producto ON salidas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON salidas.factura_id = facturas.id "
 
     if(fechas){
         let rango = fechas.split("/");
@@ -21,7 +21,15 @@ router.get('/ventas', async (req, res) => {
         query += "WHERE facturas.fecha = '"+fecha+"' ";
     }
 
-    query += "GROUP BY productos.nombre ORDER BY cantidad DESC"
+    query += "GROUP BY productos.nombre ";
+
+    if(ordenar){
+        if(ordenar === "valor") query += "ORDER BY valor DESC";
+        if(ordenar === "cantidad") query += "ORDER BY cantidad DESC";
+    } else {
+        query += "ORDER BY cantidad DESC";
+    }
+
     try {
         const {rows} = await pool.query(query);
 
@@ -34,9 +42,9 @@ router.get('/ventas', async (req, res) => {
 });
 
 router.get('/ventasMarcas', async (req, res) => {
-    const { fechas, fecha } = req.query;
+    const { fechas, fecha, ordenar } = req.query;
 
-    let query = "SELECT marcas.nombre, COUNT(*) AS cantidad FROM salidas JOIN sku_producto ON salidas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON salidas.factura_id = facturas.id JOIN marcas ON marcas.id = productos.marca "
+    let query = "SELECT marcas.nombre, COUNT(*) AS cantidad, SUM(salidas.valor_unitario * salidas.cantidad) AS valor FROM salidas JOIN sku_producto ON salidas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON salidas.factura_id = facturas.id JOIN marcas ON marcas.id = productos.marca "
 
     if(fechas){
         let rango = fechas.split("/");
@@ -50,7 +58,15 @@ router.get('/ventasMarcas', async (req, res) => {
         query += "WHERE facturas.fecha = '"+fecha+"' ";
     }
 
-    query += "GROUP BY marcas.nombre ORDER BY cantidad DESC"
+    query += "GROUP BY marcas.nombre ";
+
+    if(ordenar){
+        if(ordenar === "valor") query += "ORDER BY valor DESC";
+        if(ordenar === "cantidad") query += "ORDER BY cantidad DESC";
+    } else {
+        query += "ORDER BY valor DESC";
+    }
+
     try {
         const {rows} = await pool.query(query);
 
@@ -63,9 +79,9 @@ router.get('/ventasMarcas', async (req, res) => {
 });
 
 router.get('/compras', async (req, res) => {
-    const { fechas, fecha } = req.query;
+    const { fechas, fecha, ordenar } = req.query;
 
-    let query = "SELECT productos.nombre, COUNT(*) AS cantidad FROM entradas JOIN sku_producto ON entradas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON entradas.factura_id = facturas.id "
+    let query = "SELECT productos.nombre, COUNT(*) AS cantidad, SUM(entradas.valor_unitario * entradas.cantidad) AS valor FROM entradas JOIN sku_producto ON entradas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON entradas.factura_id = facturas.id "
 
     if(fechas){
         let rango = fechas.split("/");
@@ -79,7 +95,15 @@ router.get('/compras', async (req, res) => {
         query += "WHERE facturas.fecha = '"+fecha+"' ";
     }
 
-    query += "GROUP BY productos.nombre ORDER BY cantidad DESC"
+    query += "GROUP BY productos.nombre ";
+    
+    if(ordenar){
+        if(ordenar === "valor") query += "ORDER BY valor DESC";
+        if(ordenar === "cantidad") query += "ORDER BY cantidad DESC";
+    } else {
+        query += "ORDER BY valor DESC";
+    }
+
     try {
         const {rows} = await pool.query(query);
 
@@ -92,9 +116,9 @@ router.get('/compras', async (req, res) => {
 });
 
 router.get('/comprasMarcas', async (req, res) => {
-    const { fechas, fecha } = req.query;
+    const { fechas, fecha, ordenar } = req.query;
 
-    let query = "SELECT marcas.nombre, COUNT(*) AS cantidad FROM entradas JOIN sku_producto ON entradas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON entradas.factura_id = facturas.id JOIN marcas ON marcas.id = productos.marca "
+    let query = "SELECT marcas.nombre, COUNT(*) AS cantidad, SUM(entradas.valor_unitario * entradas.cantidad) AS valor FROM entradas JOIN sku_producto ON entradas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON entradas.factura_id = facturas.id JOIN marcas ON marcas.id = productos.marca "
 
     if(fechas){
         let rango = fechas.split("/");
@@ -108,7 +132,15 @@ router.get('/comprasMarcas', async (req, res) => {
         query += "WHERE facturas.fecha = '"+fecha+"' ";
     }
 
-    query += "GROUP BY marcas.nombre ORDER BY cantidad DESC"
+    query += "GROUP BY marcas.nombre ";
+
+    if(ordenar){
+        if(ordenar === "valor") query += "ORDER BY valor DESC";
+        if(ordenar === "cantidad") query += "ORDER BY cantidad DESC";
+    } else {
+        query += "ORDER BY valor DESC";
+    }
+
     try {
         const {rows} = await pool.query(query);
 
@@ -165,7 +197,7 @@ router.get('/empaque', async (req, res) => {
 router.get('/ventasPlataformas', async(req, res) => {
     const { fechas, fecha } = req.query;
 
-    let query = "SELECT plataformas.nombre, COUNT(*) AS cantidad FROM facturas_salidas JOIN plataformas ON plataformas.id = facturas_salidas.plataforma "
+    let query = "SELECT plataformas.nombre, COUNT(*) AS cantidad, SUM(vf.total_valor) AS valor FROM vista_factura_precio vf INNER JOIN facturas_salidas ON vf.id = facturas_salidas.id JOIN plataformas ON plataformas.id = facturas_salidas.plataforma "
 
     if(fechas){
         let rango = fechas.split("/");
@@ -190,5 +222,6 @@ router.get('/ventasPlataformas', async(req, res) => {
         res.status(400).json({status: 400, mensaje: error});
     }
 });
+
 
 export default router;
