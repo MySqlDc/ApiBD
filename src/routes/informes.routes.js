@@ -1,6 +1,9 @@
-import { Router } from 'express';
+import { Router, json } from 'express';
 import { pool } from '../conection.js';
 import { validarFecha } from '../validation.js';
+
+import CryptoJS from 'crypto-js';
+import { actualizar_stock, getProductos } from '../services/api_falabella.js';
 
 const router = Router();
 
@@ -28,6 +31,36 @@ router.get('/ventas', async (req, res) => {
         if(ordenar === "cantidad") query += "ORDER BY cantidad DESC";
     } else {
         query += "ORDER BY cantidad DESC";
+    }
+
+    try {
+        const {rows} = await pool.query(query);
+
+        if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ha encontrado ningun dato coincidente"})
+
+        res.status(200).json({status: 200, data: rows})
+    } catch (error) {
+        res.status(400).json({status: 400, mensaje: error});
+    }
+});
+
+router.get('/ventasProducto', async (req, res) => {
+    const { fechas, fecha, producto_id} = req.query;
+
+    if(!producto_id) return res.status(400).json({status: 400, mensaje: "Se debe enviar un identificador del producto"})
+
+    let query = "SELECT productos.nombre, COUNT(*) AS cantidad, SUM(salidas.valor_unitario * salidas.cantidad) AS valor FROM salidas JOIN sku_producto ON salidas.sku = sku_producto.sku JOIN productos ON sku_producto.producto_id = productos.id JOIN facturas ON salidas.factura_id = facturas.id WHERE productos.id = "+producto_id;
+
+    if(fechas){
+        let rango = fechas.split("/");
+        query += "AND facturas.fecha BETWEEN ";
+        if(!validarFecha(rango[0])) return res.status(400).json({status: 400, mensaje: "la fecha 1 esta en un formato erroneo"});
+        query += "'"+rango[0]+"' ";
+        if(!validarFecha(rango[1])) return res.status(400).json({status: 400, mensaje: "la fecha 2 esta en un formato erroneo"});
+        query += "AND '"+rango[1]+"'";
+    } else if(fecha) {
+        if(!validarFecha(fecha)) return res.status(400).json({status: 400, mensaje: "la fecha esta en un formato erroneo"});
+        query += "AND facturas.fecha = '"+fecha+"' ";
     }
 
     try {
@@ -223,5 +256,16 @@ router.get('/ventasPlataformas', async(req, res) => {
     }
 });
 
+router.get('/getProductos', async(req, res) => {
+    const { skus, offset } = req.query;
+    const datos = await getProductos(skus, offset);
+    res.status(200).json({status: 200, data: datos})
+});
+
+router.post('/setProductos', async(req, res) => {
+    const {skus} = req.body;
+    const datos = await actualizar_stock(skus);
+    res.status(200).json({status: 200, data: datos})
+});
 
 export default router;

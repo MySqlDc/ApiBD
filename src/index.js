@@ -63,6 +63,6 @@ cron.schedule('0 8-20/2 * * *', () => {
     console.log('actualizando');
 })
 
-mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
+//mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
 
 app.listen(PORT)

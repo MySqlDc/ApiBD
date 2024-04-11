@@ -7,7 +7,7 @@ import {
 } from '../config.js'
 
 
-export const api_falabella = async (skus) => {
+export const actualizar_stock = async (skus) => {
     let respuesta = '';
     const parametros = setParametros('ProductUpdate');
 
@@ -24,23 +24,47 @@ export const api_falabella = async (skus) => {
     
     options.body = await requestBody(skus);
 
-    await fetch(url, options).then(res => res.json() ). then( response => respuesta = response.SuccessResponse.Head.ResponseType).catch( error => console.error(error) );
+    await fetch(url, options).then(res => res.json() ).then( response => respuesta = response.SuccessResponse.Head).catch( error => console.error(error) );
 
     if(respuesta === '') return console.log("Se ha hecho la actualizacion de los productos");
 
-    console.log(respuesta)
-}
+    return respuesta
+};
 
-const setParametros = (action, skus = []) => {
+export const getProductos = async (skus, offset) => {
+    let respuesta = '';
+    const parametros = setParametros('GetProducts', skus, offset);
+
+    parametros.set('Signature', CryptoJS.HmacSHA256(encodeURL(parametros), API_KEY_FALABELLA).toString(CryptoJS.enc.Hex));
+
+    let url = 'https://sellercenter-api.falabella.com/?'+encodeURL(parametros);
+
+    let options = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }
+
+    await fetch (url, options).then(res => res.json()).then(response => respuesta = response.SuccessResponse.Body.Products).catch(error => console.error(error));
+
+    return respuesta;
+};
+
+const setParametros = (action, skus = [], offset) => {
     let parametros = new Map();
 
     parametros.set('Action', action);
     parametros.set('Format', 'JSON');
-    parametros.set('Filter', 'live');
     parametros.set('UserID', USER_FALABELLA);
     parametros.set('Version', '1.0');
-    if(action === 'GetProducts') {
-        parametros.set('SkuSellerList', JSON.stringify(skus))
+    if(action === 'GetProducts' && skus.length > 1) {
+        parametros.set('SkuSellerList', skus);
+    } else if(action ==='GetProducts'){
+        parametros.set('Limit', 100);
+    }
+    if(offset){
+        parametros.set('Offset', offset);
     }
 
     return parametros
@@ -62,10 +86,9 @@ const encodeURL = (parametros) => {
 const requestBody = async (skus) =>{
     let request = "<Request>";
     try {
-        const {rows} = await pool.query('SELECT sku, unidades FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)', [skus]);
 
-        for(let i=0; i<rows.length; i++){
-            request +="<Product><SellerSku>"+rows[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+rows[i].unidades+"</Stock></BusinessUnit></BusinessUnits></Product>";
+        for(let i=0; i<skus.length; i++){
+            request +="<Product><SellerSku>"+skus[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+skus[i].unidades+"</Stock></BusinessUnit></BusinessUnits></Product>";
         }
 
         request += "</Request>";
