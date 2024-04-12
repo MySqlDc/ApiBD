@@ -88,7 +88,13 @@ const requestBody = async (skus) =>{
     try {
 
         for(let i=0; i<skus.length; i++){
-            request +="<Product><SellerSku>"+skus[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+skus[i].unidades+"</Stock></BusinessUnit></BusinessUnits></Product>";
+            request +="<Product><SellerSku>"+skus[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+skus[i].unidades+"</Stock>"
+            if(skus[i].unidades > 0){
+                request += "<Status>inactive</Status>";
+            } else {
+                request += "<Status>inactive</Status>";
+            }
+            request +="</BusinessUnit></BusinessUnits></Product>";
         }
 
         request += "</Request>";
