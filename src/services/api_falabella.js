@@ -98,8 +98,7 @@ const requestBody = async (skus) =>{
         }
 
         request += "</Request>";
-
-        console.log(request);
+        
         return request
     } catch (error) {
         console.error("error: "+error)
