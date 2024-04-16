@@ -67,7 +67,7 @@ export const actualizacion = async () => {
     const records = [];
     let data = {};
     try {
-        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id > 100");
+        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id < 100");
 
         if(rows.length === 0) return console.log("error no se encontro ningun dato");
 
