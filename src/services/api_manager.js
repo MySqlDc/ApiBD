@@ -1,6 +1,4 @@
 import { leerDatos, eliminar } from '../services/data_manage.js'
-import { api_mercadoLibre } from './api_ml.js'
-import { api_rappi } from './api_rappi.js'
 
 
 export const actualizarInventario = async () => {
