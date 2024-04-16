@@ -13,16 +13,30 @@ export const actualizacionDelta = async(skus) => {
         if(rows.length === 0) return console.log("error no se encontro ningun dato");
 
         rows.forEach( datos => {
-            let producto = {
-                id: datos.producto_id,
-                store_id: STORE_ID_RAPPI,
-                name: datos.nombre,
-                trademark: datos.marca,
-                price: datos.precio_venta,
-                discount_price: datos.precio_rappi,
-                stock: datos.unidades,
-                is_available: datos.unidades>0?true:false,
-                sale_type: "U"
+            let producto = {};
+            if(datos.precio_venta > datos.precio_rappi){
+                producto = {
+                    id: datos.producto_id,
+                    store_id: STORE_ID_RAPPI,
+                    name: datos.nombre,
+                    trademark: datos.marca,
+                    price: datos.precio_venta,
+                    discount_price: datos.precio_rappi,
+                    stock: datos.unidades,
+                    is_available: datos.unidades>0?true:false,
+                    sale_type: "U"
+                }
+            } else {
+                producto = {
+                    id: datos.producto_id,
+                    store_id: STORE_ID_RAPPI,
+                    name: datos.nombre,
+                    trademark: datos.marca,
+                    price: datos.precio_rappi,
+                    stock: datos.unidades,
+                    is_available: datos.unidades>0?true:false,
+                    sale_type: "U"
+                }
             }
 
             records.push(producto);
@@ -49,6 +63,7 @@ export const actualizacionDelta = async(skus) => {
 }
 
 export const actualizacion = async () => {
+    let respuesta = '';
     const records = [];
     let data = {};
     try {
@@ -87,5 +102,7 @@ export const actualizacion = async () => {
     }
 
     console.log(options);
-    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => console.log(response)).catch(error => console.log(error));
+    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);
+
+    return respuesta;
 }
