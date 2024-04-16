@@ -87,5 +87,5 @@ export const actualizacion = async () => {
     }
 
     console.log(options);
-    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => console.log(response));
+    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => console.log(response)).catch(error => console.log(error));
 }
