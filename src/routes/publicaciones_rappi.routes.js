@@ -87,9 +87,9 @@ router.post('/publicaciones_rappi', async(req,res) => {
 });
 
 router.get('/Rappifull', async(req, res) => {
-    await actualizacion();
+    const response = await actualizacion();
 
-    res.status(200).json({mensaje: "okey"});
+    res.status(200).json({mensaje: "okey", data: response});
 })
 
 router.post('/RappiDelta', async(req, res) =>{
