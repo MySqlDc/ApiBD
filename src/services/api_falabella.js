@@ -1,6 +1,5 @@
 import moment from 'moment';
 import CryptoJS from 'crypto-js';
-import { pool } from '../conection.js'
 import {
     API_KEY_FALABELLA,
     USER_FALABELLA

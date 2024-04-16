@@ -22,6 +22,7 @@ import {
  } from './config.js'
 import { actualizarInventario } from './services/api_manager.js'
 import mongoose from 'mongoose'
+import { actualizacion } from './services/api_rappi.js'
 
 
 const app = express()

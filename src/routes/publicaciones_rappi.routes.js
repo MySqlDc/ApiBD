@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../conection.js';
+import { actualizacion, actualizacionDelta } from '../services/api_rappi.js';
 
 const router = Router();
 
@@ -83,6 +84,20 @@ router.post('/publicaciones_rappi', async(req,res) => {
     if(errores.length === 0) return res.status(201).json({status: 201, confirmacion: "Se crearon todos las publicaciones", data: creados});
 
     res.status(200).json({status: 200, mensaje: "se crearon algunas publicaciones", data: creados, error: errores});
+});
+
+router.get('/Rappifull', async(req, res) => {
+    await actualizacion();
+
+    res.status(200).json({mensaje: "okey"});
+})
+
+router.post('/RappiDelta', async(req, res) =>{
+    const {skus} = req.body;
+
+    await actualizacionDelta(skus);
+
+    res.status(200).json({mensaje: 'okey'})
 });
 
 export default router;
