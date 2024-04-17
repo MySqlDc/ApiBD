@@ -131,6 +131,8 @@ router.put('/producto/:id', async(req, res) => {
     try {
         const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1", [req.params.id]);
 
+        if(respuesta.rows[0].unidades === cantidad) return res.status(200).json({status: 200, mensaje: "valores iguales no se actualizara"});
+
         const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cantidad, req.params.id]);
 
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se actualizo ninguna fila"});
@@ -185,7 +187,6 @@ router.put('/productos', async(req, res) => {
 
     res.status(200).json({status: 200, mensaje: "se crearon algunos productos", data: creados, error: errores});
 });
-
 
 router.delete('/producto/:id', async(req,res) => {
     try {

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../conection.js';
 import { actualizacion, actualizacionDelta } from '../services/api_rappi.js';
+import { getdatos, actualizarDatos} from '../services/api_elian.js'
 
 const router = Router();
 
@@ -87,17 +88,27 @@ router.post('/publicaciones_rappi', async(req,res) => {
 });
 
 router.get('/Rappifull', async(req, res) => {
+    const datos = await getdatos();
+    await actualizarDatos(datos);
     const response = await actualizacion();
 
-    res.status(200).json({mensaje: "okey", data: response});
+    if(response) {
+        res.status(200).json({mensaje: "respuesta", data: response});
+    } else {
+        res.status(200).json({mensaje: "No habia productos para actualizar"});
+    }
 })
 
-router.post('/RappiDelta', async(req, res) =>{
-    const {skus} = req.body;
+router.get('/RappiDelta', async(req, res) =>{
+    const datos = await getdatos();
+    const ids = await actualizarDatos(datos);
+    const response = await actualizacionDelta(ids);
 
-    await actualizacionDelta(skus);
-
-    res.status(200).json({mensaje: 'okey'})
+    if(response) {
+        res.status(200).json({mensaje: "respuesta", data: response});
+    } else {
+        res.status(200).json({mensaje: "No habia productos para actualizar"});
+    }
 });
 
 export default router;

@@ -27,3 +27,6 @@ export const USER_FALABELLA = process.env.USER_FALABELLA;
 
 //Aceeso Datos
 export const KEY = process.env.KEY;
+
+//Ducor URL
+export const DUCOR_DATA = process.env.DUCOR_DATA

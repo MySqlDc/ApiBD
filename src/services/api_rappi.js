@@ -4,15 +4,19 @@ import {
     STORE_ID_RAPPI
 } from '../config.js';
 
-export const actualizacionDelta = async(skus) => {
-    const records = [];
-    let data = {};
+export const actualizacionDelta = async(ids) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("api_key", API_KEY_RAPPI);
+    console.log(ids);
+    let respuesta = '';
+    let records;
     try {
-        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
+        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id = ANY($1)", [ids]);
 
         if(rows.length === 0) return console.log("error no se encontro ningun dato");
 
-        rows.forEach( datos => {
+        records = rows.map( datos => {
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
@@ -39,39 +43,37 @@ export const actualizacionDelta = async(skus) => {
                 }
             }
 
-            records.push(producto);
+            return producto
         })
     } catch (error) {
         console.log(error);
     }
 
-    data.type = "delta"
-
-    data.records = records
-
     let options = {
         method: 'POST',
-        headers: {
-            contentType: 'application/json',
-            api_key: API_KEY_RAPPI
-        },
-        body: JSON.stringify(data)
+        headers: myHeaders,
+        body: JSON.stringify({type: "delta", records: records})
     }
 
     console.log(options);
-    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => console.log(response));
+    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);
+
+    return  respuesta;
 }
 
 export const actualizacion = async () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("api_key", API_KEY_RAPPI);
+
     let respuesta = '';
-    const records = [];
-    let data = {};
+    let records
     try {
-        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id < 100");
+        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id");
 
         if(rows.length === 0) return console.log("error no se encontro ningun dato");
 
-        rows.forEach( datos => {
+        records = rows.map( datos => {
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
@@ -98,21 +100,16 @@ export const actualizacion = async () => {
                 }
             }
 
-            records.push(producto);
+            return producto
         })
     } catch (error) {
         console.log(error);
     }
 
-    data.records = records
-
     let options = {
         method: 'POST',
-        headers: {
-            contentType: 'application/json',
-            api_key: API_KEY_RAPPI
-        },
-        body: JSON.stringify(data)
+        headers: myHeaders,
+        body: JSON.stringify({records: records})
     }
 
     console.log(options);
