@@ -20,25 +20,25 @@ export const actualizacionDelta = async(ids) => {
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
-                    id: datos.producto_id,
+                    id: datos.producto_id.toString(),
                     store_id: STORE_ID_RAPPI,
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_venta,
                     discount_price: datos.precio_rappi,
                     stock: datos.unidades,
-                    is_available: datos.unidades>0?true:false,
+                    is_available: null,
                     sale_type: "U"
                 }
             } else {
                 producto = {
-                    id: datos.producto_id,
+                    id: datos.producto_id.toString(),
                     store_id: STORE_ID_RAPPI,
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_rappi,
                     stock: datos.unidades,
-                    is_available: datos.unidades>0?true:false,
+                    is_available: null,
                     sale_type: "U"
                 }
             }
@@ -77,25 +77,25 @@ export const actualizacion = async () => {
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
-                    id: datos.producto_id,
+                    id: datos.producto_id.toString(),
                     store_id: STORE_ID_RAPPI,
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_venta,
                     discount_price: datos.precio_rappi,
                     stock: datos.unidades,
-                    is_available: datos.unidades>0?true:false,
+                    is_available: null,
                     sale_type: "U"
                 }
             } else {
                 producto = {
-                    id: datos.producto_id,
+                    id: datos.producto_id.toString(),
                     store_id: STORE_ID_RAPPI,
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_rappi,
                     stock: datos.unidades,
-                    is_available: datos.unidades>0?true:false,
+                    is_available: null,
                     sale_type: "U"
                 }
             }

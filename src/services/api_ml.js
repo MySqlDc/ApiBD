@@ -32,13 +32,13 @@ const actualizarStock = async (publicacion) => {
         body:JSON.stringify(data)
     }
 
-    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.mco;
+    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.codigo;
 
     if(publicacion.variante) url +="/variations/"+publicacion.variante;
 
     const response = await fetch(url, options);
 
-    if(response.status === 200) console.log("hecho, publicacion "+publicacion.mco+"-"+publicacion.variante);
+    if(response.status === 200) console.log("hecho, publicacion "+publicacion.codigo+"-"+publicacion.variante);
 
     if(response.status === 400 || response.status === 404) console.log("Hubo un error", response.statusText);
 
