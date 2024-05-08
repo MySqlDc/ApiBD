@@ -47,7 +47,6 @@ app.use(marcasRoutes)
 app.use(preciosRoutes)
 app.use(kitRoutes);
 app.use(kitProductoRoutes);
-app.use(kitSkuRoutes);
 app.use(publicacion_mlRoutes);
 app.use(publicacion_rappiRoutes);
 app.use(informesRoutes)
