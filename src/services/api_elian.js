@@ -66,7 +66,7 @@ export const actualizarDatosVirtuales = async () => {
     let cambios = datos.map( dato => {
         const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
         if(producto){
-            if(dato.cantidad !== producto.unidades_virtuales){
+            if(dato.cantidad !== producto.unidades){
                 let id = producto.id;
                 return {...dato, id};
             }
