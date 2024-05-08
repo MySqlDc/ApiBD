@@ -61,7 +61,7 @@ export const actualizarDatosVirtuales = async () => {
         return dato.sku;
     });
 
-    const datosDB = await traerDatosVirtuales(skus);
+    const datosDB = await traerDatos(skus);
 
     let cambios = datos.map( dato => {
         const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
@@ -75,7 +75,7 @@ export const actualizarDatosVirtuales = async () => {
 
     for (const cambio of cambios){
         try {
-            const {rows} = await pool.query("UPDATE productos SET unidades_virtuales = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
+            const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
 
             if(rows.length === 0) continue;
 
