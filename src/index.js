@@ -11,7 +11,7 @@ import publicacion_rappiRoutes from './routes/publicaciones_rappi.routes.js'
 import preciosRoutes from './routes/precios.routes.js'
 import kitRoutes from './routes/kits.routes.js'
 import kitProductoRoutes from './routes/kit_producto.routes.js'
-import kitSkuRoutes from './routes/sku_kits.routes.js'
+import marcasRoutes from './routes/marcas.routes.js'
 import pruebasRoutes from './routes/pruebas.routes.js'
 import informesRoutes from './routes/informes.routes.js'
 
@@ -42,6 +42,7 @@ app.use(salidasRoutes)
 app.use(entradasRoutes)
 app.use(sku_productosRoutes)
 app.use(facturasRoutes)
+app.use(marcasRoutes)
 //app.use(actualizarRoutes)
 app.use(preciosRoutes)
 app.use(kitRoutes);
