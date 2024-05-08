@@ -1,4 +1,4 @@
-import {DUCOR_DATA} from '../config.js';
+import { DUCOR_DATA, DUCOR_PLATFOMS } from '../config.js';
 import { pool } from '../conection.js';
 
 export const getdatos = async () => {
@@ -37,10 +37,7 @@ export const actualizarDatos = async (datos) => {
                 return {...dato, id};
             }
         }
-    });
-
-    cambios = cambios.filter(cambio => cambio !== undefined);
-    console.log(cambios);
+    }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
         try {
@@ -57,6 +54,37 @@ export const actualizarDatos = async (datos) => {
     return productos;
 }
 
+export const actualizarDatosVirtuales = async () => {
+    const datos = await getdatos();
+
+    const skus = datos.map( dato => {
+        return dato.sku;
+    });
+
+    const datosDB = await traerDatosVirtuales(skus);
+
+    let cambios = datos.map( dato => {
+        const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
+        if(producto){
+            if(dato.cantidad !== producto.unidades_virtuales){
+                let id = producto.id;
+                return {...dato, id};
+            }
+        }
+    }).filter(cambio => cambio !== undefined);
+
+    for (const cambio of cambios){
+        try {
+            const {rows} = await pool.query("UPDATE productos SET unidades_virtuales = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
+
+            if(rows.length === 0) continue;
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
+}
+
 export const traerDatos = async (skus) => {
     try {
         const {rows} = await pool.query("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
@@ -64,5 +92,29 @@ export const traerDatos = async (skus) => {
         return rows;
     } catch (e){
         console.log(e);
+    }
+}
+
+export const traerDatosVirtuales = async (skus) => {
+    try {
+        const {rows} = await pool.query("SELECT sku_producto.sku, productos.unidades_virtuales, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
+
+        return rows;
+    } catch (e){
+        console.log(e);
+    }
+}
+
+export const obtenerSalidas = async (plataforma) => {
+    try {
+        console.log(DUCOR_PLATFOMS+plataforma)
+
+        const response = await fetch(DUCOR_PLATFOMS+plataforma);
+
+        const data = await response.json();
+
+        return data;
+    } catch (error) {
+        console.log(error)
     }
 }

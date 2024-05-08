@@ -2,7 +2,13 @@
 node_modules
 
 # ignorar data
-src/data/data.js
+data
 
 # ignorar actualizacion routes
 src/routes/actualizar.routes.js
+
+# variables de entorno 
+.env
+
+# nodemon config
+nodemon.json

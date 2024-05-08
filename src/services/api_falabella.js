@@ -6,7 +6,7 @@ import {
 } from '../config.js'
 
 
-export const actualizar_stock = async (skus) => {
+export const actualizar_stockF = async (skus) => {
     let respuesta = '';
     const parametros = setParametros('ProductUpdate');
 
@@ -23,11 +23,16 @@ export const actualizar_stock = async (skus) => {
     
     options.body = await requestBody(skus);
 
-    await fetch(url, options).then(res => res.json() ).then( response => respuesta = response.SuccessResponse.Head).catch( error => console.error(error) );
+    await fetch(url, options).then(res => res.json() ).then( response => respuesta = response).catch( error => console.error(error) );
 
-    if(respuesta === '') return console.log("Se ha hecho la actualizacion de los productos");
+    if(respuesta === ''){
+        return console.log("error");
+    } else{
+        console.log(respuesta)
+        return respuesta
+    }
 
-    return respuesta
+    
 };
 
 export const getProductos = async (skus, offset) => {

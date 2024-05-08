@@ -28,6 +28,7 @@ import { actualizacion } from './services/api_rappi.js'
 const app = express()
 
 app.use(express.json())
+app.use(pruebasRoutes)
 app.use(function(req, res, next){
     const {key} = req.headers;
     if(key === KEY){
@@ -36,8 +37,6 @@ app.use(function(req, res, next){
         res.status(400).json({status: 400, mensaje: "No tienes Permiso para ingresar a estos datos", detail: req.headers.key})
     }
 });
-
-app.use(pruebasRoutes)
 app.use(productosRoutes)
 app.use(salidasRoutes)
 app.use(entradasRoutes)

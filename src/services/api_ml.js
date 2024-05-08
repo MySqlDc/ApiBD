@@ -8,19 +8,22 @@ import {
 let TOKEN = "";
 
 export const api_mercadoLibre = async (sku) => {
-    let query = "SELECT mco, variante, unidades FROM publicaciones_mc INNER JOIN productos ON productos.id = publicaciones_mc.id WHERE productos.id = (SELECT producto_id FROM sku_producto WHERE sku = $1)";
+    let flag = true;
+    let query = "SELECT mco, variante, unidades_virtuales FROM publicaciones_ml INNER JOIN productos ON productos.id = publicaciones_ml.id WHERE productos.id = (SELECT producto_id FROM sku_producto WHERE sku = $1)";
     const {rows} = await pool.query(query, [sku]);
 
     if(rows.length === 0) return;
 
     for(let i = 0; i<rows.length; i++){
-        await actualizarStock(rows[i]);
+        flag = await actualizarStock(rows[i]);
     }
+
+    return flag;
 }
 
 const actualizarStock = async (publicacion) => {
     let data = {
-        available_quantity: publicacion.unidades
+        available_quantity: publicacion.unidades_virtuales
     }
 
     let options = {
@@ -32,20 +35,27 @@ const actualizarStock = async (publicacion) => {
         body:JSON.stringify(data)
     }
 
-    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.codigo;
+    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.mco;
 
     if(publicacion.variante) url +="/variations/"+publicacion.variante;
 
     const response = await fetch(url, options);
 
-    if(response.status === 200) console.log("hecho, publicacion "+publicacion.codigo+"-"+publicacion.variante);
+    if(response.status === 200) {
+        console.log("hecho, publicacion "+publicacion.mco+"-"+publicacion.variante);
+        return true;
+    }
 
-    if(response.status === 400 || response.status === 404) console.log("Hubo un error", response.statusText);
+    if(response.status === 400 || response.status === 404) {
+        console.log("Hubo un error", response.statusText);
+        return false;
+    }
 
     if(response.status === 403){
         await token_ml();
 
-        await actualizarStock(sku);
+        const response = await actualizarStock(publicacion);
+        return response;
     }
 }
 

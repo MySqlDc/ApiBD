@@ -52,6 +52,8 @@ router.post('/producto', async(req, res) => {
         res.status(201).json({status: 201, datos: rows});
     } catch (error) {
         if(error.constraint === 'productos_nombre_key') return res.status(400).json({status: 400, mensaje: "el nombre del producto ya existe"})
+        
+        if(error.constraint === "fk_marca") return res.status(400).json({status: 400, mensaje: "La marca no existes"})
 
         res.status(400).json({status: 400, mensaje: error});
     }
@@ -109,7 +111,7 @@ router.patch('/producto/:id', async(req, res) => {
     const {nombre, marca} = req.body;
 
     try {
-        const {rows} = await pool.query("UPDATE productos SET nombre = COALESCE($1, nombre), marca = COALESCE($2, marca) WHERE id = $3 RETURNING *", [nombre, marca, req.params.id])
+        const {rows} = await pool.query("UPDATE productos SET nombre = COALESCE($1, nombre), marca = COALESCE($2, marca) WHERE id = $3 AND tipo = 'unitario' RETURNING *", [nombre, marca, req.params.id])
 
         if(rows.length === 0) return res.status(200).json({"status": 204, "message": "no se actualizo ningúna fila"})
 
@@ -129,11 +131,11 @@ router.put('/producto/:id', async(req, res) => {
     if(!usuario) return res.status(400).json({status: 400, mensaje: "Debe dar el nombre de un usuario para registrar"})
 
     try {
-        const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1", [req.params.id]);
+        const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1 AND tipo = 'unitario'", [req.params.id]);
 
         if(respuesta.rows[0].unidades === cantidad) return res.status(200).json({status: 200, mensaje: "valores iguales no se actualizara"});
 
-        const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cantidad, req.params.id]);
+        const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 AND tipo = 'unitario' RETURNING *", [cantidad, req.params.id]);
 
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se actualizo ninguna fila"});
 
@@ -163,9 +165,9 @@ router.put('/productos', async(req, res) => {
     for(const producto of productos){
         if(producto.id && producto.cantidad){
             try {
-                const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1", [producto.id]);
+                const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1 AND tipo = 'unitario'", [producto.id]);
         
-                const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [producto.cantidad, producto.id]);
+                const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 AND tipo = 'unitario' RETURNING *", [producto.cantidad, producto.id]);
         
                 if(rows.length === 0) errores.push({mensaje: "el producto no existe"});
         
@@ -190,7 +192,7 @@ router.put('/productos', async(req, res) => {
 
 router.delete('/producto/:id', async(req,res) => {
     try {
-        const {rowCount} = await pool.query("DELETE FROM productos WHERE id = $1", [req.params.id])
+        const {rowCount} = await pool.query("DELETE FROM productos WHERE id = $1 AND tipo = 'unitario'", [req.params.id])
 
         if(rowCount === 0) return res.status(200).json({status: 204, mensaje: "el producto no existia"})
 

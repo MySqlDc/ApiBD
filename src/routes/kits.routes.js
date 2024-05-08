@@ -4,7 +4,7 @@ import { pool } from '../conection.js';
 const router = Router();
 
 router.get('/kits', async(req, res) => {
-    const {rows} = await pool.query("SELECT * FROM kits");
+    const {rows} = await pool.query("SELECT * FROM productos WHERE tipo = 'kit'");
 
     if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ha encontrado ningun dato coincidente"})
 
@@ -22,7 +22,7 @@ router.get('/kit', async(req, res) => {
     let params = [id]
 
     if(!id && sku){
-        query = "SELECT kits.* FROM kits INNER JOIN kit_sku ON kits.id = kit_sku.kit_id WHERE sku = $1"
+        query = "SELECT productos.* FROM productos INNER JOIN sku_producto ON productos.id = sku_producto.producto_id WHERE sku = $1"
         params = [sku]
     };
 
@@ -37,27 +37,33 @@ router.get('/kit', async(req, res) => {
     }
 });
 
-router.post('/kit', async(req, res) => {
-    const {nombre, marca} = req.body;
+router.post('/kits', async(req, res) => {
+    const { nombre, marca } = req.body;
 
-    if(!nombre || !marca) return res.status(400).json({status: 400, mensaje: "Debe agregarse el nombre del kit nombre o marca"});
+    if(!nombre) return res.status(400).json({status: 400, mensaje: "Debe ingresar un nombre para el kit"});
 
-    if(!Number.isInteger(marca)) return res.status(400).json({status: 400, mensaje: "Debe hacer envio del id de la marca"});
+    if(!marca) return res.status(400).json({status: 400, mensaje: "Debe ingresar una marca para el kit"});
+
+    if(nombre.split("'").length > 1){
+        nombre = nombre.split("'").join("''");
+    }
+
+    let query = "INSERT INTO productos(nombre,marca,tipo) VALUES ($1,$2,$3) RETURNING *";
+    let values = [nombre, marca, "kit"]
 
     try {
-        const {rows} = await pool.query("INSERT INTO kits(nombre, marca) VALUES ($1,$2) RETURNING * ", [nombre, marca]);
-
-        if(rows.length == 0) return res.status(200).json({status: 200, mensaje: "no se ingreso ningun kit"});
-
-        res.status(200).json({status: 200, data: rows[0]});
+        const {rows} = await pool.query(query, values);
+        res.status(201).json({status: 201, datos: rows});
     } catch (error) {
+        if(error.constraint === 'productos_nombre_key') return res.status(400).json({status: 400, mensaje: "el nombre del producto ya existe"})
+
         if(error.constraint === "fk_marca") return res.status(400).json({status: 400, mensaje: "La marca no existes"})
 
         res.status(400).json({status: 400, mensaje: error});
     }
 });
 
-router.post('/kits', async(req, res) => {
+router.post('/kitsMasivo', async(req, res) => {
     const {kits} = req.body;
 
     if(!kits || kits.length < 1) return res.status(400).json({status: 400, mensaje: "Debe agregar los kits"});
@@ -66,7 +72,7 @@ router.post('/kits', async(req, res) => {
     let errores = []
 
     for(let i = 0; i < Math.ceil(kits.length/30); i++){
-        let query = "INSERT INTO kits(nombre, marca) VALUES "
+        let query = "INSERT INTO productos(nombre, marca, tipo) VALUES "
         var ronda = kits.slice(i*30, ((i*30)+30));
 
         let coma = false;
@@ -77,7 +83,7 @@ router.post('/kits', async(req, res) => {
                     query += ",";
                 }
 
-                query += "('"+kit.nombre+"',"+kit.marca+")";
+                query += "('"+kit.nombre+"',"+kit.marca+",'kit')";
                 if(!coma) coma = !coma;
             } else {
                 if(!kit.nombre) errores.push({mensaje: "kit "+(index+1)+" falta por sku"});
@@ -117,7 +123,7 @@ router.put('/kit/:kit_id', async(req, res) => {
     if(!nombre) return res.status(400).json({status: 400, mensaje: "No se agrego el nuevo nombre"});
 
     try {
-        const {rows} = await pool.query("UPDATE kits SET nombre = $1 WHERE id = $2 RETURNING *", [nombre, req.params.kit_id])
+        const {rows} = await pool.query("UPDATE productos SET nombre = $1 WHERE id = $2 AND tipo = 'kit' RETURNING *", [nombre, req.params.kit_id])
 
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se altero ningun kit"});
 
@@ -129,7 +135,7 @@ router.put('/kit/:kit_id', async(req, res) => {
 
 router.delete('/kit/:kit_id', async(req, res) => {
     try {
-        const {rowCount} = await pool.query("DELETE FROM kits WHERE id = $1", [req.params.kit_id]);
+        const {rowCount} = await pool.query("DELETE FROM productos WHERE id = $1 AND tipo = 'kit'", [req.params.kit_id]);
 
         if(rowCount === 0) return res.status(200).json({status: 204, mensaje: "el kit no exitia"});
 

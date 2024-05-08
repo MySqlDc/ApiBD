@@ -1,3 +1,5 @@
+import 'dotenv/config.js'
+
 //Puerto de ejecucion de express
 export const PORT = process.env.PORT || 3000;
 
@@ -30,3 +32,4 @@ export const KEY = process.env.KEY;
 
 //Ducor URL
 export const DUCOR_DATA = process.env.DUCOR_DATA
+export const DUCOR_PLATFOMS = process.env.DUCOR_PLATFOMS

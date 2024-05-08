@@ -1,9 +1,7 @@
-import { Router, json } from 'express';
+import { Router } from 'express';
 import { pool } from '../conection.js';
 import { validarFecha } from '../validation.js';
-
-import CryptoJS from 'crypto-js';
-import { actualizar_stock, getProductos } from '../services/api_falabella.js';
+import { getProductos } from '../services/api_falabella.js';
 
 const router = Router();
 

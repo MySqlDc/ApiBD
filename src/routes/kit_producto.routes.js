@@ -22,11 +22,11 @@ router.get('/productoKit', async(req, res) => {
 
     if(id && isNaN(parseInt(id))) return res.status(400).json({status: 400, mensaje: "error el identificador del kit no es valido"});
     
-    let query = 'SELECT kit_producto.*, productos.nombre, productos.unidades FROM kit_producto INNER JOIN productos ON kit_producto.kit_id = productos.id WHERE kit_id = $1';
+    let query = 'SELECT kit_producto.*, productos.nombre, productos.unidades FROM kit_producto INNER JOIN productos ON kit_producto.producto_id = productos.id WHERE kit_id = $1';
     let params = [id];
 
     if(sku){
-        query = 'SELECT kit_producto.*, productos.nombre, productos.unidades FROM kit_producto INNER JOIN productos ON kit_producto.kit_id = productos.id INNER JOIN sku_producto ON productos.id = sku_producto.producto_id WHERE sku = $1'
+        query = 'SELECT kit_producto.*, productos.nombre, productos.unidades FROM kit_producto INNER JOIN productos ON kit_producto.productos_id = productos.id INNER JOIN sku_producto ON productos.id = sku_producto.producto_id WHERE sku = $1'
         params = [sku];
     }
 
