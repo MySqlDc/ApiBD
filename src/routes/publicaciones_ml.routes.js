@@ -84,6 +84,57 @@ router.post('/publicaciones_ml', async(req,res) =>{
     res.status(200).json({status: 200, mensaje: "se crearon algunas publicaciones", data: creados, error: errores});
 });
 
+router.post('/publicaciones_ml_SKU', async(req,res) =>{
+    const {publicaciones} = req.body;
+    
+    if(!publicaciones || publicaciones.length === 0) return res.status(400).json({status: 400, mensaje: "No se envio los datos de los publicaciones"});
+    
+    let creados = [];
+    let errores = [];
+
+    for(var i = 0; i < Math.ceil(publicaciones.length/30); i++){
+        let query = "INSERT INTO publicaciones_ml (id,mco,variante) VALUES ";
+        var ronda = publicaciones.slice(i*30, ((i*30)+30));
+
+        let coma = false;
+
+        for(let publicacion of ronda){
+            const response = await pool.query("SELECT producto_id FROM sku_producto WHERE sku = $1", [publicacion.sku]);
+
+            if(response.rows.length > 0){
+                publicacion.id = parseInt(response.rows[0].producto_id);
+                if(coma){
+                    query += ",";
+                } 
+    
+                if(publicacion.variante !== undefined){
+                    query+= "("+publicacion.id+",'"+publicacion.mco+"','"+publicacion.variante+"')";
+                } else {
+                    query+= "("+publicacion.id+",'"+publicacion.mco+"',NULL)";
+                }
+                
+                if(!coma) coma = !coma;
+            } else {
+                console.log("sku no encontrado", publicacion)
+            }
+        } 
+
+        try {
+            const {rows} = await pool.query(query+" RETURNING *");
+
+            creados = creados.concat(rows)
+        } catch (error) {
+            errores.push({mensaje: error});
+        }
+    }
+
+    if(creados.length === 0) return res.status(400).json({status: 400, mensaje:"no se creo ninguna publicacion", error: errores});
+
+    if(errores.length === 0) return res.status(201).json({status: 201, confirmacion: "Se crearon todos las publicaciones", data: creados});
+
+    res.status(200).json({status: 200, mensaje: "se crearon algunas publicaciones", data: creados, error: errores});
+});
+
 router.put('/publicacion_ml/:id', async(req, res) =>{
     const {mco, variante, mco_anterior} = req.body;
 

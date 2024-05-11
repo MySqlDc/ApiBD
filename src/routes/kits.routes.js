@@ -53,7 +53,7 @@ router.post('/kits', async(req, res) => {
 
     try {
         const {rows} = await pool.query(query, values);
-        res.status(201).json({status: 201, datos: rows});
+        res.status(201).json({status: 201, data: rows});
     } catch (error) {
         if(error.constraint === 'productos_nombre_key') return res.status(400).json({status: 400, mensaje: "el nombre del producto ya existe"})
 

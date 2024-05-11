@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../conection.js';
 import { validarFecha } from '../validation.js';
-import { getProductos } from '../services/api_falabella.js';
+import { getProductos, actualizar_stockF } from '../services/api_falabella.js';
 
 const router = Router();
 
@@ -262,7 +262,7 @@ router.get('/getProductos', async(req, res) => {
 
 router.post('/setProductos', async(req, res) => {
     const {skus} = req.body;
-    const datos = await actualizar_stock(skus);
+    const datos = await actualizar_stockF(skus);
     res.status(200).json({status: 200, data: datos})
 });
 

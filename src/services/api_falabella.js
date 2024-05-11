@@ -4,6 +4,7 @@ import {
     API_KEY_FALABELLA,
     USER_FALABELLA
 } from '../config.js'
+import { inventario } from './consultas_internas.js';
 
 
 export const actualizar_stockF = async (skus) => {
@@ -88,6 +89,7 @@ const encodeURL = (parametros) => {
 }
 
 const requestBody = async (skus) =>{
+
     let request = "<Request>";
     try {
 
@@ -103,6 +105,7 @@ const requestBody = async (skus) =>{
 
         request += "</Request>";
         
+        console.log(request);
         return request
     } catch (error) {
         console.error("error: "+error)
