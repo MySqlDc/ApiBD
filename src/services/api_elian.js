@@ -65,6 +65,7 @@ export const actualizarDatosGeneral = async () => {
 
     let cambios = datos.map( dato => {
         const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
+        dato.cantidad<0?dato.cantidad=0:dato.cantidad;
         if(producto){
             if(dato.cantidad !== producto.unidades){
                 let id = producto.id;
@@ -78,7 +79,6 @@ export const actualizarDatosGeneral = async () => {
             const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
 
             if(rows.length === 0) continue;
-
         } catch (error) {
             console.log(error);
         }
