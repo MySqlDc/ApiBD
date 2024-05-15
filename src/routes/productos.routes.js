@@ -16,6 +16,18 @@ router.get('/productos', async(req, res) => {
     }
 });
 
+router.get('/productosVirtuales', async(req, res) => {
+    try {
+        const { rows } = await pool.query("SELECT sku_producto.sku, (productos.unidades + productos.unidades_virtuales) AS unidades FROM sku_producto INNER JOIN productos ON sku_producto.producto_id = productos.id");
+
+        if(rows.length === 0) return res.status(200).json({status: 200, mensaje: "no se ha encontrado ningun dato"})
+        
+        res.status(200).json({status: 200, data: rows})
+    } catch (error) {
+        res.status(400).json({status: 400, mensaje: error})
+    }
+})
+
 router.get('/producto/:id', async(req, res) => {
     try {
         const {rows} = await pool.query("SELECT * FROM productos WHERE id = $1", [req.params.id]);

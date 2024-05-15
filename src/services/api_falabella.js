@@ -4,10 +4,10 @@ import {
     API_KEY_FALABELLA,
     USER_FALABELLA
 } from '../config.js'
-import { inventario } from './consultas_internas.js';
 
 
 export const actualizar_stockF = async (skus) => {
+    if(skus.length === 0) return {mensaje: "no hay skus qe actualizar"}
     let respuesta = '';
     const parametros = setParametros('ProductUpdate');
 
@@ -89,12 +89,11 @@ const encodeURL = (parametros) => {
 }
 
 const requestBody = async (skus) =>{
-
     let request = "<Request>";
     try {
 
         for(let i=0; i<skus.length; i++){
-            request +="<Product><SellerSku>"+skus[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+skus[i].unidades+"</Stock>"
+            request +="<Product><SellerSku>"+skus[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+(skus[i].unidades<0?0:skus[i].unidades)+"</Stock>"
             if(skus[i].unidades > 0){
                 request += "<Status>active</Status>";
             } else {

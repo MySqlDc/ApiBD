@@ -9,10 +9,10 @@ let TOKEN = "";
 
 export const api_mercadoLibre = async (sku) => {
     let flag = true;
-    let query = "SELECT mco, variante, (unidades - unidades_virtuales) AS unidades FROM publicaciones_ml INNER JOIN productos ON productos.id = publicaciones_ml.id WHERE productos.id = (SELECT producto_id FROM sku_producto WHERE sku = $1)";
+    let query = "SELECT mco, variante, (unidades + unidades_virtuales) AS unidades FROM publicaciones_ml INNER JOIN productos ON productos.id = publicaciones_ml.id WHERE productos.id = (SELECT producto_id FROM sku_producto WHERE sku = $1)";
     const {rows} = await pool.query(query, [sku]);
 
-    if(rows.length === 0) return;
+    if(rows.length === 0) return false;
 
     for(let i = 0; i<rows.length; i++){
         flag = await actualizarStock(rows[i]);
@@ -22,8 +22,9 @@ export const api_mercadoLibre = async (sku) => {
 }
 
 const actualizarStock = async (publicacion) => {
+    console.log("publicacion", publicacion)
     let data = {
-        available_quantity: publicacion.unidades
+        available_quantity: (publicacion.unidades>0?publicacion.unidades:0)
     }
 
     let options = {

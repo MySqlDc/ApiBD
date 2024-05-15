@@ -33,7 +33,10 @@ export const registrar = async (clave, ruta = 'data') => {
     if(datos && ruta === 'data') {
         if(datos.hasOwnProperty(clave)){
             datos[clave]++;
-            if(datos[clave]===10) actualizarInventarioUrgente(clave);
+            if(datos[clave]===10){
+                await actualizarInventarioUrgente(clave);
+                delete datos[clave]
+            } 
         } else {
             datos[clave] = 1;
         }

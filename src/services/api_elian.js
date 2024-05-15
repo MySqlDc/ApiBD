@@ -54,7 +54,7 @@ export const actualizarDatos = async (datos) => {
     return productos;
 }
 
-export const actualizarDatosVirtuales = async () => {
+export const actualizarDatosGeneral = async () => {
     const datos = await getdatos();
 
     const skus = datos.map( dato => {
@@ -88,16 +88,6 @@ export const actualizarDatosVirtuales = async () => {
 export const traerDatos = async (skus) => {
     try {
         const {rows} = await pool.query("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
-
-        return rows;
-    } catch (e){
-        console.log(e);
-    }
-}
-
-export const traerDatosVirtuales = async (skus) => {
-    try {
-        const {rows} = await pool.query("SELECT sku_producto.sku, productos.unidades_virtuales, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
 
         return rows;
     } catch (e){

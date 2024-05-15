@@ -1,11 +1,12 @@
 import { leerDatos, eliminar } from '../services/data_manage.js'
 import { api_mercadoLibre } from './api_ml.js';
 import { actualizar_stockF } from './api_falabella.js'
+import { inventario } from './consultas_internas.js';
 
 
 export const actualizarInventario = async () => {
     const datos = await leerDatos();
-    const skus = [];
+    let skus = [];
     
     if(datos){
         for(const dato in datos){
@@ -18,6 +19,7 @@ export const actualizarInventario = async () => {
             }
         }
 
+        skus = await inventario(skus)
         //await api_rappi(skus, true);
         await actualizar_stockF(skus)
     }
@@ -28,6 +30,5 @@ export const actualizarInventarioUrgente = async (codigo) => {
     console.log("ActualizacionPrioritaria")
     await api_mercadoLibre(codigo);
     //await api_rappi(skus, true);
-    await api_falabella(skus)
-    await eliminar(codigo);
+    await api_falabella(skus);
 }
