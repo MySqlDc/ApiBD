@@ -23,6 +23,7 @@ import {
 import { actualizarInventario } from './services/api_manager.js'
 import mongoose from 'mongoose'
 import { actualizacion } from './services/api_rappi.js'
+import { inventario } from './services/consultas_internas.js'
 
 
 const app = express()
@@ -63,6 +64,9 @@ cron.schedule('0 8-20/2 * * *', () => {
     console.log('actualizando');
 })
 
+cron.schedule('5 * * * *', () => {
+    inventario("123548888")
+})
 //mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
 
 app.listen(PORT)
