@@ -83,6 +83,8 @@ export const actualizarDatosGeneral = async () => {
             console.log(error);
         }
     };
+
+    await pool.query("SELECT inventario_kit_general()");
 }
 
 export const traerDatos = async (skus) => {
