@@ -64,8 +64,9 @@ cron.schedule('0 8-20/2 * * *', () => {
     console.log('actualizando');
 })
 
-cron.schedule('5 * * * *', () => {
-    inventario("123548888")
+cron.schedule('*/5 * * * *', () => {
+    inventario(["123548888"])
+    console.log("aca")
 })
 //mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
 
