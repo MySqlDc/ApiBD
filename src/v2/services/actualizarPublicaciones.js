@@ -31,8 +31,6 @@ export const actualizarPublicaciones = async (data) => {
 
     const respuesta = respuestaGeneral(responseML, responseRappi, responseFalabella);
 
-    await putQuery("UPDATE publicaciones SET update_status = false WHERE id = ANY($1)", [response.data.map(dato => dato.id)])
-
     return respuesta;
 }
 

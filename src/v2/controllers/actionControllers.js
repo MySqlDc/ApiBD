@@ -32,6 +32,8 @@ export const updateStock = async (req, res) => {
 
     const response = await actualizarPublicaciones(data);
 
+    await putQuery("UPDATE publicaciones SET update_status = false WHERE id = ANY($1)", [data.map(dato => dato.id)])
+
     res.status(200);
     res.send(response);
 }

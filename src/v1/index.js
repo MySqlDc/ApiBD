@@ -55,6 +55,10 @@ cron.schedule('0 8-20/2 * * *', () => {
     console.log('actualizando');
 })
 
+cron.schedule('5/* * * * *', () => {
+    
+    console.log('activo')
+})
 //mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
 
 export default router;
