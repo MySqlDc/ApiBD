@@ -3,7 +3,7 @@ import {
     API_CLIENT_ML,
     API_REFRESH_ML,
     API_SECRET_ML
-} from '../config.js'
+} from '../../config.js'
 
 let TOKEN = "";
 

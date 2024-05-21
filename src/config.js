@@ -1,7 +1,8 @@
-import 'dotenv/config.js'
-
 //Puerto de ejecucion de express
 export const PORT = process.env.PORT || 3000;
+
+//version API
+export const VERSION = process.env.VERSION;
 
 //Datos de la base de datos
 export const DB_HOST = process.env.DB_HOST;

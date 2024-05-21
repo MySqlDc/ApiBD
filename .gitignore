@@ -9,6 +9,7 @@ src/routes/actualizar.routes.js
 
 # variables de entorno 
 .env
+.env.development
 
 # nodemon config
 nodemon.json

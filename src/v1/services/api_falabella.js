@@ -3,7 +3,7 @@ import CryptoJS from 'crypto-js';
 import {
     API_KEY_FALABELLA,
     USER_FALABELLA
-} from '../config.js'
+} from '../../config.js'
 
 
 export const actualizar_stockF = async (skus) => {

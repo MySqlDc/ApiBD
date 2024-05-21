@@ -2,7 +2,7 @@ import { pool } from '../conection.js';
 import { 
     API_KEY_RAPPI,
     STORE_ID_RAPPI
-} from '../config.js';
+} from '../../config.js';
 
 export const actualizacionDelta = async(ids) => {
     const myHeaders = new Headers();

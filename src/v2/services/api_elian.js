@@ -1,5 +1,5 @@
-import { DUCOR_DATA, DUCOR_PLATFOMS } from '../config.js';
-import { pool } from '../conection.js';
+import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
+import { getQuery } from '../database/queries.js';
 
 export const getdatos = async () => {
     const response = await fetch(DUCOR_DATA);
@@ -19,6 +19,12 @@ export const getdatos = async () => {
     return datos
 }
 
+export const traerDatos = async (skus) => {
+    const { response } = await getQuery("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
+
+    return response.data;
+}
+
 export const actualizarDatos = async (datos) => {
     let productos = [];
 
@@ -33,23 +39,17 @@ export const actualizarDatos = async (datos) => {
         dato.cantidad<0?dato.cantidad=0:dato.cantidad;
         if(producto){
             if(dato.cantidad !== producto.unidades){
-                let id = producto.id;
-                return {...dato, id};
+                return {...dato, id: producto.id};
             }
         }
     }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
-        try {
-            const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
+        const { response } = await getQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
 
-            if(rows.length === 0) continue;                
+        if(!response.data) continue;
 
-            productos.push(cambio.id);
-
-        } catch (error) {
-            console.log(error);
-        }
+        productos.push(cambio.id)
     };
     return productos;
 }
@@ -68,33 +68,18 @@ export const actualizarDatosGeneral = async () => {
         dato.cantidad<0?dato.cantidad=0:dato.cantidad;
         if(producto){
             if(dato.cantidad !== producto.unidades){
-                let id = producto.id;
-                return {...dato, id};
+                return {...dato, id: producto.id};
             }
         }
     }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
-        try {
-            const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
+        const { response } = await getQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
 
-            if(rows.length === 0) continue;
-        } catch (error) {
-            console.log(error);
-        }
+        if(!response.data) continue;
     };
 
-    await pool.query("SELECT inventario_kit_general()");
-}
-
-export const traerDatos = async (skus) => {
-    try {
-        const {rows} = await pool.query("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
-
-        return rows;
-    } catch (e){
-        console.log(e);
-    }
+    await getQuery("SELECT inventario_kit_general()");
 }
 
 export const obtenerSalidas = async (plataforma) => {

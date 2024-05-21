@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import { actualizarInventarioUrgente } from '../services/api_manager.js'
 
 const __filename = fileURLToPath(import.meta.url)
-const dataFolderPath = path.resolve(__filename, '../../..', 'data');
+const dataFolderPath = path.resolve(__filename, '../../../..', 'data');
 const dataFilePath = path.join(dataFolderPath, 'data.js');
 const facturaFilesPath  = path.join(dataFolderPath, 'facturas.js');
 
