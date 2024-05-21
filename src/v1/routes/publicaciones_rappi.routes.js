@@ -72,6 +72,7 @@ router.post('/publicaciones_rappi', async(req,res) => {
         });
 
         try {
+            console.log("query", query)
             const {rows} = await pool.query(query+" RETURNING *");
 
             creados = creados.concat(rows)
