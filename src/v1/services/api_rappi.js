@@ -77,6 +77,7 @@ export const actualizacion = async () => {
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
+                    id: datos.publicacion_id.toString(),
                     ean: datos.producto_id.toString(),
                     store_id: STORE_ID_RAPPI,
                     name: datos.nombre,
@@ -89,6 +90,7 @@ export const actualizacion = async () => {
                 }
             } else {
                 producto = {
+                    id: datos.publicacion_id.toString(),
                     ean: datos.producto_id.toString(),
                     store_id: STORE_ID_RAPPI,
                     name: datos.nombre,
