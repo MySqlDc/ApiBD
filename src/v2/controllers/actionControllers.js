@@ -1,7 +1,7 @@
 import { getQuery } from '../database/queries.js';
-import { actualizar } from '../services/actualizarPublicaciones.js'
+import { actualizarPublicaciones } from '../services/actualizarPublicaciones.js'
 
-export const updateStock = async(req, res) => {
+export const updateStockFile = async(req, res) => {
     const {data} = req.body;
     const regex = /[a-zA-z]/
 
@@ -21,7 +21,16 @@ export const updateStock = async(req, res) => {
 
     if(arrayObjectData.length === 0) return res.status(400).send({mensaje: "No hubo datos correctos en el archivo"});
 
-    const response = await actualizar(arrayObjectData);
+    const response = await actualizarPublicaciones(arrayObjectData);
+
+    res.status(200);
+    res.send(response);
+}
+
+export const updateStock = async (req, res) => {
+    const data = await getQuery("SELECT id, unidades AS stock FROM productos WHERE update_status = true");
+
+    const response = await actualizarPublicaciones(data);
 
     res.status(200);
     res.send(response);

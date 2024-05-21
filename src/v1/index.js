@@ -51,7 +51,7 @@ router.use(publicacion_rappiRoutes);
 router.use(informesRoutes)
 
 cron.schedule('0 8-20/2 * * *', () => {
-    actualizarInventario();
+    //actualizarInventario();
     console.log('actualizando');
 })
 

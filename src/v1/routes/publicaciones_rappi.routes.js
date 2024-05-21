@@ -58,16 +58,16 @@ router.post('/publicaciones_rappi', async(req,res) => {
 
         let coma = false;
 
-        ronda.forEach((publicaciones, index) =>{
+        ronda.forEach((publicacion, index) =>{
             if(coma){
                 query += ",";
             }
              
-            if(producto.nombre.split("'").length > 1){
-                producto.nombre = producto.nombre.split("'").join("''");
+            if(publicacion.nombre.split("'").length > 1){
+                publicacion.nombre = publicacion.nombre.split("'").join("''");
             }
 
-            query+= "('"+publicaciones.id+"',"+publicaciones.producto_id+","+publicaciones.nombre+")";
+            query+= "('"+publicacion.id+"',"+publicacion.producto_id+","+publicacion.nombre+")";
             if(!coma) coma = !coma;
         });
 

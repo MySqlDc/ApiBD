@@ -1,9 +1,9 @@
-import { getQuery } from "../database/queries.js"
+import { getQuery, putQuery } from "../database/queries.js"
 import { actualizarStockFalabella } from "./api_falabella.js";
 import { actualizarStockML } from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
 
-export const actualizar = async (data) => {
+export const actualizarPublicaciones = async (data) => {
     if(data.length === 0) return {status: "error", mensaje: "no se enviaron datos"}
 
     const ids = data.map(dato => {
@@ -30,6 +30,8 @@ export const actualizar = async (data) => {
     }))
 
     const respuesta = respuestaGeneral(responseML, responseRappi, responseFalabella);
+
+    await putQuery("UPDATE publicaciones SET update_status = false WHERE id = ANY($1)", [response.data.map(dato => dato.id)])
 
     return respuesta;
 }
