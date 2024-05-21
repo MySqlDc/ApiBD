@@ -67,7 +67,7 @@ router.post('/publicaciones_rappi', async(req,res) => {
                 publicacion.nombre = publicacion.nombre.split("'").join("''");
             }
 
-            query+= "('"+publicacion.id+"',"+publicacion.producto_id+","+publicacion.nombre+")";
+            query+= "("+publicacion.id+",'"+publicacion.producto_id+"','"+publicacion.nombre+"')";
             if(!coma) coma = !coma;
         });
 
