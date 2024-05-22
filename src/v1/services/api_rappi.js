@@ -6,6 +6,7 @@ import {
 
 export const actualizacionDelta = async(ids) => {
     const myHeaders = new Headers();
+    let data = [];
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("api_key", API_KEY_RAPPI);
     console.log(ids);
@@ -15,6 +16,8 @@ export const actualizacionDelta = async(ids) => {
         const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id = ANY($1)", [ids]);
 
         if(rows.length === 0) return console.log("error no se encontro ningun dato");
+
+        data = rows;
 
         records = rows.map( datos => {
             let producto = {};
@@ -58,7 +61,7 @@ export const actualizacionDelta = async(ids) => {
     console.log(options);
     await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);
 
-    return  {respuesta, rows};
+    return  {respuesta, data};
 }
 
 export const actualizacion = async () => {
