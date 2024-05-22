@@ -100,13 +100,12 @@ router.get('/Rappifull', async(req, res) => {
     }
 })
 
-router.get('/RappiDelta', async(req, res) =>{
-    const datos = await getdatos();
-    const ids = await actualizarDatos(datos);
-    const response = await actualizacionDelta(ids);
+router.post('/RappiDelta', async(req, res) =>{
+    const { ids } = req.body;
+    const actualizacion = await actualizacionDelta(ids);
 
-    if(response) {
-        res.status(200).json({mensaje: "respuesta", data: response});
+    if(actualizacion.respuesta) {
+        res.status(200).json({mensaje: actualizacion.respuesta, data: actualizacion.rows});
     } else {
         res.status(200).json({mensaje: "No habia productos para actualizar"});
     }

@@ -26,7 +26,7 @@ export const actualizacionDelta = async(ids) => {
                     trademark: datos.marca,
                     price: datos.precio_venta,
                     discount_price: datos.precio_rappi,
-                    stock: datos.unidades,
+                    stock: (datos.unidades - 1)>0?datos.unidades:0,
                     is_available: null,
                     sale_type: "U"
                 }
@@ -37,7 +37,7 @@ export const actualizacionDelta = async(ids) => {
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_rappi,
-                    stock: datos.unidades,
+                    stock: (datos.unidades - 1)>0?datos.unidades:0,
                     is_available: null,
                     sale_type: "U"
                 }
@@ -58,7 +58,7 @@ export const actualizacionDelta = async(ids) => {
     console.log(options);
     await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);
 
-    return  respuesta;
+    return  {respuesta, rows};
 }
 
 export const actualizacion = async () => {
@@ -83,7 +83,7 @@ export const actualizacion = async () => {
                     trademark: datos.marca,
                     price: datos.precio_venta,
                     discount_price: datos.precio_rappi,
-                    stock: datos.unidades,
+                    stock: (datos.unidades - 1)>0?datos.unidades:0,
                     is_available: null,
                     sale_type: "U"
                 }
@@ -94,7 +94,7 @@ export const actualizacion = async () => {
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_rappi,
-                    stock: datos.unidades,
+                    stock: (datos.unidades - 1)>0?datos.unidades:0,
                     is_available: null,
                     sale_type: "U"
                 }
