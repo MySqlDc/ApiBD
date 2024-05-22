@@ -105,7 +105,7 @@ router.post('/RappiDelta', async(req, res) =>{
     const actualizacion = await actualizacionDelta(ids);
 
     if(actualizacion.respuesta) {
-        res.status(200).json({mensaje: actualizacion.respuesta, data: actualizacion.rows});
+        res.status(200).json({mensaje: actualizacion.respuesta, data: actualizacion.data});
     } else {
         res.status(200).json({mensaje: "No habia productos para actualizar"});
     }
