@@ -1,5 +1,5 @@
-import { getQuery } from '../database/queries.js';
-import { actualizarPublicaciones } from '../services/actualizarPublicaciones.js'
+import { getQuery, putQuery } from '../database/queries.js';
+import { actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
 
 export const updateStockFile = async(req, res) => {
     const {data} = req.body;
@@ -53,4 +53,14 @@ export const donwloadFile = async (req, res) =>{
         res.send({mensaje: data.response.mensaje})
     }
     
+}
+
+export const updateRappi = async (req, res) => {
+    const data = await getQuery("SELECT publicaciones.*, marcas.nombre AS marca FROM publicaciones LEFT JOIN marcas ON publicaciones.marca_id = marcas.id WHERE plataforma_id = 2 AND producto_id = ANY(SELECT id FROM productos WHERE update = true)")
+
+    const response = await actualizarRappiFull(data);
+
+    if(response.status === "error") return res.status(400).send({mensaje: "Erro en la actualizacion"});
+
+    if(response.status === "ok") return res.status(200).send({mensaje: "actualizado"})
 }

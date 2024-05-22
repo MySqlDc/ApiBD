@@ -1,4 +1,4 @@
-import { getQuery, putQuery } from "../database/queries.js"
+import { getQuery } from "../database/queries.js"
 import { actualizarStockFalabella } from "./api_falabella.js";
 import { actualizarStockML } from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
@@ -61,9 +61,16 @@ const actualizarML = async(data) => {
     }
 }
 
+export const actualizarRappiFull = async(data)  => {
+    if(data.length === 0) return {status: "error"}
+    const response = await actualizarStockRappi(data, false);
+
+    return response
+}
+
 const actualizarRappi = async(data) => {
     if(data.length === 0) return {status: "error"}
-    const response = await actualizarStockRappi(data);
+    const response = await actualizarStockRappi(data, true);
 
     return response
 }

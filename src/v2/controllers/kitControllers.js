@@ -1,4 +1,4 @@
-import { getQuery, postQuery } from "../database/queries.js";
+import { deleteQuery, getQuery, postQuery } from "../database/queries.js";
 
 export const getAllKits = async (req, res) => {
     const data = await getQuery("SELECT * FROM productos WHERE tipo_id = 2");
