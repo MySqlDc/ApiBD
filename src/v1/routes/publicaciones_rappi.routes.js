@@ -28,13 +28,13 @@ router.get('/publicacion_rappi/:id', async (req, res) =>{
 })
 
 router.post('/publicacion_rappi', async(req, res) => {
-    let {id, producto_id, nombre } = req.body;
+    let {id, publicacion_id, producto_id, nombre } = req.body;
 
     if(nombre.split("'").length > 1){
         nombre = nombre.split("'").join("'");
     }
     try {
-        const {rows} = await pool.query("INSERT INTO publicaciones_rappi(id,producto_id,nombre) VALUES ($1,$2,$3) RETURNING *", [id, producto_id, nombre]);
+        const {rows} = await pool.query("INSERT INTO publicaciones_rappi(id,publicacion_id,producto_id,nombre) VALUES ($1,$2,$3,$4) RETURNING *", [id, publicacion_id, producto_id, nombre]);
         if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "No se encontro ningun publicaciones"})
 
         res.status(200).json({status: 200, data: rows});
@@ -53,7 +53,7 @@ router.post('/publicaciones_rappi', async(req,res) => {
     let errores = [];
 
     for(var i = 0; i < Math.ceil(publicaciones.length/30); i++){
-        let query = "INSERT INTO publicaciones_rappi (id,producto_id,nombre) VALUES ";
+        let query = "INSERT INTO publicaciones_rappi (id,publicacion_id,producto_id,nombre) VALUES ";
         var ronda = publicaciones.slice(i*30, ((i*30)+30));
 
         let coma = false;
@@ -67,7 +67,7 @@ router.post('/publicaciones_rappi', async(req,res) => {
                 publicacion.nombre = publicacion.nombre.split("'").join("''");
             }
 
-            query+= "("+publicacion.id+",'"+publicacion.producto_id+"','"+publicacion.nombre+"')";
+            query+= "("+publicacion.id+",'"+publicacion.publicacion_id+",'"+publicacion.producto_id+"','"+publicacion.nombre+"')";
             if(!coma) coma = !coma;
         });
 
