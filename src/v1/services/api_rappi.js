@@ -13,13 +13,14 @@ export const actualizacionDelta = async(ids) => {
     let respuesta = '';
     let records;
     try {
-        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id = ANY($1)", [ids]);
+        const {rows} = await pool.query("SELECT publicaciones_rappi.*, productos.unidades, productos.unidades_virtuales, marcas.nombre AS marca, precios.precio_venta, precios.precio_rappi FROM publicaciones_rappi INNER JOIN productos ON productos.id = publicaciones_rappi.id INNER JOIN marcas ON marcas.id = productos.marca INNER JOIN precios ON precios.id = productos.id INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE productos.id = ANY($1)", [ids]);
 
         if(rows.length === 0) return console.log("error no se encontro ningun dato");
 
         data = rows;
 
         records = rows.map( datos => {
+            let unidades = datos.unidades + datos.unidades_virtuales;
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
@@ -29,7 +30,7 @@ export const actualizacionDelta = async(ids) => {
                     trademark: datos.marca,
                     price: datos.precio_venta,
                     discount_price: datos.precio_rappi,
-                    stock: (datos.unidades - 1)>0?datos.unidades:0,
+                    stock: (unidades - 1)>0?unidades:0,
                     is_available: null,
                     sale_type: "U"
                 }
@@ -40,7 +41,7 @@ export const actualizacionDelta = async(ids) => {
                     name: datos.nombre,
                     trademark: datos.marca,
                     price: datos.precio_rappi,
-                    stock: (datos.unidades - 1)>0?datos.unidades:0,
+                    stock: (unidades - 1)>0?unidades:0,
                     is_available: null,
                     sale_type: "U"
                 }
