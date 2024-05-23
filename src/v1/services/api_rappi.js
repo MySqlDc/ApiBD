@@ -21,6 +21,7 @@ export const actualizacionDelta = async(ids) => {
 
         records = rows.map( datos => {
             let unidades = datos.unidades + datos.unidades_virtuales;
+            console.log(unidades)
             let producto = {};
             if(datos.precio_venta > datos.precio_rappi){
                 producto = {
