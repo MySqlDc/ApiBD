@@ -2,21 +2,27 @@ import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
 import { pool } from '../conection.js';
 
 export const getdatos = async () => {
-    const response = await fetch(DUCOR_DATA);
-    const data = await response.json();
+    try {
+        const response = await fetch(DUCOR_DATA);
+        const data = await response.json();
 
-    let anterior = '';
-    const datos = data.map( dato => {
-        if(dato.code !== anterior){
-            const producto = {
-                sku: dato.sku,
-                cantidad: dato.quantity
+        let anterior = '';
+        const datos = data.map( dato => {
+            if(dato.code !== anterior){
+                const producto = {
+                    sku: dato.sku,
+                    cantidad: dato.quantity
+                }
+                return producto
             }
-            return producto
-        }
-    });
+        });
 
-    return datos
+        return datos;    
+    } catch (error) {
+        console.log(error)
+        return null;
+    }
+    
 }
 
 export const actualizarDatos = async (datos) => {
@@ -63,6 +69,8 @@ export const actualizarDatosGeneral = async () => {
 
     const datosDB = await traerDatos(skus);
 
+    console.log(datosDB)
+
     let cambios = datos.map( dato => {
         const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
         dato.cantidad<0?dato.cantidad=0:dato.cantidad;
@@ -74,26 +82,47 @@ export const actualizarDatosGeneral = async () => {
         }
     }).filter(cambio => cambio !== undefined);
 
-    for (const cambio of cambios){
-        try {
-            const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
-
-            if(rows.length === 0) continue;
-        } catch (error) {
-            console.log(error);
+    const client = await pool.connect(); // Obtén una conexión del pool una vez
+    try {
+        for (const cambio of cambios) {
+            try {
+                await client.query('BEGIN');
+                const { rows } = await client.query(
+                    "UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", 
+                    [cambio.cantidad, cambio.id]
+                );
+                await client.query('COMMIT');
+                
+                if (rows.length === 0) continue;
+            } catch (error) {
+                await client.query('ROLLBACK');
+                console.log(`Error al actualizar el producto con id ${cambio.id}:`, error);
+            }
         }
-    };
+        await client.query('BEGIN');
+        await client.query("SELECT inventario_kit_general()");
+        await client.query('COMMIT');
+    } finally {
+        client.release(); // Libera la conexión al pool después de completar todas las operaciones
+    }
 
-    await pool.query("SELECT inventario_kit_general()");
+    
+    
 }
 
 export const traerDatos = async (skus) => {
+    const client = await pool.connect();
     try {
-        const {rows} = await pool.query("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
+        await client.query('BEGIN');
+        const {rows} = await client.query("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
 
+        await client.query('COMMIT');
         return rows;
     } catch (e){
+        await client.query('ROLLBACK');
         console.log(e);
+    } finally {
+        client.release();
     }
 }
 
@@ -107,6 +136,6 @@ export const obtenerSalidas = async (plataforma) => {
 
         return data;
     } catch (error) {
-        console.log(error)
+        throw error
     }
 }

@@ -20,7 +20,7 @@ export const crearFactura = async (datosFactura) => {
 // Leer todas las facturas
 export const leerFacturas = async () => {
   try {
-    const facturas = await Factura.find().populate('productos');
+    const facturas = await Factura.find();
     console.log('Facturas:', facturas);
     return facturas;
   } catch (error) {
@@ -29,6 +29,7 @@ export const leerFacturas = async () => {
   }
 };
 
+//leer una factura
 export const leerFactura = async (id) => {
   try {
     const factura = await Factura.findById(id);
@@ -42,6 +43,47 @@ export const leerFactura = async (id) => {
     throw error;
   }
 }
+
+//leer una factura por codigo
+export const leerFacturaCodigo = async (codigo) => {
+  try {
+    const factura = await Factura.findOne({ codigo });
+    if (!factura) {
+      return console.log(`Factura con código ${codigo} no encontrada`);
+    }
+    return factura;
+  } catch (error) {
+    throw error;
+  }
+}
+
+//leer facturas antes de
+export const leerFacturasAntesDe = async (fecha) => {
+  try {
+    const facturas = await Factura.find({fecha: {$lt: fecha}});
+
+    return facturas;
+  } catch (error) {
+    console.log("error al leer facturas por fecha: ", error);
+    throw error;
+  }
+}
+
+//leer facturas de un dia
+export const leerFacturasDia = async (fecha) => {
+  try {
+    const finDia = new Date(fecha);
+    finDia.setUTCHours(23, 59, 59, 999);
+
+    const facturas = await Factura.find({fecha: {$gte: fecha, $lte: finDia}});
+
+    return facturas;
+  } catch (error) {
+    console.log("error al leer facturas por fecha: ", error);
+    throw error;
+  }
+}
+
 
 // Actualizar una factura por ID
 export const actualizarFactura = async (id, datosActualizados) => {

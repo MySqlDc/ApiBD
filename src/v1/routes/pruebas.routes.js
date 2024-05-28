@@ -5,6 +5,7 @@ import { esDespues, esIgual } from '../validation.js';
 import { eliminar, leerDatos, registrar } from '../services/data_manage.js';
 import { pool } from '../conection.js';
 import { actualizarInventario } from '../services/api_manager.js';
+import { crearFactura, eliminarFactura, leerFacturaCodigo } from '../../v2/database/queriesMongo/facturas.js';
 
 const router = Router();
 
@@ -55,21 +56,25 @@ router.get('/actualizarStockVirtual', async(req, res) => {
 
     let data = [];
 
-    let datosShopi = await obtenerSalidas("SHOPIFY");
-    data = data.concat(datosShopi);
-    
-    let datosFala = await obtenerSalidas("FALABELLA");
-    data = data.concat(datosFala);
-    
-    let datosML = await obtenerSalidas("MERCADOLIBRE");
-    data = data.concat(datosML);
+    try{
+        let datosShopi = await obtenerSalidas("SHOPIFY");
+        data = data.concat(datosShopi);
+        
+        let datosFala = await obtenerSalidas("FALABELLA");
+        data = data.concat(datosFala);
+        
+        let datosML = await obtenerSalidas("MERCADOLIBRE");
+        data = data.concat(datosML);
+        
+    } catch(error){
+        return res.status(400).send({error})
+    }
 
     const registros = await leerDatos('facturas');
-
-    //se filtran los datos obtenidos para obtener solo los del dia de hoy
-    let datosFiltrados = data.filter(pedido => esDespues(hace5dias, new Date(pedido.date_generate)) || registros.hasOwnProperty(pedido.id)).map(pedido => {return {...pedido.order, fecha: pedido.date_generate}})
-
     
+
+    //se filtran los datos obtenidos para obtener solo los gerados desde hace 5 dias y los que esten registrados
+    let datosFiltrados = data.filter(pedido => esDespues(hace5dias, new Date(pedido.date_generate)) || registros.hasOwnProperty(pedido.id)).map(pedido => {return {...pedido.order, fecha: pedido.date_generate}})
 
     console.log(registros)
 
@@ -141,15 +146,20 @@ router.get('/actualizarStockVirtual', async(req, res) => {
     if(updateKit){
         await pool.query("SELECT inventario_kit_general()");
     }
-    
-    const productosData = await leerDatos()
-    console.log("productos", productosData);
 
     for(const elemento of datosFiltrados){
         if(elemento.status !== 'SIN SALIDA'){
             await eliminar(elemento.id, 'facturas');
+            const factura = await leerFacturaCodigo(elemento.id);
+            if(factura) {
+                await eliminarFactura(factura._id)
+            } else {
+                console.log("No se encontro la factura ", elemento.id)
+            }
         } else {
             await registrar({id: elemento.id, fecha: elemento.fecha}, 'facturas');
+            const productos = elemento.items.map(item => ({sku: item.item.sku, "unidades": item.item.quantity}))
+            await crearFactura({codigo: elemento.id, fecha: elemento.fecha, estado: elemento.status, productos});
         }
     };
 

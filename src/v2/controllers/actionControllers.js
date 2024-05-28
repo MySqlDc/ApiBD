@@ -64,7 +64,3 @@ export const updateRappi = async (req, res) => {
 
     if(response.status === "ok") return res.status(200).send({mensaje: "actualizado"})
 }
-
-export const guardarFacturas =  async (req, res) => {
-    
-}

@@ -1,16 +1,22 @@
 import { Router } from 'express';
-import { createBill, deleteBill, getAllBills, getBill, updateBill } from '../controllers/facturaControllers.js';
+import { createBill, deleteBill, getAllBills, getBill, getUnitsOrders, updateBill, updateOrder, updateOrders } from '../controllers/facturaControllers.js';
 
 const router = Router()
 
-router.get('/facturas', getAllBills);
+router.get('/pedidos', getAllBills);
 
-router.get('/facturas/:id', getBill);
+router.get('/pedidos/:id', getBill);
 
-router.post('/facturas', createBill);
+router.get('/actualizarPedidos', updateOrders);
 
-router.put('/facturas/:id', updateBill);
+router.get('/actualizarPedidos/:codigo', updateOrder);
 
-router.delete('/facturas/:id', deleteBill);
+router.get('/registrarUnidades', getUnitsOrders);
+
+router.post('/pedidos', createBill);
+
+router.put('/pedidos/:id', updateBill);
+
+router.delete('/pedidos/:id', deleteBill);
 
 export default router;

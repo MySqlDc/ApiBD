@@ -1,12 +1,37 @@
-import { actualizarFactura, crearFactura, eliminarFactura, leerFacturas } from "../database/queriesMongo/facturas.js"
-
+import { putQuery } from "../database/queries.js";
+import { actualizarFactura, crearFactura, eliminarFactura, leerFactura, leerFacturaCodigo, leerFacturas, leerFacturasAntesDe, leerFacturasDia } from "../database/queriesMongo/facturas.js"
+import { actualizarItems, actualizarPedidos } from "../services/actualizarStock.js";
 
 export const getAllBills = async (req, res) => {
-    const data = await leerFacturas()
+    const { antesDe, fecha, codigo } = req.query;
 
-    if(data) return res.status(200).send({data});
-
-    res.status(400).send({error: "Error en la conexion"})
+    try {
+        let facturas;
+        let pedidos;
+        if(fecha){
+            let dia = new Date(fecha);
+            facturas = await leerFacturasDia(dia);
+        } else if(antesDe){
+            let anteriorA = new Date(antesDe);
+            anteriorA.setDate(anteriorA.getDate())
+    
+            facturas = await leerFacturasAntesDe(anteriorA);
+        } else if(codigo) {
+            facturas = await leerFacturaCodigo(codigo);
+        } else {
+            facturas = await leerFacturas();
+        }
+        
+        if(facturas.length){
+            pedidos = facturas.map(factura => {return {codigo: factura.codigo, fecha: factura.fecha, estado: factura.estado, productos: factura.productos}})
+        } else {
+            pedidos = facturas
+        }
+        
+        return res.status(200).send({Cantidad: facturas.length, Pedidos: pedidos});
+    } catch (error) {
+        return res.status(400).send({error});
+    }
 }
 
 export const getBill = async (req, res) => {
@@ -23,15 +48,10 @@ export const getBill = async (req, res) => {
 }
 
 export const createBill = async (req, res) => {
-    const { codigo, fecha, estado, productos } = req.body;
+    const { factura } = req.body;
 
     try {
-        const nuevaFactura = await crearFactura({
-            codigo,
-            fecha: new Date(fecha),
-            estado,
-            productos
-        });
+        const nuevaFactura = await crearFactura(factura);
 
         console.log("Creado", nuevaFactura);
         return res.status(200).send({data: nuevaFactura})
@@ -63,6 +83,55 @@ export const deleteBill = async (req, res) => {
         return res.status(200).send({confirmacion: "Factura eliminada", data: facturaEliminada})
     } catch (error) {
         console.error("Error en la eliminacion factura", error);
-        return res.sttaus(400).send({error})
+        return res.status(400).send({error})
+    }
+}
+
+export const updateOrders = async (req, res) => {
+    const response = await actualizarPedidos();
+
+    res.status(response.status).send(response.response);    
+}
+
+export const updateOrder = async (req, res) => {
+    const { codigo } = req.params;
+
+    try {
+        const pedido = await leerFacturaCodigo(codigo);
+
+        const items = pedido.productos.map( item => ({sku: item.sku, unidades: item.unidades, status: "Salio"}));
+
+        await actualizarItems(items)
+
+        await eliminarFactura(pedido._id)
+
+        console.log("se elimino el pedido", codigo)
+
+        res.status(200).send({confirmacion: "pedido eliminado correctamente", pedido})
+    } catch (error) {
+        console.log("error", error);
+        res.status(400).send({error})
+    }
+}
+
+export const getUnitsOrders = async(req, res) => {
+    try {
+        const {response} = await putQuery("UPDATE productos SET unidades_virtuales WHERE unidades_virtuales < 0");
+
+        if(!response.data) res.status(400).send(response.error);
+
+        const pedidos = await leerFacturas();
+
+        const items = pedidos.flatMap(pedido => { 
+            return pedido.productos.map( item => ({sku: item.sku, unidades: item.unidades, status: pedido.estado}))
+        })
+
+        await actualizarItems(items);
+
+        res.status(200).send({confirmacion: "unidades virtuales actualizadas"})
+
+    } catch (error){
+        console.log("error", error);
+        res.status(400).send({error});
     }
 }

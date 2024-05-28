@@ -17,9 +17,9 @@ router.post('/productos', createProduct);
 
 router.put('/productos/:id', updateProduct);
 
-router.put('productos/:id/unidades', updateUnidades);
+router.put('/productos/:id/unidades', updateUnidades);
 
-router.put('productos/:id/unidadesVirtuales', updateUnidadesVirtuales);
+router.put('/productos/:id/unidadesVirtuales', updateUnidadesVirtuales);
 
 router.delete('/productos/:id', deleteProduct);
 

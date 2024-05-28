@@ -1,5 +1,5 @@
 import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
-import { getQuery } from '../database/queries.js';
+import { getQuery, putQuery } from '../database/queries.js';
 
 export const getdatos = async () => {
     const response = await fetch(DUCOR_DATA);
@@ -45,7 +45,7 @@ export const actualizarDatos = async (datos) => {
     }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
-        const { response } = await getQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
+        const { response } = await putQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
 
         if(!response.data) continue;
 
@@ -74,15 +74,13 @@ export const actualizarDatosGeneral = async () => {
     }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
-        const { response } = await getQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
-
-        if(!response.data) continue;
+        await putQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
     };
 
     await getQuery("SELECT inventario_kit_general()");
 }
 
-export const obtenerSalidas = async (plataforma) => {
+export const getPedidos = async (plataforma) => {
     try {
         console.log(DUCOR_PLATFOMS+plataforma)
 
@@ -93,5 +91,6 @@ export const obtenerSalidas = async (plataforma) => {
         return data;
     } catch (error) {
         console.log(error)
+        throw error
     }
 }
