@@ -1,8 +1,8 @@
-import { putQuery } from "../database/queries.js";
+import { pool } from "../database/conection.js";
 import { actualizarFactura, crearFactura, eliminarFactura, leerFactura, leerFacturaCodigo, leerFacturas, leerFacturasAntesDe, leerFacturasDia } from "../database/queriesMongo/facturas.js"
 import { actualizarItems, actualizarPedidos } from "../services/actualizarStock.js";
 
-export const getAllBills = async (req, res) => {
+export const getAllBills = async (req, res, next) => {
     const { antesDe, fecha, codigo } = req.query;
 
     try {
@@ -30,11 +30,11 @@ export const getAllBills = async (req, res) => {
         
         return res.status(200).send({Cantidad: facturas.length, Pedidos: pedidos});
     } catch (error) {
-        return res.status(400).send({error});
+        next(error);
     }
 }
 
-export const getBill = async (req, res) => {
+export const getBill = async (req, res, next) => {
     const { id } = req.params;
 
     try {
@@ -42,26 +42,23 @@ export const getBill = async (req, res) => {
 
         return res.status(200).send({data: factura});
     } catch (error) {
-        console.error("Error en la busqueda de factura", error);
-        return res.status(400).send({error})
+        next(error);
     }
 }
 
-export const createBill = async (req, res) => {
+export const createBill = async (req, res, next) => {
     const { factura } = req.body;
 
     try {
         const nuevaFactura = await crearFactura(factura);
 
-        console.log("Creado", nuevaFactura);
         return res.status(200).send({data: nuevaFactura})
     } catch (error) {
-        console.error("Error en la creacion factura", error);
-        return res.status(400).send({error})
+        next(error);
     }
 }
 
-export const updateBill = async (req, res) => {
+export const updateBill = async (req, res, next) => {
     const { estado } = req.body;
     const { id } = req.params;
 
@@ -70,30 +67,32 @@ export const updateBill = async (req, res) => {
 
         return res.status(200).send({data: facturaActualizada})
     } catch (error) {
-        console.error("Error en la creacion actualizacion", error);
-        return res.status(400).send({error})
+        next(error);
     }
 }
 
-export const deleteBill = async (req, res) => {
+export const deleteBill = async (req, res, next) => {
     const { id } = req.params;
 
     try {
         const facturaEliminada = await eliminarFactura(id);
         return res.status(200).send({confirmacion: "Factura eliminada", data: facturaEliminada})
     } catch (error) {
-        console.error("Error en la eliminacion factura", error);
-        return res.status(400).send({error})
+        next(error);
     }
 }
 
-export const updateOrders = async (req, res) => {
-    const response = await actualizarPedidos();
+export const updateOrders = async (req, res, next) => {
+    try{
+        const response = await actualizarPedidos();
 
-    res.status(response.status).send(response.response);    
+        res.status(response.status).send(response.response);    
+    } catch (error){
+        next(error)
+    }
 }
 
-export const updateOrder = async (req, res) => {
+export const updateOrder = async (req, res, next) => {
     const { codigo } = req.params;
 
     try {
@@ -109,16 +108,15 @@ export const updateOrder = async (req, res) => {
 
         res.status(200).send({confirmacion: "pedido eliminado correctamente", pedido})
     } catch (error) {
-        console.log("error", error);
-        res.status(400).send({error})
+        next(error)
     }
 }
 
-export const getUnitsOrders = async(req, res) => {
+export const getUnitsOrders = async(req, res, next) => {
+    const client = await pool.connect();
     try {
-        const {response} = await putQuery("UPDATE productos SET unidades_virtuales WHERE unidades_virtuales < 0");
-
-        if(!response.data) res.status(400).send(response.error);
+        await client.query('BEGIN');
+        await client.query("UPDATE productos SET unidades_virtuales WHERE unidades_virtuales < 0");
 
         const pedidos = await leerFacturas();
 
@@ -128,10 +126,12 @@ export const getUnitsOrders = async(req, res) => {
 
         await actualizarItems(items);
 
+        await client.query('COMMIT');
         res.status(200).send({confirmacion: "unidades virtuales actualizadas"})
-
     } catch (error){
-        console.log("error", error);
-        res.status(400).send({error});
+        await client.query('ROLLBACK');
+        next(error)
+    } finally {
+        client.release();
     }
 }

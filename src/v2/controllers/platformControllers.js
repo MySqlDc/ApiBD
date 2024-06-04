@@ -1,43 +1,100 @@
-import { deleteQuery, getQuery, postQuery, putQuery } from '../database/queries.js';
+import { pool } from '../database/conection.js';
 
-export const getAllPlatform = async (req, res) => {
-    const data = await getQuery("SELECT * FROM plataformas");
-    res.status(data.status);
-    res.send(data.response);
+export const getAllPlatform = async (req, res, next) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        const {rows} = await client.query('SELECT * FROM plataformas');
+
+        if(rows.length === 0) throw new Error('No se encontraron plataformas');
+
+        await client.query('COMMIT');
+        res.status(200).send({data: rows});
+    } catch (error) {
+        client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
 }
 
-export const getPlatform = async (req, res) => {
+export const getPlatform = async (req, res, next) => {
     const {id} = req.params;
+    const client = await pool.connect();
+        
+    try{
+        await client.query('BEGIN');
+        const {rows} = await client.query('SELECT * FROM plataformas WHERE id = $1', [id]);
 
-    const data = await getQuery("SELECT * FROM plataformas WHERE id = $1", [id]);
+        if(rows.length === 0) throw new Error('No se encontraron datos');
 
-    res.status(data.status);
-    res.send(data.response);
+        await client.query('COMMIT');
+        res.status(200).send({data: rows});
+    } catch (error){
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
 }
 
-export const createPlatform = async (req, res) => {
+export const createPlatform = async (req, res, next) => {
     const { nombre } = req.body;
+    const client = await pool.connect();
 
-    const data = await postQuery("INSERT INTO plataformas (nombre) VALUES ($1)", [nombre])
-    res.status(data.status);
-    res.send(data.response);
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('INSERT INTO plataformas (nombre) VALUES ($1)', [nombre]);
+
+        await client.query('COMMIT');
+        res.status(200).send({confirm: 'Se registro la plataforma', data: rows[0]})
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
 }
 
-export const updatePlatform = async (req, res) => {
+export const updatePlatform = async (req, res, next) => {
     const { nombre } = req.body;
     const { id } = req.params;
+    const client = await pool.connect();
 
-    const data = await putQuery("UPDATE plataformas SET nombre = COALESCE($1,nombre) WHERE id = $2", [nombre, id]);
+    try {
+        await client.query('BEGIN');
+        const { rows } = await client.query('UPDATE plataformas SET nombre = COALESCE($1,nombre) WHERE id = $2 RETURNING *', [nombre, id]);
 
-    res.status(data.status);
-    res.send(data.response);
+        if(rows.length === 0) throw new Error('No se actualizo ninguna plataforma')
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Se actualizo la plataforma", data: rows})
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
 }
 
-export const deletePlatform = async (req, res) => {
+export const deletePlatform = async (req, res, next) => {
     const { id } = req.params;
+    const client = await pool.connect();
 
-    const data = await deleteQuery("DELETE FROM plataformas WHERE id = $1", [id]);
+    try {
+        await client.query('BEGIN');
+        const { rows } = await client.query('DELETE FROM plataformas WHERE id = $1 RETURNING *', [id]);
 
-    res.status(data.status);
-    res.send(data.response);
+        if(rows.length === 0) throw new Error('No se elimino ninguna plataforma');
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Plataforma eliminada correctamente", data: rows[0]});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error)
+    } finally {
+        client.release();
+    }
 }

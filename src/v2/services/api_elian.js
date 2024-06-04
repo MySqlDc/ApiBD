@@ -1,28 +1,48 @@
 import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
-import { getQuery, putQuery } from '../database/queries.js';
+import { pool } from '../database/conection.js';
 
 export const getdatos = async () => {
-    const response = await fetch(DUCOR_DATA);
-    const data = await response.json();
+    try {
+        const response = await fetch(DUCOR_DATA);
+        const data = await response.json();
 
-    let anterior = '';
-    const datos = data.map( dato => {
-        if(dato.code !== anterior){
-            const producto = {
-                sku: dato.sku,
-                cantidad: dato.quantity
+        let anterior = '';
+        const datos = data.map( dato => {
+            if(dato.code !== anterior){
+                const producto = {
+                    sku: dato.sku,
+                    cantidad: dato.quantity
+                }
+                return producto
             }
-            return producto
-        }
-    });
+        });
 
-    return datos
+        return datos    
+    } catch (error) {
+        console.log("Fallo en la obtencion de datos", error);
+        return [];
+    }
+    
 }
 
 export const traerDatos = async (skus) => {
-    const { response } = await getQuery("SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)", [skus]);
+    const client = await pool.connect();
 
-    return response.data;
+    try {
+        await client.query('BEGIN');
+
+        const {rows} = await client.query('SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)', [skus]);
+
+        if(rows.length === 0) throw new Error('No hubo datos');
+
+        await client.query('COMMIT');
+        return rows
+    } catch (error) {
+        await client.query('ROLLBACK');
+        return [];
+    } finally {
+        client.release();
+    }
 }
 
 export const actualizarDatos = async (datos) => {
@@ -45,12 +65,25 @@ export const actualizarDatos = async (datos) => {
     }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
-        const { response } = await putQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
+        const client = await pool.connect();
 
-        if(!response.data) continue;
+        try {
+            await client.query('BEGIN');
 
-        productos.push(cambio.id)
+            const { rows } = await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
+
+            if(rows.length === 0) throw new Error('No se actualizo ningun producto');
+
+            await client.query('COMMIT');
+            productos.push(cambio.id);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.log("No se actualizo el producto", cambio);
+        } finally {
+            client.release();
+        }
     };
+
     return productos;
 }
 
@@ -73,11 +106,22 @@ export const actualizarDatosGeneral = async () => {
         }
     }).filter(cambio => cambio !== undefined);
 
-    for (const cambio of cambios){
-        await putQuery("UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *", [cambio.cantidad, cambio.id]);
-    };
+    const client = await pool.connect();
 
-    await getQuery("SELECT inventario_kit_general()");
+    try {
+        await client.query('BEGIN');
+        for (const cambio of cambios){
+            await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
+        };    
+
+        await client.query('SELECT inventario_kit_general()');
+        await client.query('COMMIT');
+    } catch (error) {
+        client.query('ROLLBACK');
+        console.log("error al actualizar datos",error);
+    } finally {
+        client.release();
+    }
 }
 
 export const getPedidos = async (plataforma) => {

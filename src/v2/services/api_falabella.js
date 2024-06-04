@@ -23,15 +23,16 @@ export const actualizarStockFalabella = async (publicaciones) => {
     
     options.body = await requestBody(publicaciones);
 
-    await fetch(url, options).then(res => res.json() ).then( response => respuesta = response.SuccessResponse.Head).catch( error => console.error(error) );
+    try {
+        await fetch(url, options).then(res => res.json() ).then( response => respuesta = response.SuccessResponse.Head).catch( error => console.error(error) );    
 
-    if(respuesta === ''){
-        return {status: "error", respuesta}
-    } else {
+        if(respuesta === '') throw new Error('No se actualizo falabella') ;
+            
         return {status: "ok"}
+    } catch (error) {
+        console.log(error)
+        return {status: "error"}
     }
-
-    
 }
 
 const setParametros = (action) => {

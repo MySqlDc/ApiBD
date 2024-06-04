@@ -40,13 +40,15 @@ export const actualizarStockRappi = async (publicaciones, delta) => {
     }
 
     console.log(options);
+    try {
+        await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);    
+        if(respuesta.status === created){
+            return {status: "ok"}
+        } 
 
-    await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);
-
-    console.log(respuesta)
-    if(respuesta.status === created){
-        return {status: "ok"}
-    } else {
+        throw new Error('Fallo en la actualizacion');
+    } catch (error) {
+        console.log(error)
         return {status: "error"}
     }
 }

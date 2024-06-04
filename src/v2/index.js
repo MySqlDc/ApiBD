@@ -11,6 +11,7 @@ import publicationRoutes from './routes/publication.routes.js'
 import actionRoutes from './routes/action.routes.js'
 import facturaRoutes from './routes/factura.routes.js'
 import { actualizarPedidos } from './services/actualizarStock.js'
+import { handleError } from './middlewares/errorHandler.js'
 
 const router = express.Router();
 
@@ -25,7 +26,8 @@ router.use(publicationRoutes);
 router.use(actionRoutes);
 router.use(facturaRoutes);
 
-cron.schedule('*/15 * * * *', async() => {
+router.use(handleError);
+cron.schedule('*/30 * * * *', async() => {
     await actualizarPedidos()
     console.log('activo2')
 })

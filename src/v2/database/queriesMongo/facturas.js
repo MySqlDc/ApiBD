@@ -7,7 +7,6 @@ export const crearFactura = async (datosFactura) => {
 
   try {
     const nuevaFactura = new Factura(datosFactura);
-    console.log("nueva factura", nuevaFactura)
     const resultado = await nuevaFactura.save();
     console.log('Factura creada:', resultado);
     return resultado;

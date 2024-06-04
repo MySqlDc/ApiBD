@@ -26,13 +26,9 @@ export const actualizarStockML = async (publicacion) => {
 
     const response = await fetch(url, options);
 
-    if(response.status === 200) {
-        return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
-    }
+    if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
 
-    if(response.status === 400 || response.status === 404){
-        return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: response.statusText}
-    }
+    if(response.status === 400 || response.status === 404) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: response.statusText}
 
     if(response.status === 403){
         await token_ml();

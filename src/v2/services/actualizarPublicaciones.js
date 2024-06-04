@@ -1,4 +1,4 @@
-import { getQuery } from "../database/queries.js"
+import { pool } from "../database/conection.js";
 import { actualizarStockFalabella } from "./api_falabella.js";
 import { actualizarStockML } from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
@@ -10,76 +10,111 @@ export const actualizarPublicaciones = async (data) => {
         if(!isNaN(dato.id)) return dato.id
     }).filter(dato => dato !== undefined)
 
-    const { response } = await getQuery("SELECT publicaciones.*, marcas.nombre AS marca FROM publicaciones LEFT JOIN marcas ON publicaciones.marca_id = marcas.id WHERE producto_id = ANY($1)", [ids]);
+    const responseML = await actualizarML(ids)
 
-    if(response.length === 0) return {status: "error", mensaje: "no hay publicaciones asociadas"};
+    const responseRappi = await actualizarRappi(ids)
 
-    const responseML = await actualizarML(response.data.filter(dato => dato.plataforma_id === 3 && dato.active).map(publicacion => {
-        const producto = data.filter(datazo => datazo.id === publicacion.producto_id)
-        return {...publicacion, stock: producto[0].stock}
-    }))
-
-    const responseRappi = await actualizarRappi(response.data.filter(dato => dato.plataforma_id === 2 && dato.active).map(publicacion => {
-        const producto = data.filter(dato => dato.id === publicacion.producto_id)
-        return {...publicacion, stock: producto[0].stock}
-    }))
-
-    const responseFalabella = await actualizarFalabella(response.data.filter(dato => dato.plataforma_id === 1 && dato.active).map(publicacion => {
-        const producto = data.filter(dato => dato.id === publicacion.producto_id)
-        return {...publicacion, stock: producto[0].stock}  
-    }))
+    const responseFalabella = await actualizarFalabella(ids)
 
     const respuesta = respuestaGeneral(responseML, responseRappi, responseFalabella);
 
     return respuesta;
 }
 
-const actualizarML = async(data) => {
-    if(data.length === 0) return {status: "error"}
-    const dataOk = [];
-    const dataErr = [];
+const actualizarML = async(ids) => {
+    const client = await pool.connect();
 
-    for(const publicacion of data){
-        const response = await actualizarStockML(publicacion, true);
+    try {
+        await client.query('BEGIN');
 
-        if(response.status === "ok"){
-            dataOk.push(response)
-        } else {
-            dataErr.push(response)
+        const { rows } = await client.query('SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
+
+        if(rows.length === 0) throw new Error('No hay publicaciones');
+
+        for(const publicacion of rows){
+            const response = await actualizarStockML(publicacion);
+
+            if(response.status === "ok"){
+                dataOk.push(response);continue;
+            } 
+            
+            dataErr.push(response);
         }
+
+        await client.query('COMMIT');
+        return {status: "ok"};
+    } catch (error) {
+        await client.query('ROLLBACK');
+        return {status: "error"};
+    } finally {
+        client.release();
     }
+}
 
-    console.log("Ok", dataOk);
-    console.log("Error", dataErr);
+export const actualizarRappiFull = async()  => {
+    const client = await pool.connect();
 
-    if(dataErr.length === 0){
-        return {status: "ok"}
-    } else if(dataOk.length === 0){
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT publicaciones_stock_view.*, marcas.nombre AS marca FROM publicaciones_stock_view LEFT JOIN marcas ON publicaciones.marca_id = marcas.id WHERE plataforma_id = 2');
+
+        if(rows.length === 0) throw new Error('No hay publicaciones');
+        
+        const response = await actualizarStockRappi(data, false);
+
+        await client.query('COMMIT');
+        return response;
+    } catch (error) {
+        await client.query('ROLLBACK');
         return {status: "error"}
-    } else {
-        return {status: "warning"}
+    } finally {
+        client.release();
     }
 }
 
-export const actualizarRappiFull = async(data)  => {
-    if(data.length === 0) return {status: "error"}
-    const response = await actualizarStockRappi(data, false);
+const actualizarRappi = async(ids) => {
+    const client = await pool.connect();
 
-    return response
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT publicaciones_stock_view.*, marcas.nombre AS marca FROM publicaciones_stock_view LEFT JOIN marcas ON publicaciones.marca_id = marcas.id WHERE plataforma_id = 2 AND active = true AND producto_id = ANY($1)', [ids] );
+
+        if(rows.length === 0) throw new Error('No hay publicaciones');
+
+        const response = await actualizarStockRappi(data, true);
+
+        await client.query('COMMIT');
+        return response;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        return {status: "error"}
+    } finally {
+        client.release();
+    }
 }
 
-const actualizarRappi = async(data) => {
-    if(data.length === 0) return {status: "error"}
-    const response = await actualizarStockRappi(data, true);
+const actualizarFalabella = async(ids) => {
+    const client = await pool.connect();
 
-    return response
-}
+    try {
+        await client.query('BEGIN');
 
-const actualizarFalabella = async(data) => {
-    if(data.length === 0) return {status: "error"}
-    const falabellaData = data.map(datos => {return {sku: datos.codigo, stock: datos.stock}});
-    const response = await actualizarStockFalabella(falabellaData);
-    return response
+        const { rows } = await client.query('SELECT codigo AS sku, stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
+
+        if(rows.length === 0) throw new Error('No hay publicaciones');
+        
+        const response = await actualizarStockFalabella(rows);
+
+        await client.query('COMMIT');
+        return response;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        return {status: "error"}
+    } finally {
+        client.release();
+    }
 }
 
 const respuestaGeneral = (responseML, responseRappi, responseFalabella) => {
