@@ -116,7 +116,7 @@ export const getUnitsOrders = async(req, res, next) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        await client.query("UPDATE productos SET unidades_virtuales WHERE unidades_virtuales < 0");
+        await client.query("UPDATE productos SET unidades_virtuales = 0 WHERE unidades_virtuales < 0");
 
         const pedidos = await leerFacturas();
 
