@@ -113,9 +113,8 @@ export const actualizarDatosGeneral = async () => {
         for (const cambio of cambios){
             await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
         };    
-
-        await client.query('SELECT inventario_kit_general()');
         await client.query('COMMIT');
+        console.log('stock actualizado')
     } catch (error) {
         client.query('ROLLBACK');
         console.log("error al actualizar datos",error);

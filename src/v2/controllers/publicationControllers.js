@@ -8,6 +8,29 @@ export const getAllPublication = async (req, res, next)=> {
 
         const { rows } = await client.query('SELECT * FROM publicaciones');;
 
+        if(rows.length === 0) throw new Error('No hay publicaciones')
+        
+        await client.query('COMMIT');
+        res.status(200).send({data: rows});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const getPublicationPlatform = async ( req, res, next ) => {
+    const { plataforma } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT * FROM publicaciones WHERE plataforma_id = (SELECT id FROM plataformas WHERE nombre = $1)', [plataforma]);
+
+        if(rows.length === 0) throw new Error('No se encontro ninguna publicacion asociada con esa plataforma');
+
         await client.query('COMMIT');
         res.status(200).send({data: rows});
     } catch (error) {
@@ -19,13 +42,15 @@ export const getAllPublication = async (req, res, next)=> {
 }
 
 export const getPublication = async (req, res, next) => {
-    const {id} = req.params;
+    const { id } = req.params;
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT p.id AS key, p.codigo, p.variante, plataformas.nombre AS plataforma, p.active FROM publicaciones p INNER JOIN plataformas ON p.plataforma_id = plataformas.id WHERE p.producto_id = $1', [id]);
+        const { rows } = await client.query('SELECT * FROM publicaciones WHERE id = $1', [id]);
+
+        if(rows.length === 0) throw new Error('No hay publicaciones asociadas con ese codigo')
 
         await client.query('COMMIT');
         res.status(200).send({data: rows});
@@ -71,15 +96,16 @@ export const createPublication = async (req, res, next) => {
 }
 
 export const updatePublication = async (req, res, next) => {
-    const { codigo , variante, plataforma, active } = req.body;
+    const { codigo , variante, plataforma, precio, descuento, marca } = req.body;
     const { id } = req.params;
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), active = COALESCE($4, active) WHERE id = $5 RETURNING *', [codigo , variante, plataforma, active, id])
+        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id) WHERE id = $8 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, id])
 
+        if(rows.length === 0) throw new Error('No se actualizo ninguna publicacion')
 
         await client.query('COMMIT');
         res.status(200).send({confirmacion: "Se actualizo la publicacion", data: rows});
@@ -98,7 +124,7 @@ export const activePublication = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE publicaciones SET active = true WHERE producto_id = ANY($1) RETURNING *', [ids]);
+        const { rows } = await client.query('UPDATE publicaciones SET active = true WHERE id = ANY($1) RETURNING *', [ids]);
 
         if(rows.length === 0) throw new Error('No se activo ninguna publicacion');
 
@@ -119,7 +145,7 @@ export const inactivePublication = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE producto_id = ANY($1)', [ids]);
+        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE id = ANY($1)', [ids]);
 
         if(rows.length === 0) throw new Error('No se desactivo ninguna publicacion');
 

@@ -84,7 +84,7 @@ const actualizarRappi = async(ids) => {
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
         const response = await actualizarStockRappi(data, true);
-
+        
         await client.query('COMMIT');
         return response;
     } catch (error) {

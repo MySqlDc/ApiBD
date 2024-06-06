@@ -121,6 +121,45 @@ export const getProductPlatform = async (req, res, next) => {
     }
 }
 
+export const getProductPublication = async (req, res, next) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT p.id AS key, p.codigo, p.variante, plataformas.nombre AS plataforma, p.active FROM publicaciones p INNER JOIN plataformas ON p.plataforma_id = plataformas.id WHERE p.producto_id = $1', [id]);
+
+        if(rows.length === 0) throw new Error('El producto no tiene publicaciones asociadas')
+        await client.query('COMMIT');
+        res.status(200).send({data: rows});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const getProductSkus = async (req, res, next) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT sku FROM sku_producto WHERE producto_id = $1', [id]);
+
+        await client.query('COMMIT');
+        res.status(200).send({data: rows.map(row => row.sku)});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error)
+    } finally {
+        client.release();
+    }
+}
+
 export const createProduct = async (req, res, next) => {
     const { nombre, imagen, marca } = req.body;
     const client = await pool.connect();
@@ -198,6 +237,48 @@ export const updateUnidadesVirtuales = async (req, res, next) => {
 
         await client.query('COMMIT');
         res.status(200).send({confirmacion: "Se actualizaron las unidades virtuales del producto", data: rows});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const activeProductPublication = async (req, res, next) => {
+    const { ids } = req.body;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('UPDATE publicaciones SET active = true WHERE producto_id = ANY($1) RETURNING *', [ids]);
+
+        if(rows.length === 0) throw new Error('No se activo ninguna publicacion');
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Se activaron las publicaciones", data: rows});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const inactiveProductPublication = async (req, res, next) => {
+    const { ids } = req.body;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE producto_id = ANY($1)', [ids]);
+
+        if(rows.length === 0) throw new Error('No se desactivo ninguna publicacion');
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Se desactivaron las publicaciones", data: rows});
     } catch (error) {
         await client.query('ROLLBACK');
         next(error);

@@ -40,7 +40,13 @@ export const updateStock = async (req, res, next) => {
 
         if(rows.length === 0) throw new Error('No hay publicaciones que actualizar');
 
+        await client.query('COMMIT');
+
         const response = await actualizarPublicaciones(rows);
+
+        await client.query('BEGIN');
+        
+        if(response.status === 'error') throw new Error(response.mensaje);
 
         await client.query('UPDATE publicaciones SET update_status = false WHERE id = ANY($1)', [rows.map(row => row.id)])
 

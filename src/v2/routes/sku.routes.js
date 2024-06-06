@@ -5,7 +5,7 @@ const router = Router();
 
 router.get('/skus', getAllSkus);
 
-router.get('/skus/:id', getSku);
+router.get('/skus/:sku', getSku);
 
 router.post('/skus/:id', createSku);
 

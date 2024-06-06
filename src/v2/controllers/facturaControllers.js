@@ -116,21 +116,17 @@ export const getUnitsOrders = async(req, res, next) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        console.log("inicio")
         await client.query("UPDATE productos SET unidades_virtuales = 0 WHERE unidades_virtuales < 0");
 
-        console.log('traer pedidos')
         const pedidos = await leerFacturas();
 
-        console.log('filtrar datos')
         const items = pedidos.flatMap(pedido => { 
             return pedido.productos.map( item => ({sku: item.sku, unidades: item.unidades, status: pedido.estado}))
         })
-        console.log("items", items);
 
         await client.query('COMMIT');
-
         await actualizarItems(items);
+        
         res.status(200).send({confirmacion: "unidades virtuales actualizadas"})
     } catch (error){
         await client.query('ROLLBACK');
