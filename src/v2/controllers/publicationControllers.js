@@ -103,7 +103,7 @@ export const updatePublication = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id) WHERE id = $8 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, id])
+        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id) WHERE id = $7 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, id])
 
         if(rows.length === 0) throw new Error('No se actualizo ninguna publicacion')
 
