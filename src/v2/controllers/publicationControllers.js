@@ -96,12 +96,21 @@ export const createPublication = async (req, res, next) => {
 }
 
 export const updatePublication = async (req, res, next) => {
-    const { codigo , variante, plataforma, precio, descuento, marca } = req.body;
+    const { codigo , variante, plataforma, precio, descuento, marca_nombre } = req.body;
     const { id } = req.params;
     const client = await pool.connect();
 
     try {
+        let marca = null;
         await client.query('BEGIN');
+
+        const marcas = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marca_nombre])
+
+        if(marcas.rows.length === 0) {
+            console.log('No existe la marca', id)
+        } else {
+            marca = marcas.rows[0].id;
+        }
 
         const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id) WHERE id = $7 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, id])
 
