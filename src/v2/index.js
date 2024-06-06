@@ -28,10 +28,10 @@ router.use(actionRoutes);
 router.use(facturaRoutes);
 
 router.use(handleError);
-// cron.schedule('*/30 * * * *', async() => {
-//     await actualizarPedidos()
-//     console.log('activo2')
-// })
+cron.schedule('*/30 * * * *', async() => {
+    await actualizarPedidos()
+    console.log('activo2')
+})
 
 cron.schedule('15 * * * *', async() => {
     await actualizarDatosGeneral()
