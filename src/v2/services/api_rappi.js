@@ -16,7 +16,7 @@ export const actualizarStockRappi = async (publicaciones, delta) => {
             store_id: STORE_ID_RAPPI,
             name: publicacion.nombre,
             trademark: publicacion.marca,
-            stock: publicacion.stock,
+            stock: publicacion.stock>0?publicacion.stock:0,
             is_available: null,
             sale_type: "U",
             price: publicacion.precio
@@ -42,7 +42,8 @@ export const actualizarStockRappi = async (publicaciones, delta) => {
     console.log(options);
     try {
         await fetch("https://services.grability.rappi.com/api/cpgs-integration/datasets", options).then(res => res.json()).then(response => respuesta = response).catch(error => respuesta = error);    
-        if(respuesta.status === created){
+        if(respuesta.status === 'created'){
+            console.log(respuesta);
             return {status: "ok"}
         } 
 

@@ -48,7 +48,7 @@ export const updateStock = async (req, res, next) => {
         
         if(response.status === 'error') throw new Error(response.mensaje);
 
-        await client.query('UPDATE publicaciones SET update_status = false WHERE id = ANY($1)', [rows.map(row => row.id)])
+        await client.query('UPDATE productos SET update_status = false WHERE id = ANY($1)', [rows.map(row => row.id)])
 
         await client.query('COMMIT');
         res.status(200).send(response);
@@ -85,7 +85,7 @@ export const updateRappi = async (req, res, next) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const {rows} = await client.query('SELECT publicaciones.*, marcas.nombre AS marca FROM publicaciones LEFT JOIN marcas ON pubicaciones.marca_id = marcas.id WHERE plataforma_id = 2 AND producto_id = ANY(SELECT id FROM productos WHERE update = true)');
+        const {rows} = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2');
 
         if(rows.length === 0) throw new Error('No hubo publicaciones que actualizar');
         

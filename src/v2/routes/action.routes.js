@@ -9,6 +9,6 @@ router.get('/actualizarStock', updateStock);
 
 router.put('/actualizarStock', updateStockFile);
 
-router.get('/rappiFull', updateRappi);
+router.get('/rappi/full', updateRappi);
 
 export default router

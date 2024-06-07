@@ -4,7 +4,7 @@ import { actualizarStockML } from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
 
 export const actualizarPublicaciones = async (data) => {
-    if(data.length === 0) return {status: "error", mensaje: "no se enviaron datos"}
+    if(data.length === 0) return {status: "error", mensaje: "no hay productos para actualizar"}
 
     const ids = data.map(dato => {
         if(!isNaN(dato.id)) return dato.id
@@ -27,7 +27,10 @@ const actualizarML = async(ids) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
+        const dataOk = [];
+        const dataErr = [];
+
+        const { rows } = await client.query('SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
@@ -42,9 +45,13 @@ const actualizarML = async(ids) => {
         }
 
         await client.query('COMMIT');
+
+        console.log('actualizados', dataOk);
+        console.log('error', dataErr);
         return {status: "ok"};
     } catch (error) {
         await client.query('ROLLBACK');
+        console.log('ml fallo', error);
         return {status: "error"};
     } finally {
         client.release();
@@ -57,16 +64,17 @@ export const actualizarRappiFull = async()  => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT publicaciones_stock_view.*, marcas.nombre AS marca FROM publicaciones_stock_view LEFT JOIN marcas ON publicaciones.marca_id = marcas.id WHERE plataforma_id = 2');
+        const { rows } = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2');
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
         
-        const response = await actualizarStockRappi(data, false);
+        const response = await actualizarStockRappi(rows, false);
 
         await client.query('COMMIT');
         return response;
     } catch (error) {
         await client.query('ROLLBACK');
+        console.log('Rappi Full fallo', error);
         return {status: "error"}
     } finally {
         client.release();
@@ -79,16 +87,19 @@ const actualizarRappi = async(ids) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT publicaciones_stock_view.*, marcas.nombre AS marca FROM publicaciones_stock_view LEFT JOIN marcas ON publicaciones.marca_id = marcas.id WHERE plataforma_id = 2 AND active = true AND producto_id = ANY($1)', [ids] );
+        const { rows } = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
-        const response = await actualizarStockRappi(data, true);
+        console.log('rows', rows.length)
+
+        const response = await actualizarStockRappi(rows, true);
         
         await client.query('COMMIT');
         return response;
     } catch (error) {
         await client.query('ROLLBACK');
+        console.log('Rappi fallo', error);
         return {status: "error"}
     } finally {
         client.release();
@@ -111,6 +122,7 @@ const actualizarFalabella = async(ids) => {
         return response;
     } catch (error) {
         await client.query('ROLLBACK');
+        console.log('falabella fallo', error);
         return {status: "error"}
     } finally {
         client.release();
