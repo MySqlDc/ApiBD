@@ -67,23 +67,35 @@ export const createPublication = async (req, res, next) => {
     const client = await pool.connect();
 
     try {
-        let marca_id = null;
         await client.query('BEGIN');
+
+        let marca_id = undefined;
 
         if(plataforma === 2){
             
-            let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marcaNombre.toString().toLowerCase()]);
+            if(!marcaNombre) throw new Error('No se envio la marca');
+            let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marcaNombre.toString().toUpperCase()]);
     
+            
             if(marca.rows.length === 0) {
-                marca = await client.query('INSERT INTO marcas (nombre) VALUES ($1)', [marcaNombre.toString().toLowerCase()])
+                marca = await client.query('INSERT INTO marcas (nombre) VALUES ($1) RETURNING *', [marcaNombre.toString().toUpperCase()])
             }
 
-            marca_id = marca.rows[0];
+            marca_id = marca.rows[0].id;
         }
 
-        console.log('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [codigo, variante, plataforma, producto, nombre, precio, descuento, marca_id])
+        const valores = [
+            codigo, 
+            variante,
+            plataforma, 
+            producto, 
+            nombre, 
+            precio, 
+            descuento, 
+            marca_id
+        ]
 
-        const { rows } = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [codigo, variante, plataforma, producto, nombre, precio, descuento, marca_id]);
+        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', valores);
 
         if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
 

@@ -167,7 +167,7 @@ export const createProduct = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('INSERT INTO productos (nombre, url_imagen, marca_id) VALUES ($1, $2, $3)', [nombre, imagen, marca]);
+        const { rows } = await client.query('INSERT INTO productos (nombre, url_imagen, marca_id) VALUES ($1, $2, $3) RETURNING *', [nombre, imagen, marca]);
 
         await client.query('COMMIT');
         res.status(200).send({confirmacion: "Se creo correctamente el producto", data: rows})
@@ -273,7 +273,7 @@ export const inactiveProductPublication = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE producto_id = ANY($1)', [ids]);
+        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE producto_id = ANY($1) RETURNING *', [ids]);
 
         if(rows.length === 0) throw new Error('No se desactivo ninguna publicacion');
 

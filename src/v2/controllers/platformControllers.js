@@ -46,7 +46,7 @@ export const createPlatform = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('INSERT INTO plataformas (nombre) VALUES ($1)', [nombre]);
+        const { rows } = await client.query('INSERT INTO plataformas (nombre) VALUES ($1) RETURNING *', [nombre]);
 
         await client.query('COMMIT');
         res.status(200).send({confirm: 'Se registro la plataforma', data: rows[0]})

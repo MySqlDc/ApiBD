@@ -47,7 +47,7 @@ export const createSku = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('INSERT INTO sku_producto (sku, producto_id) VALUES ($1, $2)', [sku, id]);
+        const { rows } = await client.query('INSERT INTO sku_producto (sku, producto_id) VALUES ($1, $2) RETURNING *', [sku, id]);
 
         await client.query('COMMIT');
         res.status(200).send({confirmacion: "Se agrego correctamente el sku", data: rows});
