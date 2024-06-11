@@ -38,9 +38,11 @@ const actualizarML = async(ids) => {
             const response = await actualizarStockML(publicacion);
             console.log(response);
 
+            if(!response) console.log("Error undefined", publicacion);
+
             if(response.status === "ok"){
                 dataOk.push(response);continue;
-            } 
+            }
             
             dataErr.push(response);
         }
