@@ -71,7 +71,7 @@ export const createPublication = async (req, res, next) => {
 
         let marca_id = undefined;
 
-        if(plataforma === 20){
+        if(plataforma === 2){
             
             if(!marcaNombre) throw new Error('No se envio la marca');
             let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marcaNombre.toString().toUpperCase()]);

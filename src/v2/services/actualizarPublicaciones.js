@@ -36,6 +36,7 @@ const actualizarML = async(ids) => {
 
         for(const publicacion of rows){
             const response = await actualizarStockML(publicacion);
+            console.log(response);
 
             if(response.status === "ok"){
                 dataOk.push(response);continue;
@@ -96,6 +97,7 @@ const actualizarRappi = async(ids) => {
         const response = await actualizarStockRappi(rows, true);
         
         await client.query('COMMIT');
+        console.log('rappi actualizado');
         return response;
     } catch (error) {
         await client.query('ROLLBACK');
@@ -119,6 +121,7 @@ const actualizarFalabella = async(ids) => {
         const response = await actualizarStockFalabella(rows);
 
         await client.query('COMMIT');
+        console.log('falabella actualizado');
         return response;
     } catch (error) {
         await client.query('ROLLBACK');
