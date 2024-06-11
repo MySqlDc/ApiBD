@@ -81,6 +81,8 @@ export const createPublication = async (req, res, next) => {
             marca_id = marca.rows[0];
         }
 
+        console.log('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [codigo, variante, plataforma, producto, nombre, precio, descuento, marca_id])
+
         const { rows } = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [codigo, variante, plataforma, producto, nombre, precio, descuento, marca_id]);
 
         if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
