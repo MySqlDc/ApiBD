@@ -10,6 +10,7 @@ export const actualizarPublicaciones = async (data) => {
         if(!isNaN(dato.id)) return dato.id
     }).filter(dato => dato !== undefined)
 
+    console.log(ids);
     const responseML = await actualizarML(ids)
 
     const responseRappi = await actualizarRappi(ids)
@@ -38,7 +39,10 @@ const actualizarML = async(ids) => {
             const response = await actualizarStockML(publicacion);
             console.log(response);
 
-            if(!response) console.log("Error undefined", publicacion);
+            if(!response) {
+                console.log("Error undefined", publicacion);
+                continue;
+            }
 
             if(response.status === "ok"){
                 dataOk.push(response);continue;

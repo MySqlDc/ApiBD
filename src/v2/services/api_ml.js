@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
     API_CLIENT_ML,
     API_REFRESH_ML,
@@ -7,36 +8,39 @@ import {
 let TOKEN = '';
 
 export const actualizarStockML = async (publicacion) => {
-    let data = {
-        available_quantity: publicacion.stock
-    }
-
-    let options = {
-        method: 'PUT',
-        contentType: 'application/json',
-        headers: {
-            Authorization: 'Bearer '+TOKEN
-        },
-        body:JSON.stringify(data)
-    }
-
     let url = "https://api.mercadolibre.com/items/MCO"+publicacion.codigo;
 
     if(publicacion.variante) url +="/variations/"+publicacion.variante;
 
-    const response = await fetch(url, options);
-
-    if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
-
-    if(response.status === 400 || response.status === 404) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: response.statusText}
-
-    if(response.status === 403){
-        await token_ml();
-
-        const response = await actualizarStockML(publicacion);
-        
-        return response;
+    let options = {
+        method: 'put',
+        url,
+        contentType: 'application/json',
+        headers: {
+            Authorization: `Bearer ${TOKEN}`
+        },
+        data:JSON.stringify({ available_quantity: publicacion.stock })
     }
+
+    try {
+        const response = await axios(options);
+
+        if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
+    } catch (error) {
+
+        if(error.response && (error.response.status === 400 || error.response.status === 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.response.statusText}
+
+        if(error.response && error.response.status === 403){
+            await token_ml();
+
+            const response = await actualizarStockML(publicacion);
+            
+            return response;
+        }
+
+        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
+    }
+    
 }
 
 
