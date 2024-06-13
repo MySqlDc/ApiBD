@@ -10,6 +10,7 @@ import plataformRoutes from './routes/platform.routes.js'
 import publicationRoutes from './routes/publication.routes.js'
 import actionRoutes from './routes/action.routes.js'
 import facturaRoutes from './routes/factura.routes.js'
+import brandRoutes from './routes/marca.routes.js'
 import { actualizarPedidos } from './services/actualizarStock.js'
 import { handleError } from './middlewares/errorHandler.js'
 import { actualizarDatosGeneral } from './services/api_elian.js'
@@ -26,6 +27,7 @@ router.use(plataformRoutes);
 router.use(publicationRoutes);
 router.use(actionRoutes);
 router.use(facturaRoutes);
+router.use(brandRoutes);
 
 router.use(handleError);
 cron.schedule('*/30 * * * *', async() => {

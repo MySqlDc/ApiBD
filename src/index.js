@@ -9,7 +9,6 @@ const app = express()
 
 app.use(express.json());
 
-
 app.use('/v1', routerV1)    
 app.use('/v2', routerV2)
 

@@ -63,7 +63,7 @@ export const getPublication = async (req, res, next) => {
 }
 
 export const createPublication = async (req, res, next) => {
-    const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento } = req.body;
+    const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin } = req.body;
     const client = await pool.connect();
 
     try {
@@ -92,10 +92,11 @@ export const createPublication = async (req, res, next) => {
             nombre, 
             precio, 
             descuento, 
-            marca_id
+            marca_id,
+            medellin
         ]
 
-        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', valores);
+        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *', valores);
 
         if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
 
@@ -110,7 +111,7 @@ export const createPublication = async (req, res, next) => {
 }
 
 export const updatePublication = async (req, res, next) => {
-    const { codigo , variante, plataforma, precio, descuento, marca_nombre } = req.body;
+    const { codigo , variante, plataforma, precio, descuento, marca_nombre, medellin } = req.body;
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -126,7 +127,7 @@ export const updatePublication = async (req, res, next) => {
             marca = marcas.rows[0].id;
         }
 
-        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id) WHERE id = $7 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, id])
+        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id), medellin = COALESCE($7, medellin) WHERE id = $8 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, medellin, id])
 
         if(rows.length === 0) throw new Error('No se actualizo ninguna publicacion')
 

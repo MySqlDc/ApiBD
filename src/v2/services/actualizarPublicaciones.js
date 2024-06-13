@@ -65,20 +65,24 @@ const actualizarML = async(ids) => {
     }
 }
 
-export const actualizarRappiFull = async()  => {
+export const actualizarRappiFull = async(medellin = false)  => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2');
+        let query = 'SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2';
+
+        if(medellin) query += ' AND medellin = true';
+
+        const { rows } = await client.query(query);
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
         
-        const response = await actualizarStockRappi(rows, false);
+        const response = await actualizarStockRappi(rows, false, medellin);
 
         await client.query('COMMIT');
-        return response;
+        return {status: "ok", response};
     } catch (error) {
         await client.query('ROLLBACK');
         console.log('Rappi Full fallo', error);

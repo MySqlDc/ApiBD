@@ -22,6 +22,7 @@ export const API_REFRESH_ML = process.env.API_REFRESH_ML;
 //Datos API Rappi
 export const API_KEY_RAPPI = process.env.API_KEY_RAPPI;
 export const STORE_ID_RAPPI = process.env.STORE_ID_RAPPI;
+export const STORE_ID_RAPPI_DIM = process.env.STORE_ID_RAPPI_DIM;
 
 
 //DATOS API falabella

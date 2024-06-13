@@ -1,9 +1,10 @@
 import { 
     API_KEY_RAPPI,
-    STORE_ID_RAPPI
+    STORE_ID_RAPPI,
+    STORE_ID_RAPPI_DIM
 } from '../../config.js';
 
-export const actualizarStockRappi = async (publicaciones, delta) => {
+export const actualizarStockRappi = async (publicaciones, delta, medellin = false) => {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("api_key", API_KEY_RAPPI);
@@ -13,7 +14,7 @@ export const actualizarStockRappi = async (publicaciones, delta) => {
     let records = publicaciones.map(publicacion => {
         let producto = {
             id: publicacion.codigo,
-            store_id: STORE_ID_RAPPI,
+            store_id: medellin?STORE_ID_RAPPI_DIM:STORE_ID_RAPPI,
             name: publicacion.nombre,
             trademark: publicacion.marca,
             stock: (publicacion.stock-1)>0?publicacion.stock:0,

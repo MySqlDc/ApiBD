@@ -82,21 +82,26 @@ export const donwloadFile = async (req, res, next) =>{
 }
 
 export const updateRappi = async (req, res, next) => {
-    const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-        const {rows} = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2');
+        const response = await actualizarRappiFull();
 
-        if(rows.length === 0) throw new Error('No hubo publicaciones que actualizar');
-        
-        await actualizarRappiFull(rows);
+        if(response.status === 'Error') throw new Error('Fallo en actualizar rappi')
 
-        await client.query('COMMIT');
         return res.status(200).send({confirmacion: "actualizado"})
     } catch (error) {
-        await client.query('ROLLBACK');
         next(error);
-    } finally {
-        client.release();
+    }
+}
+
+export const updateRappiMed = async (req, res, next) => {
+
+    try {
+        const response = await actualizarRappiFull(true);
+
+        if(response.status === 'Error') throw new Error('Fallo en actualizar rappi medellin')
+
+        return res.status(200).send({confirmacion: "actualizado medellin"})
+    } catch (error) {
+        next(error);
     }
 }
