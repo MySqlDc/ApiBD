@@ -245,6 +245,28 @@ export const updateUnidadesVirtuales = async (req, res, next) => {
     }
 }
 
+export const updateUnidadesMedellin = async (req, res, next) => {
+    const { unidades } = req.body;
+    const { id } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('UPDATE productos SET unidades_medellin = $1 WHERE id = $2 RETURNING *', [unidades, id]);
+
+        if(rows.length === 0) throw new Error('No se actualizaron las unidades de medellin');
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Se actualizaron las unidades de medellin del producto", data: rows});
+    } catch (error) {
+        await client.query('ROLLBACk');
+        next(error);
+    } finally {
+        client.release()
+    }
+}
+
 export const activeProductPublication = async (req, res, next) => {
     const { ids } = req.body;
     const client = await pool.connect();

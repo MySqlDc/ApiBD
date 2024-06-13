@@ -13,7 +13,8 @@ import {
     getProductPublication, 
     activeProductPublication, 
     inactiveProductPublication, 
-    getProductSkus 
+    getProductSkus, 
+    updateUnidadesMedellin
 } from '../controllers/productControllers.js';
 
 const router = Router();
@@ -39,6 +40,8 @@ router.put('/productos/:id', updateProduct);
 router.put('/productos/:id/unidades', updateUnidades);
 
 router.put('/productos/:id/unidadesVirtuales', updateUnidadesVirtuales);
+
+router.put('/productos/:id/unidadesMedellin', updateUnidadesMedellin);
 
 router.put('/productos/publicaciones/activar', activeProductPublication);
 
