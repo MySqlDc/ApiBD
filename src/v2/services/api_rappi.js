@@ -17,7 +17,7 @@ export const actualizarStockRappi = async (publicaciones, delta, medellin = fals
             store_id: medellin?STORE_ID_RAPPI_DIM:STORE_ID_RAPPI,
             name: publicacion.nombre,
             trademark: publicacion.marca,
-            stock: medellin?(publicacion.stock_dim-1)>0?publicacion.stock_dim:0:(publicacion.stock-1)>0?publicacion.stock:0,
+            stock: medellin?publicacion.stock_dim:(publicacion.stock-1)>0?publicacion.stock:0,
             is_available: null,
             sale_type: "U",
             price: publicacion.precio
