@@ -69,6 +69,8 @@ export const createPublication = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
+        if(descuento > precio) throw new Error('El descuento es mayor que el precio de venta')
+
         let marca_id = undefined;
 
         if(plataforma === 2){
