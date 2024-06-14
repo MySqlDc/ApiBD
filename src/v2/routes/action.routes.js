@@ -7,7 +7,7 @@ router.get('/archivo', donwloadFile);
 
 router.get('/actualizarStock', updateStock);
 
-router.get('/actualizarStock', updateStockSomes);
+router.post('/actualizarStock', updateStockSomes);
 
 router.put('/actualizarStock', updateStockFile);
 
