@@ -60,6 +60,23 @@ export const updateStock = async (req, res, next) => {
     }
 }
 
+export const updateStockSomes = async (req, res, next) => {
+    const { ids } = req.body;
+    try {
+        const codigos = ids.map(id => {return {id}})
+
+        console.log(codigos)
+
+        const response = await actualizarPublicaciones(codigos);
+
+        if(response.status === 'error') throw new Error(response.mensaje);
+
+        res.status(200).send(response);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export const donwloadFile = async (req, res, next) =>{
     const client = await pool.connect();
     try{
