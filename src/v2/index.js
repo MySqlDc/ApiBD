@@ -14,6 +14,7 @@ import brandRoutes from './routes/marca.routes.js'
 import { actualizarPedidos } from './services/actualizarStock.js'
 import { handleError } from './middlewares/errorHandler.js'
 import { actualizarDatosGeneral } from './services/api_elian.js'
+import { actualizar } from './services/actualizarPublicaciones.js'
 
 const router = express.Router();
 
@@ -38,4 +39,9 @@ cron.schedule('*/30 * * * *', async() => {
 cron.schedule('15 * * * *', async() => {
     await actualizarDatosGeneral()
 })
+
+cron.schedule('45 */2 * * *', async () => {
+    await actualizar();
+})
+
 export default router;

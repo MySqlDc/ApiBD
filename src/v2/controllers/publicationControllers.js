@@ -113,7 +113,7 @@ export const createPublication = async (req, res, next) => {
 }
 
 export const updatePublication = async (req, res, next) => {
-    const { codigo , variante, plataforma, precio, descuento, marca_nombre, medellin } = req.body;
+    const { active, codigo , variante, plataforma, precio, descuento, marca_nombre, medellin } = req.body;
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -129,7 +129,7 @@ export const updatePublication = async (req, res, next) => {
             marca = marcas.rows[0].id;
         }
 
-        const { rows } = await client.query('UPDATE publicaciones SET codigo = COALESCE($1,codigo), variante = COALESCE($2, variante), plataforma_id = COALESCE($3, plataforma_id), precio = COALESCE($4, precio), descuento = COALESCE($5, descuento), marca_id = COALESCE($6, marca_id), medellin = COALESCE($7, medellin) WHERE id = $8 RETURNING *', [codigo , variante, plataforma, precio, descuento, marca, medellin, id])
+        const { rows } = await client.query('UPDATE publicaciones SET active = COALESCE($1, active), codigo = COALESCE($2,codigo), variante = COALESCE($3, variante), plataforma_id = COALESCE($4, plataforma_id), precio = COALESCE($5, precio), descuento = COALESCE($6, descuento), marca_id = COALESCE($7, marca_id), medellin = COALESCE($8, medellin) WHERE id = $9 RETURNING *', [active, codigo , variante, plataforma, precio, descuento, marca, medellin, id])
 
         if(rows.length === 0) throw new Error('No se actualizo ninguna publicacion')
 

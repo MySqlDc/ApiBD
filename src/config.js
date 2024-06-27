@@ -29,6 +29,11 @@ export const STORE_ID_RAPPI_DIM = process.env.STORE_ID_RAPPI_DIM;
 export const API_KEY_FALABELLA = process.env.API_KEY_FALABELLA;
 export const USER_FALABELLA = process.env.USER_FALABELLA;
 
+//DATOS API VTEX
+export const STORE_NAME_VTEX = process.env.STORE_NAME_VTEX;
+export const API_KEY_VTEX = process.env.API_KEY_VTEX;
+export const TOKEN_VTEX = process.env.TOKEN_VTEX;
+
 //Aceeso Datos
 export const KEY = process.env.KEY;
 

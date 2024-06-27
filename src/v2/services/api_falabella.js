@@ -6,7 +6,7 @@ import {
 } from '../../config.js'
 
 
-export const actualizarStockFalabella = async (publicaciones) => {
+export const actualizarStockFalabella = async (publicaciones, precio = false) => {
     let respuesta = '';
     const parametros = setParametros('ProductUpdate');
 
@@ -21,7 +21,7 @@ export const actualizarStockFalabella = async (publicaciones) => {
         }
     }
     
-    options.body = await requestBody(publicaciones);
+    options.body = await requestBody(publicaciones, precio);
 
     try {
         await fetch(url, options).then(res => res.json() ).then( response => respuesta = response.SuccessResponse.Head).catch( error => console.error(error) );    
@@ -59,12 +59,17 @@ const encodeURL = (parametros) => {
     return url
 }
 
-const requestBody = async (skus) =>{
+const requestBody = async (publicaciones, price = false) =>{
     let request = "<Request>";
 
-    for(let i=0; i<skus.length; i++){
-        request +="<Product><SellerSku>"+skus[i].sku+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+skus[i].stock+"</Stock>"
-        if(skus[i].stock > 0){
+    for(let i=0; i<publicaciones.length; i++){
+        request +="<Product><SellerSku>"+publicaciones[i].codigo+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+publicaciones[i].stock+"</Stock>"
+        
+        if(price) request += "<Price>"+publicaciones[i].precio+"</Price>";
+
+        if(price && publicaciones[i].descuento) request += "<SpecialPrice>"+publicaciones[i].descuento+"</SpecialPrice>";
+
+        if(publicaciones[i].stock > 0){
             request += "<Status>active</Status>";
         } else {
             request += "<Status>inactive</Status>";
@@ -74,5 +79,6 @@ const requestBody = async (skus) =>{
 
     request += "</Request>";
     
+    console.log(request);
     return request
 }

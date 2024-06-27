@@ -1,5 +1,9 @@
 import { pool } from '../database/conection.js';
 import { actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
+import { actualizarStockFalabella } from '../services/api_falabella.js';
+import { actualizarDescuentoML, actualizarPrecioML, eliminarDescuentoML } from '../services/api_ml.js';
+import { actualizarStockRappi } from '../services/api_rappi.js';
+import { actualizarPrecioVTEX } from '../services/api_vtex.js';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
@@ -121,4 +125,81 @@ export const updateRappiMed = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+}
+
+export const updatePricePublicacion = async (req, res, next) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        
+        const {rows} = await client.query("SELECT * FROM publicaciones_stock_view WHERE id = $1", [id]);
+
+        if(rows.length === 0) throw new Error('No se encontro la publicacion');
+
+        let response = '';
+
+        switch(rows[0].plataforma_id){
+            case 1: 
+                response = await actualizarStockFalabella(rows, true);break;
+            case 2:
+                response = await actualizarStockRappi(rows, true);break;
+            case 3:
+                response = await actualizarPrecioML(rows[0]);break;
+            case 5:
+                response = await actualizarPrecioVTEX(rows[0]);break;
+        }
+
+        await client.query('COMMIT');
+        return res.status(200).send(response);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const updateDiscountPublication = async (req, res, next) => {
+    const { id } = req.params;
+    const { descuento, eliminar, promocion} = req.body;
+    const client = await pool.connect();
+
+    try {
+        let response;
+        await client.query('BEGIN');
+
+        if(!promocion_id || !promocion_type) throw new Error('Debe ingresar los datos de la promocion');
+
+        const {rows} = await client.query('SELECT * FROM publicaciones WHERE id = $1', [id]);
+
+        if(rows.length === 0) throw new Error('No hay pubicaciones para actualizar');
+
+        if(eliminar) {
+            response = eliminarDescuentoML(rows[0], promocion);
+        } else if(descuento === rows[0].descuento){
+            response = actualizarDescuentoML(rows[0], promocion);
+        } else if(descuento > rows[0].descuento){
+            eliminarDescuentoML(rows[0], promocion);
+            response = actualizarDescuentoML(rows[0], promocion);
+        } else if(descuento < rows[0].descuento){
+            response = actualizarDescuentoML(rows[0], promocion);
+        }
+
+        if(response.error) throw new Error(response.error)
+
+        const actualizacion = await client.query('UPDATE publicaciones SET descuento = $1 WHERE id = $2 RETURNING *', [descuento, id]);
+
+        if(actualizacion.rows.length === 0) throw new Error('No se actualizaron los datos en la base de datos pero si en la publicacion');
+
+        await client.query('COMMIT');
+        res.status(200).send(response.status);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release()
+    }
+
 }

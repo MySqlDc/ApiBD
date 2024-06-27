@@ -2,6 +2,34 @@ import { pool } from "../database/conection.js";
 import { actualizarStockFalabella } from "./api_falabella.js";
 import { actualizarStockML } from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
+import { actualizarStockVTEX } from "./api_vtex.js";
+
+export const actualizar = async () => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const {rows} = await client.query('SELECT id FROM productos WHERE update_status = true');
+
+        if(rows.length === 0) throw new Error('No hay publicaciones que actualizar');
+
+        await client.query('COMMIT');
+
+        const response = await actualizarPublicaciones(rows);
+
+        await client.query('BEGIN');
+        
+        if(response.status === 'error') throw new Error(response.mensaje);
+
+        await client.query('UPDATE productos SET update_status = false WHERE id = ANY($1)', [rows.map(row => row.id)])
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+    } finally {
+        client.release();
+    }
+}
+
 
 export const actualizarPublicaciones = async (data) => {
     if(data.length === 0) return {status: "error", mensaje: "no hay productos para actualizar"}
@@ -16,6 +44,8 @@ export const actualizarPublicaciones = async (data) => {
     const responseRappi = await actualizarRappi(ids)
 
     const responseFalabella = await actualizarFalabella(ids)
+    
+    const responseAddi = await actualizarAddi(ids);
 
     const respuesta = respuestaGeneral(responseML, responseRappi, responseFalabella);
 
@@ -59,6 +89,49 @@ const actualizarML = async(ids) => {
     } catch (error) {
         await client.query('ROLLBACK');
         console.log('ml fallo', error);
+        return {status: "error"};
+    } finally {
+        client.release();
+    }
+}
+
+export const actualizarAddi = async (ids) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const dataOk = [];
+        const dataErr = [];
+
+        const { rows } = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 5 AND active = true AND producto_id = ANY($1)', [ids] );
+
+        if(rows.length === 0) throw new Error('No hay publicaciones');
+
+        for(const publicacion of rows){
+            const response = await actualizarStockVTEX(publicacion);
+            console.log(response);
+
+            if(!response) {
+                console.log("Error undefined", publicacion);
+                continue;
+            }
+
+            if(response.status === "ok"){
+                dataOk.push(response);continue;
+            }
+            
+            dataErr.push(response);
+        }
+
+        await client.query('COMMIT');
+
+        console.log('actualizados', dataOk);
+        console.log('error', dataErr);
+        return {status: "ok"};
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.log('Addi fallo', error);
         return {status: "error"};
     } finally {
         client.release();
@@ -124,7 +197,7 @@ const actualizarFalabella = async(ids) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT codigo AS sku, stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
+        const { rows } = await client.query('SELECT codigo, stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
         
