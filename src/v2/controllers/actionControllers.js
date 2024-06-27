@@ -3,7 +3,7 @@ import { actualizarPublicaciones, actualizarRappiFull } from '../services/actual
 import { actualizarStockFalabella } from '../services/api_falabella.js';
 import { actualizarDescuentoML, actualizarPrecioML, eliminarDescuentoML } from '../services/api_ml.js';
 import { actualizarStockRappi } from '../services/api_rappi.js';
-import { actualizarPrecioVTEX } from '../services/api_vtex.js';
+import { actualizarPrecioVTEX, actualizarStockVTEX } from '../services/api_vtex.js';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
@@ -56,6 +56,30 @@ export const updateStock = async (req, res, next) => {
 
         await client.query('COMMIT');
         res.status(200).send(response);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const updateStockPublicacion = async(req, res, next) => {
+    const { sku } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        const {rows} = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 5 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [sku]);
+
+        if(rows.length === 0) throw new Error('No existe una publicacion');
+
+        const response = await actualizarStockVTEX(rows[0]);
+
+        if(response.status === 'error') throw new Error('error al actualizar publicacion '+response.mensaje);
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Actualizado"});
     } catch (error) {
         await client.query('ROLLBACK');
         next(error);
