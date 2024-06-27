@@ -176,6 +176,7 @@ export const updatePricePublicacion = async (req, res, next) => {
         }
 
         await client.query('COMMIT');
+        console.log("remontan")
         return res.status(200).send(response);
     } catch (error) {
         await client.query('ROLLBACK');
