@@ -79,7 +79,7 @@ export const updateStockPublicacion = async(req, res, next) => {
         if(response.status === 'error') throw new Error('error al actualizar publicacion '+response.mensaje);
 
         await client.query('COMMIT');
-        res.status(200).send({confirmacion: "Actualizado"});
+        res.status(200).send({confirmacion: "Actualizado", data: rows[0]});
     } catch (error) {
         await client.query('ROLLBACK');
         next(error);
