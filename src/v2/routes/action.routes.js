@@ -11,7 +11,7 @@ router.get('/rappi/full', updateRappi);
 
 router.get('/rappi/full/medellin', updateRappiMed);
 
-router.get('/actualizar/stock/:sku', updateStockPublicacion);
+router.post('/actualizar/stock/:sku', updateStockPublicacion);
 
 router.post('/actualizar/precio/:id', updatePricePublicacion);
 

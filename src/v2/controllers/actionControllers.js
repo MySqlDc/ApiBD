@@ -66,6 +66,7 @@ export const updateStock = async (req, res, next) => {
 
 export const updateStockPublicacion = async(req, res, next) => {
     const { sku } = req.params;
+    const { cantidad } = req.body;
     const client = await pool.connect();
 
     try {
@@ -199,7 +200,7 @@ export const updateDiscountPublication = async (req, res, next) => {
 
         const {rows} = await client.query('SELECT * FROM publicaciones WHERE id = $1', [id]);
 
-        if(rows.length === 0) throw new Error('No hay pubicaciones para actualizar');
+        if(rows.length === 0) throw new Error('No hay publicaciones para actualizar');
 
         if(eliminar) {
             response = eliminarDescuentoML(rows[0], promocion);
