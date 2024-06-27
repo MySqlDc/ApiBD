@@ -75,6 +75,8 @@ export const updateStockPublicacion = async(req, res, next) => {
 
         if(rows.length === 0) throw new Error('No existe una publicacion');
 
+        if(rows[0].stock === cantidad) throw new Error('El valor es el mismo');
+
         const response = await actualizarStockVTEX(rows[0]);
 
         if(response.status === 'error') throw new Error('error al actualizar publicacion '+response.mensaje);
