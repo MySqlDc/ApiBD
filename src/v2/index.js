@@ -37,7 +37,9 @@ cron.schedule('*/30 * * * *', async() => {
 })
 
 cron.schedule('15 * * * *', async() => {
-    await actualizarDatosGeneral()
+    console.log("comenzo")
+    await actualizarDatosGeneral();
+    console.log("termino")
 })
 
 cron.schedule('45 */2 * * *', async () => {

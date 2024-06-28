@@ -16,7 +16,7 @@ export const getdatos = async () => {
                 }
                 return producto
             }
-        });
+        }).filter(cambio => cambio !== undefined);;
 
         return datos    
     } catch (error) {
@@ -26,13 +26,13 @@ export const getdatos = async () => {
     
 }
 
-export const traerDatos = async (skus) => {
+export const traerDatos = async () => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        const {rows} = await client.query('SELECT sku_producto.sku, productos.unidades, productos.id FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE sku = ANY($1)', [skus]);
+        const {rows} = await client.query('SELECT * FROM vista_sku_producto');
 
         if(rows.length === 0) throw new Error('No hubo datos');
 
@@ -49,15 +49,11 @@ export const traerDatos = async (skus) => {
 export const actualizarDatos = async (datos) => {
     let productos = [];
 
-    const skus = datos.map( dato => {
-        return dato.sku;
-    });
-
-    const datosDB = await traerDatos(skus);
+    const datosDB = await traerDatos();
 
     let cambios = datos.map( dato => {
         const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
-        dato.cantidad<0?dato.cantidad=0:dato.cantidad;
+        if(dato.cantida < 0) dato.cantidad = 0;
         if(producto){
             if(dato.cantidad !== producto.unidades){
                 return {...dato, id: producto.id};
@@ -89,41 +85,47 @@ export const actualizarDatos = async (datos) => {
 }
 
 export const actualizarDatosGeneral = async () => {
+    let productos = [];
+    console.log("continuo");
     const datos = await getdatos();
+    console.log("paso", datos);
 
-    const skus = datos.map( dato => {
-        return dato.sku;
-    });
+    const datosDB = await traerDatos();
 
-    const datosDB = await traerDatos(skus);
+    console.log("datos", datosDB)
 
     let cambios = datos.map( dato => {
-        const producto = datosDB.find(datoDB => datoDB.sku === dato.sku);
-        dato.cantidad<0?dato.cantidad=0:dato.cantidad;
+        const producto = datosDB.find(db_dato => db_dato.sku == dato.sku);
+        if(dato.cantida < 0) dato.cantidad = 0;
         if(producto){
-            if(dato.cantidad !== producto.unidades){
-                return {...dato, id: producto.id};
+            if(dato.cantidad != producto.unidades){
+                return {...dato, id: producto.id}
             }
         }
     }).filter(cambio => cambio !== undefined);
 
-    const client = await pool.connect();
+    for (const cambio of cambios){
+        console.log(cambio)
+        const client = await pool.connect();
 
-    try {
-        for (const cambio of cambios){
+        try {
             await client.query('BEGIN');
-            console.log('cambio', cambio);
-            await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
+
+            const { rows } = await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
+
+            if(rows.length === 0) throw new Error('No se actualizo ningun producto');
+
             await client.query('COMMIT');
-        };    
-        
-        console.log('stock actualizado')
-    } catch (error) {
-        client.query('ROLLBACK');
-        console.log("error al actualizar datos",error);
-    } finally {
-        client.release();
-    }
+            productos.push(cambio.id);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.log("No se actualizo el producto", cambio);
+        } finally {
+            client.release();
+        }
+    };
+
+    console.log("actualizado ", productos);
 }
 
 export const getPedidos = async (plataforma) => {
