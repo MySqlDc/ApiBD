@@ -9,6 +9,7 @@ export const getdatos = async () => {
         let anterior = '';
         const datos = data.map( dato => {
             if(dato.code !== anterior){
+                anterior = dato.code;
                 const producto = {
                     sku: dato.sku,
                     cantidad: dato.quantity
@@ -109,11 +110,13 @@ export const actualizarDatosGeneral = async () => {
     const client = await pool.connect();
 
     try {
-        await client.query('BEGIN');
         for (const cambio of cambios){
+            await client.query('BEGIN');
+            console.log('cambio', cambio);
             await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
+            await client.query('COMMIT');
         };    
-        await client.query('COMMIT');
+        
         console.log('stock actualizado')
     } catch (error) {
         client.query('ROLLBACK');
