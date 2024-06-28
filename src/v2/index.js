@@ -42,7 +42,11 @@ cron.schedule('15 * * * *', async() => {
     console.log("termino")
 })
 
-cron.schedule('45 */2 * * *', async () => {
+cron.schedule('45 9-21/2 * * 1-5', async () => {
+    await actualizar();
+})
+
+cron.schedule('45 10, 18 * * 6,7', async () => {
     await actualizar();
 })
 
