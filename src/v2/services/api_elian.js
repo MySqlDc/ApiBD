@@ -105,10 +105,10 @@ export const actualizarDatosGeneral = async () => {
     }).filter(cambio => cambio !== undefined);
 
     for (const cambio of cambios){
-        console.log(cambio)
         const client = await pool.connect();
 
         try {
+            console.log("cambio", cambio);
             await client.query('BEGIN');
 
             const { rows } = await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [cambio.cantidad, cambio.id]);
@@ -125,7 +125,7 @@ export const actualizarDatosGeneral = async () => {
         }
     };
 
-    console.log("actualizado ", productos);
+    console.log("actualizado Stock", productos);
 }
 
 export const getPedidos = async (plataforma) => {
