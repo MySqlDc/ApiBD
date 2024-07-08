@@ -49,6 +49,7 @@ export const actualizarPublicaciones = async (data) => {
 
     const respuesta = respuestaGeneral(responseML, responseRappi, responseFalabella);
 
+    console.log("bandera actualizacion", respuesta);
     return respuesta;
 }
 

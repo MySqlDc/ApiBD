@@ -50,15 +50,6 @@ router.use(publicacion_mlRoutes);
 router.use(publicacion_rappiRoutes);
 router.use(informesRoutes)
 
-cron.schedule('0 8-20/2 * * *', () => {
-    //actualizarInventario();
-    console.log('actualizando');
-})
-
-cron.schedule('*/5 * * * *', () => {
-    
-    console.log('activo')
-})
 //mongoose.connect(DB_URI).then(() => console.log("Conectado a Mongo"));
 
 export default router;
