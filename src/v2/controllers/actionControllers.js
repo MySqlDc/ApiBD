@@ -1,3 +1,5 @@
+import fs from 'fs';
+import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
 import { actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
 import { actualizarStockFalabella } from '../services/api_falabella.js';
@@ -122,6 +124,35 @@ export const donwloadFile = async (req, res, next) =>{
         await client.query('COMMIT');
         res.status(200).send({data: [].concat(head, arrayData)});
     } catch (error){
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const downloadFile = async(req, res, next) => {
+    const client = await pool.connect();
+    try {
+        const {rows} = await pool.query('SELECT codigo, nombre FROM publicaciones WHERE plataforma_id = 2');
+
+        const fileName = 'data.csv';
+        const writableStream = fs.createWriteStream(fileName);
+
+        csv.write(rows, {headers: true}).pipe(writableStream);
+
+        writableStream.on('finish', () => {
+            res.download(fileName, (err) => {
+                if(err) {
+                    console.error('Error al enviar el archivo', err);
+                    next(err);
+                } else {
+                    console.log('Archivo CSV enviado exitosamente');
+                    fs.unlinkSync(fileName);
+                }
+            })
+        })
+    } catch (error) {
         await client.query('ROLLBACK');
         next(error);
     } finally {

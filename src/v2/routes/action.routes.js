@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { donwloadFile, updatePricePublicacion, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
+import { donwloadFile, downloadFile, updatePricePublicacion, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
 
 const router = Router()
 
 router.get('/archivo', donwloadFile);
+
+router.get('/archivo/descargar', downloadFile);
 
 router.get('/actualizarStock', updateStock);
 
