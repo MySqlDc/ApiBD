@@ -18,6 +18,11 @@ export const getdatos = async () => {
             }
         }).filter(cambio => cambio !== undefined);;
 
+        const ceros = datos.filter(dato => dato.cantidad == 0);
+        if(ceros.length > 6000){
+            return getdatos();
+        }
+
         return datos    
     } catch (error) {
         console.log("Fallo en la obtencion de datos", error);
@@ -96,7 +101,7 @@ export const actualizarDatosGeneral = async () => {
 
     let cambios = datos.map( dato => {
         const producto = datosDB.find(db_dato => db_dato.sku == dato.sku);
-        if(dato.cantida < 0) dato.cantidad = 0;
+        if(dato.cantidad < 0) dato.cantidad = 0;
         if(producto){
             if(dato.cantidad != producto.unidades){
                 return {...dato, id: producto.id}
