@@ -19,7 +19,7 @@ export const getdatos = async () => {
         }).filter(cambio => cambio !== undefined);
 
         const ceros = datos.filter(dato => dato.cantidad == 0);
-        console.log(ceros.length);
+        console.log("ceros ", ceros.length);
         if(ceros.length > 6000){
             const cantidades = await getdatos();
             return cantidades;
