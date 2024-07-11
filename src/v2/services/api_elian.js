@@ -16,14 +16,15 @@ export const getdatos = async () => {
                 }
                 return producto
             }
-        }).filter(cambio => cambio !== undefined);;
+        }).filter(cambio => cambio !== undefined);
 
         const ceros = datos.filter(dato => dato.cantidad == 0);
+        console.log(ceros.length);
         if(ceros.length > 6000){
             return getdatos();
+        } else {
+            return datos;
         }
-
-        return datos    
     } catch (error) {
         console.log("Fallo en la obtencion de datos", error);
         return [];
