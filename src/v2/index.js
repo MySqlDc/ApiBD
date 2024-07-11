@@ -36,7 +36,7 @@ cron.schedule('*/30 * * * *', async() => {
     console.log('activo2')
 })
 
-cron.schedule('15 * * * *', async() => {
+cron.schedule('5 * * * *', async() => {
     console.log("comenzo")
     await actualizarDatosGeneral();
     console.log("termino")
