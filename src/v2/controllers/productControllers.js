@@ -209,9 +209,17 @@ export const updateUnidades = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE productos SET unidades = $1 WHERE id = $2 RETURNING *', [unidades, id]);
+        const producto = await client.query('SELECT id, unidades_prueba AS unidades FROM productos WHERE id = $1', [id]);
 
-        if(rows.length === 0) throw new Error('No se actualizaron las unidades del producto');
+        if(producto.rows[0].unidades == unidades) throw new Error('las unidades son las mismas que hay en la base de datos');
+
+        const { rows } = await client.query('UPDATE productos SET unidades_prueba = $1 WHERE id = $2 RETURNING *', [unidades, id]);
+
+        if(rows.length == 0) throw new Error('No se actualizaron las unidades del producto');
+
+        const registro = await client.query('INSERT INTO registro_ajuste (producto_id, fecha, cantidad_ingresada, cantidad_antigua) VALUES ($1, now(), $2, $3) RETURNING *', [id, unidades, producto.rows[0].unidades])
+
+        if(registro.rows.lenght == 0) console.log("ajuste no se registro", [id, unidades, producto.rows[0].unidades])
 
         await client.query('COMMIT');
         res.status(200).send({confirmacion: "Se actualizaron las unidades del producto", data: rows});

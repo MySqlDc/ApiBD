@@ -1,54 +1,63 @@
 import { pool } from "../database/conection.js";
-import { actualizarFactura, crearFactura, eliminarFactura, leerFactura, leerFacturaCodigo, leerFacturas, leerFacturasAntesDe, leerFacturasDia } from "../database/queriesMongo/facturas.js"
-import { actualizarItems, actualizarPedidos } from "../services/actualizarStock.js";
+import { crearFactura } from "../database/queriesMongo/facturas.js"
 
 export const getAllBills = async (req, res, next) => {
     const { antesDe, fecha, codigo } = req.query;
 
+    const client = await pool.connect();
     try {
-        let facturas;
-        let pedidos;
+        await client.query("BEGIN");
+        let query = "SELECT * FROM vista_pedidos";
+        let params = [];
         if(fecha){
-            let dia = new Date(fecha);
-            facturas = await leerFacturasDia(dia);
+            query += " WHERE fecha = $1"
+            params.push(fecha);
         } else if(antesDe){
-            let anteriorA = new Date(antesDe);
-            anteriorA.setDate(anteriorA.getDate())
-    
-            facturas = await leerFacturasAntesDe(anteriorA);
+            query += " WHERE fecha < $1"
+            params.push(antesDe);
         } else if(codigo) {
-            facturas = await leerFacturaCodigo(codigo);
-        } else {
-            facturas = await leerFacturas();
+            query += " WHERE codigo = $1"
+            params.push(codigo);
         }
+
+        const {rows} = await client.query(query, params);
         
-        if(facturas.length){
-            pedidos = facturas.map(factura => {return {codigo: factura.codigo, fecha: factura.fecha, estado: factura.estado, productos: factura.productos}})
-        } else {
-            pedidos = facturas
-        }
+        if(rows.length === 0) throw new Error("No se encontraron productos");
         
-        return res.status(200).send({Cantidad: facturas.length, Pedidos: pedidos});
+        await client.query("COMMIT");
+        return res.status(200).send({Cantidad: rows.length, Pedidos: rows});
     } catch (error) {
+        await client.query("ROLLBACK");
         next(error);
+    } finally {
+        client.release()
     }
 }
 
 export const getBill = async (req, res, next) => {
     const { id } = req.params;
 
+    const client = await pool.connect();
     try {
-        const factura = await leerFactura(id);
+        await client.query("BEGIN");
 
-        return res.status(200).send({data: factura});
+        const {rows} = await client.query("SELECT * FROM vista_pedidos WHERE id = $1", [id]);
+
+        if(rows.length == 0) throw new Error("No hay pedidos asociados a ese id")
+
+        await client.query("COMMIT")
+        return res.status(200).send({data: rows[0]});
     } catch (error) {
+        await client.query("ROLLBACK");
         next(error);
+    } finally {
+        client.release();
     }
 }
 
 export const createBill = async (req, res, next) => {
     const { factura } = req.body;
-
+    
     try {
         const nuevaFactura = await crearFactura(factura);
 
@@ -62,75 +71,40 @@ export const updateBill = async (req, res, next) => {
     const { estado } = req.body;
     const { id } = req.params;
 
+    const client = await pool.connect();
     try {
-        const facturaActualizada = await actualizarFactura(id, {estado});
+        await client.query("BEGIN");
 
-        return res.status(200).send({data: facturaActualizada})
+        const {rows} = await client.query("UPDATE vista_pedidos SET estado_id = $1 WHERE id = $1", [estado, id]);
+
+        if(rows.length == 0) throw new Error("No hay pedidos asociados a ese id")
+
+        await client.query("COMMIT")
+        return res.status(200).send({data: rows[0]});
     } catch (error) {
+        await client.query("ROLLBACK");
         next(error);
+    } finally {
+        client.release();
     }
 }
 
 export const deleteBill = async (req, res, next) => {
     const { id } = req.params;
 
-    try {
-        const facturaEliminada = await eliminarFactura(id);
-        return res.status(200).send({confirmacion: "Factura eliminada", data: facturaEliminada})
-    } catch (error) {
-        next(error);
-    }
-}
-
-export const updateOrders = async (req, res, next) => {
-    try{
-        const response = await actualizarPedidos();
-
-        res.status(response.status).send(response.response);    
-    } catch (error){
-        next(error)
-    }
-}
-
-export const updateOrder = async (req, res, next) => {
-    const { codigo } = req.params;
-
-    try {
-        const pedido = await leerFacturaCodigo(codigo);
-
-        const items = pedido.productos.map( item => ({sku: item.sku, unidades: item.unidades, status: "Salio"}));
-
-        await actualizarItems(items)
-
-        await eliminarFactura(pedido._id)
-
-        console.log("se elimino el pedido", codigo)
-
-        res.status(200).send({confirmacion: "pedido eliminado correctamente", pedido})
-    } catch (error) {
-        next(error)
-    }
-}
-
-export const getUnitsOrders = async(req, res, next) => {
     const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-        await client.query("UPDATE productos SET unidades_virtuales = 0 WHERE unidades_virtuales < 0");
+        await client.query("BEGIN");
 
-        const pedidos = await leerFacturas();
+        const {rows} = await client.query("DELETE FROM vista_pedidos WHERE id = $1 RETURNING *", [id]);
 
-        const items = pedidos.flatMap(pedido => { 
-            return pedido.productos.map( item => ({sku: item.sku, unidades: item.unidades, status: pedido.estado}))
-        })
+        if(rows.length == 0) throw new Error("No hay pedidos asociados a ese id")
 
-        await client.query('COMMIT');
-        await actualizarItems(items);
-        
-        res.status(200).send({confirmacion: "unidades virtuales actualizadas"})
-    } catch (error){
-        await client.query('ROLLBACK');
-        next(error)
+        await client.query("COMMIT")
+        return res.status(200).send({confirmacion: "Se elimino correctamente", data: rows[0]});
+    } catch (error) {
+        await client.query("ROLLBACK");
+        next(error);
     } finally {
         client.release();
     }

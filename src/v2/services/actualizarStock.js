@@ -1,5 +1,5 @@
 import { pool } from "../database/conection.js";
-import { crearFactura, eliminarFactura, leerFacturaCodigo, leerFacturas } from "../database/queriesMongo/facturas.js";
+import { crearFactura } from "../database/queriesMongo/facturas.js";
 import { getPedidos } from './api_elian.js'
 import { esDespues } from '../validators/facturaValidator.js'
 
