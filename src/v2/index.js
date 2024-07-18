@@ -33,14 +33,10 @@ cron.schedule('15 * * * *', async() => {
     console.log("termino")
 })
 
-cron.schedule('45 10-22/2 * * 1-5', async () => {
+cron.schedule('45 10-22/2 * * *', async () => {
     console.log("comenzo actualizacion publicaciones");
     await actualizar();
     console.log("Fin actualizacion publicaciones");
-})
-
-cron.schedule('45 10,18 * * 6,7', async () => {
-    await actualizar();
 })
 
 export default router;

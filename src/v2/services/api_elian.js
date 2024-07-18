@@ -1,5 +1,6 @@
 import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
 import { pool } from '../database/conection.js';
+import { crearFactura, updateFactura } from '../database/queriesMongo/facturas.js';
 
 export const getdatos = async () => {
     try {
@@ -18,7 +19,7 @@ export const getdatos = async () => {
             }
         }).filter(cambio => cambio !== undefined);
 
-        const ceros = datos.filter(dato => dato.cantidad == 0);
+        const ceros = datos.filter(dato => dato.cantidad <= 0);
         console.log("ceros ", ceros.length);
         if(ceros.length > 4500){
             const cantidades = await getdatos();
@@ -147,5 +148,99 @@ export const getPedidos = async (plataforma) => {
     } catch (error) {
         console.log(error)
         throw error
+    }
+}
+
+export const createOrders = async() => {
+    let dia = new Date();
+    let dataPedidos = [];
+    const dataBD = await getOrders();
+
+    dia.setDate(dia.getDate() - 5);
+
+    let datosTemp = await getPedidos("FALABELLA");
+    dataPedidos.push(...datosTemp);
+
+    datosTemp = await getPedidos("MERCADOLIBRE");
+    dataPedidos.push(...datosTemp);
+
+    datosTemp = await getPedidos("SHOPIFY");
+    dataPedidos.push(...datosTemp);
+
+    console.log(dataPedidos.length);
+    dataPedidos = dataPedidos.map(pedido => {
+        let plataforma = 0;
+        let estado = 2;
+        switch(pedido.order.platform){
+            case 'mercadolibre': plataforma = 3;break;
+            case 'falabella': plataforma = 1;break;
+            case 'shopify': plataforma = 4;break;
+        }
+
+        switch(pedido.order.status){
+            case 'SIN SALIDA': estado = 1;break;
+            case 'CANCELADO': estado = 2;break;
+            case 'ANULADO': estado = 3;break;
+            default: estado = 4;break;
+        }
+
+        return {
+            tipo: 2,
+            codigo: pedido.order.id, 
+            fecha: new Date(pedido.date_generate),
+            plataforma, 
+            items: pedido.order.items.map(item => {return {sku: item.item.sku, cantidad: item.item.quantity, precio: parseInt(item.item.price)}}).filter(item => item.sku != null), 
+            status: estado
+        }
+    }).filter(
+        pedido => {
+            let match = dataBD.some(data => data.codigo == pedido.codigo && data.estado_id == 1);
+            return pedido.fecha > dia || match}
+    )
+
+    const createPedidos = dataPedidos.filter(pedido => !dataBD.some(data => data.codigo == pedido.codigo))
+    const changePedidos = dataPedidos.filter(pedido => {
+        const dataMatch = dataBD.find(data => data.codigo == pedido.codigo);
+        return (dataMatch && dataMatch.estado_id != pedido.status && pedido.status != 1);
+    })
+    
+    for(const pedido of createPedidos){
+        if(pedido.items.length == 0) continue;
+
+        if(pedido.items.length == 1 && pedido.items[0].sku == '1111111111') continue;
+        try{
+            await crearFactura(pedido);   
+        } catch(error) {
+            console.log("error")
+        }
+    }
+
+    for(const pedido of changePedidos){
+        try{
+            await updateFactura(pedido);   
+        } catch(error) {
+            console.log("error")
+        }
+    }
+}
+
+export const getOrders = async() => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT * FROM pedidos');
+
+        await client.query('COMMIT');
+
+        return rows;
+    } catch (error) {
+        console.log('error al pedir los datos');
+        await client.query('ROLLBACK');
+
+        return [];
+    } finally {
+        client.release();
     }
 }

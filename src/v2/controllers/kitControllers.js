@@ -58,6 +58,8 @@ export const getKitProducts = async (req, res, next) => {
     }
 }
 
+//creacion de kits
+//envio nombre String, imagen String, marca Int, productos [id Int]
 export const createKit = async (req, res, next) => {
     const { nombre, imagen, marca, productos } = req.body;
     const client = await pool.connect();
@@ -66,7 +68,7 @@ export const createKit = async (req, res, next) => {
         await client.query('BEGIN');
         if(productos.length <= 1) throw new Error('El kit no puede llevar solo un producto');
 
-        const datakit = await client.query('INSERT INTO productos (nombre, url_imagen, tipo_id, marca_id) VALUES ($1, $2, $3, $4) RETURNING *', [nombre, imagen, marca]);
+        const datakit = await client.query('INSERT INTO productos (nombre, url_imagen, tipo_id, marca_id) VALUES ($1, $2, 2, $3) RETURNING *', [nombre, imagen, marca]);
 
         for(const productoId of productos){
             const asociacionProducto = await client.query('INSERT INTO kit_producto (kit_id, producto_id) VALUES ($1, $2) RETURNING *', [datakit.rows[0].id, productoId]);

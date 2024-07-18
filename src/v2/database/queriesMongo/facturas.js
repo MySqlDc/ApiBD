@@ -1,16 +1,34 @@
 import { pool } from "../conection.js";
 
 // Crear una nueva factura
+// recibe datos factura 
+// {
+//   "tipo": int,
+//   "plataforma": int,
+//   "codigo": String,
+//   "fecha": String date YYYY-MM-DD,
+//   "items": [
+//     {
+//       "sku": String,
+//       "cantidad": int,
+//       "precio": int
+//     },
+//     {
+//       "sku": String,
+//       "cantidad": int,
+//       "precio": int
+//     }
+//   ]
+// }
 export const crearFactura = async (datosFactura) => {
   const client = await pool.connect();
-  console.log("crear factura", datosFactura);
 
   try {
     await client.query("BEGIN");
-    
+
     const pedido = await client.query(
       "INSERT INTO pedidos (plataforma_id, estado_id, fecha, codigo, tipo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [1, 1, datosFactura.fecha, datosFactura.codigo, 1]
+      [1, datosFactura.status?datosFactura.status:1, datosFactura.fecha, datosFactura.codigo, datosFactura.tipo]
     );
 
     if(pedido.rows == 0) throw new Error('No se genero el pedido');
@@ -40,6 +58,32 @@ export const crearFactura = async (datosFactura) => {
   } catch (error) {
     client.query("ROLLBACK");
     console.error('Error al crear factura:', error);
+    throw error;
+  } finally {
+    client.release()
+  }
+};
+
+export const updateFactura = async (datosFactura) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+
+    const pedido = await client.query(
+      "UPDATE pedidos SET estado_id = $1 WHERE codigo = $2 RETURNING *",
+      [datosFactura.status?datosFactura.status:1, datosFactura.codigo]
+    );
+
+    if(pedido.rows == 0) throw new Error('No se actualizo el pedido');
+
+    await client.query("COMMIT");
+    console.log('Factura editada:', pedido.rows[0]);
+    return pedido.rows[0];
+  } catch (error) {
+    client.query("ROLLBACK");
+    console.error('Error al editar la factura:', error);
     throw error;
   } finally {
     client.release()
