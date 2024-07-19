@@ -36,7 +36,7 @@ export const getAllBills = async (req, res, next) => {
         }
 
         if(plataforma){
-            query += " AND plataforma_id = "+plataforma;
+            query += ' AND codigo LIKE "'+plataforma+'%"';
         }
 
         const {rows} = await client.query(query, params);
