@@ -2,7 +2,7 @@ import { pool } from "../database/conection.js";
 import { crearFactura } from "../database/queries/facturas.js"
 
 export const getAllBills = async (req, res, next) => {
-    const { despuesDe, antesDe, fecha, codigo } = req.query;
+    const { despuesDe, antesDe, fecha, codigo, tipo, generados } = req.query;
 
     const client = await pool.connect();
     try {
