@@ -1,7 +1,6 @@
 import { pool } from "../database/conection.js";
-import { crearFactura } from "../database/queriesMongo/facturas.js";
+import { crearFactura, updateFactura } from "../database/queries/facturas.js";
 import { getPedidos } from './api_elian.js'
-import { esDespues } from '../validators/facturaValidator.js'
 
 export const actualizarItems = async (items) => {
     for(const item of items){
@@ -31,64 +30,98 @@ export const actualizarItems = async (items) => {
     console.log("items actualizados")
 }
 
-export const actualizarPedidos = async() => {
-    let hace5dias = new Date();
-    hace5dias.setDate(hace5dias.getDate() - 5);
+export const createOrders = async() => {
+    let dia = new Date();
+    let dataPedidos = [];
+    const dataBD = await getOrders();
 
-    const registros = await leerFacturas();
-    let data = [];
+    dia.setDate(dia.getDate() - 5);
 
-    let datosShopi = await getPedidos("SHOPIFY");
-    data = data.concat(datosShopi);
-    
-    let datosFala = await getPedidos("FALABELLA");
-    data = data.concat(datosFala);
+    let datosTemp = await getPedidos("FALABELLA");
+    dataPedidos.push(...datosTemp);
 
-    let datosML = await getPedidos("MERCADOLIBRE");
-    data = data.concat(datosML);
-    
-    let datosFiltrados = data.filter(pedido => {
-        const esFechaReciente = esDespues(hace5dias, new Date(pedido.date_generate));
-        const existeEnRegistros = registros.some(registro => {registro.codigo === pedido.id});
-        
-        return esFechaReciente || existeEnRegistros;
-    }).map(pedido => {return {...pedido.order, fecha: pedido.date_generate}})
-    .filter(dato => {
-        const existeCambio = registros.filter(registro => registro.codigo === dato.id).length > 0 && dato.status !== 'SIN SALIDA';
-        const noExisteSinSalida = !registros.filter(registro => registro.codigo === dato.id).length > 0 && dato.status === 'SIN SALIDA';
+    datosTemp = await getPedidos("MERCADOLIBRE");
+    dataPedidos.push(...datosTemp);
 
-        return  existeCambio || noExisteSinSalida
-    });
-    
-    const items = datosFiltrados.flatMap(pedido => {
-            return pedido.items.map(item => ({
-                sku: item.item.sku,
-                unidades: item.item.quantity,
-                status: pedido.status,
-                codigo: pedido.id,
-                plataforma: pedido.platform
-            }))
-        }).filter(item => item.sku !== null);
+    datosTemp = await getPedidos("SHOPIFY");
+    dataPedidos.push(...datosTemp);
 
-    await actualizarItems(items);
-
-    for(const elemento of datosFiltrados){
-        try {
-            if(elemento.status !== 'SIN SALIDA'){
-                const factura = await leerFacturaCodigo(elemento.id);
-                if(!factura) continue;
-
-                await eliminarFactura(factura._id);
-            } else {
-                const productos = elemento.items.map(item => ({sku: item.item.sku, "unidades": item.item.quantity}))
-                await crearFactura({codigo: elemento.id, fecha: elemento.fecha, estado: elemento.status, productos});
-            }
-        } catch (error) {
-            console.log("Error al actualizar elemento:", elemento, error)
+    console.log(dataPedidos.length);
+    dataPedidos = dataPedidos.map(pedido => {
+        let plataforma = 0;
+        let estado = 2;
+        switch(pedido.order.platform){
+            case 'mercadolibre': plataforma = 3;break;
+            case 'falabella': plataforma = 1;break;
+            case 'shopify': plataforma = 4;break;
         }
-    };
 
-    console.log("actualizado")
+        switch(pedido.order.status){
+            case 'SIN SALIDA': estado = 1;break;
+            case 'CANCELADO': estado = 2;break;
+            case 'ANULADO': estado = 3;break;
+            default: estado = 4;break;
+        }
 
-    return {status: 200, response: {confirmacion: "se actualizo el registro de pedidos"}}
+        return {
+            tipo: 2,
+            codigo: pedido.order.id, 
+            fecha: new Date(pedido.date_generate),
+            plataforma, 
+            items: pedido.order.items.map(item => {return {sku: item.item.sku, cantidad: item.item.quantity, precio: parseInt(item.item.price)}}).filter(item => item.sku != null), 
+            status: estado
+        }
+    }).filter(
+        pedido => {
+            let match = dataBD.some(data => data.codigo == pedido.codigo && data.estado_id == 1);
+            return pedido.fecha > dia || match}
+    )
+
+    const createPedidos = dataPedidos.filter(pedido => !dataBD.some(data => data.codigo == pedido.codigo))
+    const changePedidos = dataPedidos.filter(pedido => {
+        const dataMatch = dataBD.find(data => data.codigo == pedido.codigo);
+        return (dataMatch && dataMatch.estado_id != pedido.status && pedido.status != 1);
+    })
+    
+    for(const pedido of createPedidos){
+        if(pedido.items.length == 0) continue;
+
+        if(pedido.items.length == 1 && pedido.items[0].sku == '1111111111') continue;
+        try{
+            await crearFactura(pedido);   
+        } catch(error) {
+            console.log("error")
+        }
+    }
+
+    for(const pedido of changePedidos){
+        try{
+            await updateFactura(pedido);   
+        } catch(error) {
+            console.log("error")
+        }
+    }
+
+    return {status: 200, confirmacion: "Completado"}
+}
+
+export const getOrders = async() => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('SELECT * FROM pedidos WHERE tipo = 2');
+
+        await client.query('COMMIT');
+
+        return rows;
+    } catch (error) {
+        console.log('error al pedir los datos');
+        await client.query('ROLLBACK');
+
+        return [];
+    } finally {
+        client.release();
+    }
 }

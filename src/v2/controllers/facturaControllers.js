@@ -1,5 +1,5 @@
 import { pool } from "../database/conection.js";
-import { crearFactura } from "../database/queriesMongo/facturas.js"
+import { crearFactura } from "../database/queries/facturas.js"
 
 export const getAllBills = async (req, res, next) => {
     const { antesDe, fecha, codigo } = req.query;

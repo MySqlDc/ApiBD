@@ -10,8 +10,9 @@ import actionRoutes from './routes/action.routes.js'
 import facturaRoutes from './routes/factura.routes.js'
 import brandRoutes from './routes/marca.routes.js'
 import { handleError } from './middlewares/errorHandler.js'
-import { actualizarDatosGeneral } from './services/api_elian.js'
 import { actualizar } from './services/actualizarPublicaciones.js'
+import { actualizarDatosGeneral, actualizarReservados } from './database/queries/productos.js'
+import { createOrders } from './services/actualizarStock.js'
 
 const router = express.Router();
 
@@ -37,6 +38,13 @@ cron.schedule('45 10-22/2 * * *', async () => {
     console.log("comenzo actualizacion publicaciones");
     await actualizar();
     console.log("Fin actualizacion publicaciones");
+})
+
+cron.schedule('30 * * * *', async() => {
+    console.log("comenzo peticion pedidos");
+    await createOrders();
+    await actualizarReservados();
+    console.log("Fin peticion pedidos")
 })
 
 export default router;

@@ -6,7 +6,7 @@ import { actualizarStockFalabella } from '../services/api_falabella.js';
 import { actualizarDescuentoML, actualizarPrecioML, eliminarDescuentoML } from '../services/api_ml.js';
 import { actualizarStockRappi } from '../services/api_rappi.js';
 import { actualizarPrecioVTEX, actualizarStockVTEX } from '../services/api_vtex.js';
-import { createOrders } from '../services/api_elian.js';
+import { actualizarReservados } from '../database/queries/productos.js';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
@@ -265,6 +265,6 @@ export const updateDiscountPublication = async (req, res, next) => {
 }
 
 export const getPedidos = async (req, res, next) => {
-    await createOrders()
+    await actualizarReservados()
     res.send({confirmacion: "Ordenes Actualizadas"});
 }
