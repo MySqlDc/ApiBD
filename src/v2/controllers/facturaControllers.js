@@ -23,6 +23,18 @@ export const getAllBills = async (req, res, next) => {
             params.push(codigo);
         }
 
+        if(tipo){
+            if(tipo == 2){
+                query += " AND tipo = 2";
+            } else if (tipo == 1){
+                query += " AND tipo = 1";
+            }
+        }
+
+        if(generados){
+            query += " AND estado_id = 1";
+        }
+
         const {rows} = await client.query(query, params);
         
         if(rows.length === 0) throw new Error("No se encontraron productos");
