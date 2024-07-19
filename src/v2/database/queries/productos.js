@@ -41,13 +41,9 @@ export const traerDatos = async () => {
 
 export const actualizarDatosGeneral = async () => {
     let productos = [];
-    console.log("continuo");
     const datos = await getdatos();
-    console.log("paso", datos);
 
     const datosDB = await traerDatos();
-
-    console.log("datos", datosDB)
 
     let cambios = datos.map( dato => {
         const producto = datosDB.find(db_dato => db_dato.sku == dato.sku);

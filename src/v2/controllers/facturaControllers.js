@@ -2,7 +2,7 @@ import { pool } from "../database/conection.js";
 import { crearFactura } from "../database/queries/facturas.js"
 
 export const getAllBills = async (req, res, next) => {
-    const { antesDe, fecha, codigo } = req.query;
+    const { despuesDe, antesDe, fecha, codigo } = req.query;
 
     const client = await pool.connect();
     try {
@@ -15,6 +15,9 @@ export const getAllBills = async (req, res, next) => {
         } else if(antesDe){
             query += " WHERE fecha < $1"
             params.push(antesDe);
+        } else if(despuesDe){
+            query += " WHERE fecha > $1"
+            params.push(despuesDe);
         } else if(codigo) {
             query += " WHERE codigo = $1"
             params.push(codigo);
