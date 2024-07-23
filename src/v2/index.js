@@ -40,7 +40,7 @@ cron.schedule('45 10-22/2 * * *', async () => {
     console.log("Fin actualizacion publicaciones");
 })
 
-cron.schedule('30 * * * *', async() => {
+cron.schedule('37 * * * *', async() => {
     console.log("comenzo peticion pedidos");
     await createOrders();
     await actualizarReservados();
