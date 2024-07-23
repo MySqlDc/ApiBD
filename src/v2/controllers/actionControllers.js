@@ -265,6 +265,7 @@ export const updateDiscountPublication = async (req, res, next) => {
 }
 
 export const getPedidos = async (req, res, next) => {
-    await actualizarReservados()
+    await createOrders();
+    await actualizarReservados();
     res.send({confirmacion: "Ordenes Actualizadas"});
 }

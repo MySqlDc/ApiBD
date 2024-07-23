@@ -22,4 +22,5 @@ router.post('/actualizarStock', updateStockSomes);
 router.put('/actualizarStock', updateStockFile);
 
 router.get('/obtenerDatos', getPedidos);
+
 export default router
