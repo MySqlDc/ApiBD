@@ -2,7 +2,7 @@ import { pool } from "../database/conection.js";
 import { crearFactura } from "../database/queries/facturas.js"
 
 export const getAllBills = async (req, res, next) => {
-    const { despuesDe, antesDe, fecha, codigo, tipo, generados, plataforma } = req.query;
+    const { despuesDe, antesDe, fecha, codigo } = req.query;
 
     const client = await pool.connect();
     try {
@@ -21,22 +21,6 @@ export const getAllBills = async (req, res, next) => {
         } else if(codigo) {
             query += " WHERE codigo = $1"
             params.push(codigo);
-        }
-
-        if(tipo){
-            if(tipo == 2){
-                query += " AND tipo = 2";
-            } else if (tipo == 1){
-                query += " AND tipo = 1";
-            }
-        }
-
-        if(generados){
-            query += " AND estado_id = 1";
-        }
-
-        if(plataforma){
-            query += " AND codigo LIKE '"+plataforma+"%'";
         }
 
         const {rows} = await client.query(query, params);
@@ -68,6 +52,70 @@ export const getBill = async (req, res, next) => {
         return res.status(200).send({data: rows[0]});
     } catch (error) {
         await client.query("ROLLBACK");
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const getBillPlatform = async(req, res, next) => {
+    const { plataforma } = req.params;
+    const { despuesDe, estado } = req.query;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        let query = 'SELECT * FROM vista_pedidos WHERE tipo = 2 AND plataforma_id = ANY(SELECT id FROM plataformas WHERE nombre = $1)';
+        let params = [plataforma];
+
+        if(despuesDe){
+            query += ' AND fecha > $2';
+            params.push(despuesDe);
+        }
+
+        if(estado){
+            query += ' AND estado_id = 1'
+        }
+
+        const {rows} = await client.query(query, params);
+
+        if(rows.length == 0) throw new Error("No hay pedidos asociados a esa plataforma");
+
+        await client.query("COMMIT");
+        return res.status(200).send({cantidad: rows.length, data: rows});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
+export const getBillEstados = async(req, res, next) => {
+    const {estado} = req.params;
+    const { despuesDe } = req.query;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        let query = 'SELECT * FROM vista_pedidos WHERE tipo = 2 AND estado_id = ANY(SELECT id FROM estados WHERE nombre = $1)';
+        let params = [estado];
+
+        if(despuesDe){
+            query += ' AND fecha > $2';
+            params.push(despuesDe);
+        }
+
+        const {rows} = await client.query(query, params);
+
+        if(rows.length == 0) throw new Error("No hay pedidos con ese estado");
+
+        await client.query("COMMIT");
+        return res.status(200).send({cantidad: rows.length, data: rows});
+    } catch (error) {
+        await client.query('ROLLBACK');
         next(error);
     } finally {
         client.release();
