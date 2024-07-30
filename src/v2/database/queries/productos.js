@@ -9,6 +9,8 @@ export const actualizarReservados = async () => {
 
         await client.query("UPDATE productos pr SET unidades_virtuales = -subquery.total_cantidad FROM ( SELECT pp.producto_id, SUM(pp.cantidad) AS total_cantidad FROM producto_pedido pp JOIN pedidos pd ON pp.pedido_id = pd.id WHERE pd.fecha > '2024-07-07' AND pd.estado_id = 1 AND pd.tipo = 2 GROUP BY pp.producto_id ) AS subquery WHERE pr.id = subquery.producto_id AND pr.unidades_virtuales != -subquery.total_cantidad");
 
+        await client.query("SELECT agregar_pendientes()");
+
         await client.query("COMMIT");
     } catch (error) {
         await client.query("ROLLBACK")

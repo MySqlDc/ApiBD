@@ -133,9 +133,13 @@ export const donwloadFile = async (req, res, next) =>{
 }
 
 export const downloadFile = async(req, res, next) => {
+    const { plataforma } = req.params;
+
     const client = await pool.connect();
     try {
-        const {rows} = await pool.query('SELECT codigo, nombre FROM publicaciones WHERE plataforma_id = 2');
+        const {rows} = await pool.query('SELECT codigo, nombre FROM publicaciones WHERE plataforma_id = ANY(SELECT id FROM nombre = $1)', [plataforma]);
+
+        if(rows.length == 0) throw new Error("No se encontraron publicaciones de esa plataforma")
 
         const fileName = 'data.csv';
         const writableStream = fs.createWriteStream(fileName);

@@ -5,7 +5,7 @@ const router = Router()
 
 router.get('/archivo', donwloadFile);
 
-router.get('/archivo/descargar', downloadFile);
+router.get('/archivo/descargar/:plataforma', downloadFile);
 
 router.get('/actualizarStock', updateStock);
 
