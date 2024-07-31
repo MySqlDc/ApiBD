@@ -132,6 +132,17 @@ export const donwloadFile = async (req, res, next) =>{
     }
 }
 
+function formatDateForFilename(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}_${hours}:${minutes}:${seconds}`;
+}
+
 export const downloadFile = async(req, res, next) => {
     const { plataforma } = req.params;
 
@@ -143,16 +154,16 @@ export const downloadFile = async(req, res, next) => {
     try {
         switch(plataforma){
             case 'Mercado Libre':
-                query = 'SELECT codigo AS MCO, variante, nombre';break;
+                query = 'SELECT codigo AS MCO, variante, nombre ';break;
             default:
-                query = 'SELECT codigo AS sku, nombre';break;
+                query = 'SELECT codigo AS sku, nombre ';break;
         }
         query += 'FROM publicaciones WHERE plataforma_id = ANY(SELECT id FROM plataformas WHERE nombre = $1)';
         const {rows} = await pool.query(query, [plataforma]);
 
         if(rows.length == 0) throw new Error("No se encontraron publicaciones de esa plataforma")
 
-        const fileName = plataforma+'-data-'+date+'.csv';
+        const fileName = `${plataforma}_data-${formatDateForFilename(date)}.csv`;
         const writableStream = fs.createWriteStream(fileName);
 
         csv.write(rows, {headers: true}).pipe(writableStream);
