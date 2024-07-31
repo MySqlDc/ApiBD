@@ -88,7 +88,7 @@ export const createOrders = async() => {
 
         if(pedido.items.length == 1 && pedido.items[0].sku == '1111111111') continue;
         try{
-            await crearFactura(pedido);   
+            await crearFactura(pedido);
         } catch(error) {
             console.log("error")
         }
