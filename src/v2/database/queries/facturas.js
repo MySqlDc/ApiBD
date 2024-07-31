@@ -27,7 +27,7 @@ export const crearFactura = async (datosFactura) => {
     await client.query("BEGIN");
     const pedido = await client.query(
       "INSERT INTO pedidos (plataforma_id, estado_id, fecha, codigo, tipo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [platforma, datosFactura.status?datosFactura.status:1, datosFactura.fecha, datosFactura.codigo, datosFactura.tipo]
+      [datosFactura.platforma, datosFactura.status?datosFactura.status:1, datosFactura.fecha, datosFactura.codigo, datosFactura.tipo]
     );
 
     if(pedido.rows == 0) throw new Error('No se genero el pedido');
