@@ -7,6 +7,7 @@ import { actualizarDescuentoML, actualizarPrecioML, eliminarDescuentoML } from '
 import { actualizarStockRappi } from '../services/api_rappi.js';
 import { actualizarPrecioVTEX, actualizarStockVTEX } from '../services/api_vtex.js';
 import { actualizarReservados } from '../database/queries/productos.js';
+import { createOrders } from '../services/actualizarStock.js';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
