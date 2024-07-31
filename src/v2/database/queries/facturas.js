@@ -23,22 +23,11 @@ import { pool } from "../conection.js";
 export const crearFactura = async (datosFactura) => {
   const client = await pool.connect();
 
-  let platform_id = 0;
   try {
     await client.query("BEGIN");
-
-    switch(datosFactura.platform){
-      case 'mercadolibre':
-        platform_id = 3;break;
-      case 'shopify': 
-        platform_id = 4;break;
-      default:
-        platform_id = 1;break;
-    }
-
     const pedido = await client.query(
       "INSERT INTO pedidos (plataforma_id, estado_id, fecha, codigo, tipo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [platform_id, datosFactura.status?datosFactura.status:1, datosFactura.fecha, datosFactura.codigo, datosFactura.tipo]
+      [platforma, datosFactura.status?datosFactura.status:1, datosFactura.fecha, datosFactura.codigo, datosFactura.tipo]
     );
 
     if(pedido.rows == 0) throw new Error('No se genero el pedido');
