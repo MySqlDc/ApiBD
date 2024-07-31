@@ -137,6 +137,8 @@ export const downloadFile = async(req, res, next) => {
 
     console.log(plataforma)
     const client = await pool.connect();
+    const date = new Date();
+
     let query = '';
     try {
         switch(plataforma){
@@ -150,7 +152,7 @@ export const downloadFile = async(req, res, next) => {
 
         if(rows.length == 0) throw new Error("No se encontraron publicaciones de esa plataforma")
 
-        const fileName = 'data.csv';
+        const fileName = plataforma+'-data-'+date+'.csv';
         const writableStream = fs.createWriteStream(fileName);
 
         csv.write(rows, {headers: true}).pipe(writableStream);
