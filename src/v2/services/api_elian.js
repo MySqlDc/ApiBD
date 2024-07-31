@@ -46,4 +46,3 @@ export const getPedidos = async (plataforma) => {
         throw error
     }
 }
-

@@ -137,8 +137,16 @@ export const downloadFile = async(req, res, next) => {
 
     console.log(plataforma)
     const client = await pool.connect();
+    let query = '';
     try {
-        const {rows} = await pool.query('SELECT codigo, nombre FROM publicaciones WHERE plataforma_id = ANY(SELECT id FROM plataformas WHERE nombre = $1)', [plataforma]);
+        switch(plataforma){
+            case 'Mercado Libre':
+                query = 'SELECT codigo AS MCO, variante, nombre';break;
+            default:
+                query = 'SELECT codigo AS sku, nombre';break;
+        }
+        query += 'FROM publicaciones WHERE plataforma_id = ANY(SELECT id FROM plataformas WHERE nombre = $1)';
+        const {rows} = await pool.query(query, [plataforma]);
 
         if(rows.length == 0) throw new Error("No se encontraron publicaciones de esa plataforma")
 
