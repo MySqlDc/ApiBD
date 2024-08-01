@@ -31,13 +31,13 @@ router.use(handleError);
 cron.schedule('15 * * * *', async() => {
     console.log("comenzo")
     await actualizarDatosGeneral();
+    await actualizar(true);
     console.log("termino")
 })
 
 cron.schedule('45 10-22/2 * * *', async () => {
     console.log("comenzo actualizacion publicaciones");
     await actualizar();
-    console.log("Fin actualizacion publicaciones");
 })
 
 cron.schedule('37 * * * *', async() => {

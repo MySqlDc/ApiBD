@@ -4,11 +4,15 @@ import { actualizarStockML } from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
 import { actualizarStockVTEX } from "./api_vtex.js";
 
-export const actualizar = async () => {
+export const actualizar = async (urgente = false) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const {rows} = await client.query('SELECT id FROM productos WHERE update_status = true');
+        let query = 'SELECT id FROM productos WHERE update_status = true';
+
+        if(urgente) query = 'SELECT id, nombre FROM productos WHERE update_status = true AND (unidades + unidades_virtuales) <= 0';
+        
+        const {rows} = await client.query(query);
 
         if(rows.length === 0) throw new Error('No hay publicaciones que actualizar');
 
@@ -22,6 +26,7 @@ export const actualizar = async () => {
 
         await client.query('UPDATE productos SET update_status = false WHERE id = ANY($1)', [rows.map(row => row.id)])
 
+        console.log("Fin actualizacion publicaciones");
         await client.query('COMMIT');
     } catch (error) {
         await client.query('ROLLBACK');
@@ -29,7 +34,6 @@ export const actualizar = async () => {
         client.release();
     }
 }
-
 
 export const actualizarPublicaciones = async (data) => {
     if(data.length === 0) return {status: "error", mensaje: "no hay productos para actualizar"}
