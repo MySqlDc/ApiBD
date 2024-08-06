@@ -123,11 +123,7 @@ export const updatePublication = async (req, res, next) => {
 
         const marcas = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marca_nombre])
 
-        if(marcas.rows.length === 0) {
-            console.log('No existe la marca', id)
-        } else {
-            marca = marcas.rows[0].id;
-        }
+        if(marca_nombre && marcas.rows.length != 0) marca = marcas.rows[0].id;
 
         const { rows } = await client.query('UPDATE publicaciones SET active = COALESCE($1, active), codigo = COALESCE($2,codigo), variante = COALESCE($3, variante), plataforma_id = COALESCE($4, plataforma_id), precio = COALESCE($5, precio), descuento = COALESCE($6, descuento), marca_id = COALESCE($7, marca_id), medellin = COALESCE($8, medellin) WHERE id = $9 RETURNING *', [active, codigo , variante, plataforma, precio, descuento, marca, medellin, id])
 

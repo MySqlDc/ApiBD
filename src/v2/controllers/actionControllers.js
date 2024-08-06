@@ -1,7 +1,7 @@
 import fs from 'fs';
 import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
-import { actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
+import { actualizarMLForzado, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
 import { actualizarStockFalabella } from '../services/api_falabella.js';
 import { actualizarDescuentoML, actualizarPrecioML, eliminarDescuentoML } from '../services/api_ml.js';
 import { actualizarStockRappi } from '../services/api_rappi.js';
@@ -295,4 +295,14 @@ export const getPedidos = async (req, res, next) => {
     await createOrders();
     await actualizarReservados();
     res.send({confirmacion: "Ordenes Actualizadas"});
+}
+
+export const update_ml = async (req, res, next) => {
+    try {
+        await actualizarMLForzado();
+        res.send({confirmacion: "Actualizar datos"});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
 }

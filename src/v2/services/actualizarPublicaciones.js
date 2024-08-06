@@ -45,13 +45,13 @@ export const actualizarPublicaciones = async (data) => {
     console.log(ids);
     const responseML = await actualizarML(ids)
 
-    const responseRappi = await actualizarRappi(ids)
+    //const responseRappi = await actualizarRappi(ids)
 
     const responseFalabella = await actualizarFalabella(ids)
     
     const responseAddi = await actualizarAddi(ids);
 
-    const respuesta = respuestaGeneral(responseML, responseRappi, responseFalabella);
+    const respuesta = respuestaGeneral(responseML, responseAddi, responseFalabella);
 
     console.log("bandera actualizacion", respuesta);
     return respuesta;

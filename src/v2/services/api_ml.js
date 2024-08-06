@@ -8,6 +8,7 @@ import {
 let TOKEN = '';
 
 export const actualizarStockML = async (publicacion) => {
+    console.log("Consulta ml")
     let url = "https://api.mercadolibre.com/items/MCO"+publicacion.codigo;
 
     if(publicacion.variante) url +="/variations/"+publicacion.variante;
