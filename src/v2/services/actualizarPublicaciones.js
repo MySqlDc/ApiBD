@@ -100,6 +100,59 @@ const actualizarML = async(ids) => {
     }
 }
 
+export const actualizarMLForzado = async() => {
+    const client = await pool.connect();
+
+    try {
+        console.log("inicio")
+        await client.query('BEGIN');
+
+        const dataOk = [];
+        const dataErr = [];
+
+
+        const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538731.7702045538878,7702045593914,7702045900903}')");
+        //const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '851486802'");
+        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538533,7702045538625,7702045552362,7702045146127,7702045538380,7702045538953,7702045538847,7702045538717,7702045538595,7702045538519,7702045538854,7702045326819}')");
+        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN productos ON productos.id = publicaciones_stock_view.producto_id WHERE publicaciones_stock_view.codigo = '503263690' AND publicaciones_stock_view.active = false");
+        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id = 3 AND producto_id = ANY(SELECT id FROM productos WHERE (nombre LIKE '%Evolution%' OR nombre LIKE '%Koleston Perfect%') AND unidades < 2 AND tipo_id = 1)");
+        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id =3 AND producto_id = ANY(SELECT id FROM productos WHERE nombre LIKE '%Royal%' AND nombre LIKE '%Tono%' AND (nombre LIKE '%77%' OR nombre LIKE '%88%' OR nombre LIKE '%99%' OR nombre LIKE '%-0%' OR nombre LIKE '%00%' OR nombre LIKE '%-1%') AND NOT nombre LIKE '%1-1%' AND tipo_id = 1)");
+
+        const pubs = rows.map(row => {
+            return { codigo: row.codigo, variante: row.variante, stock: 2}
+        })
+
+        console.log("actualizando");
+        for(const publicacion of pubs){
+            console.log("Entro", publicacion);
+            const response = await actualizarStockML(publicacion);
+
+            if(!response) {
+                console.log("Error undefined", publicacion);
+                continue;
+            }
+
+            if(response.status === "ok"){
+                dataOk.push(response);continue;
+            }
+            
+            dataErr.push(response);
+        }
+
+        await client.query('COMMIT');
+
+        console.log('actualizados', dataOk);
+        console.log('error', dataErr);
+        return {status: "ok"};
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.log('ml fallo', error);
+        return {status: "error"};
+    } finally {
+        client.release();
+    }
+}
+
 export const actualizarAddi = async (ids) => {
     const client = await pool.connect();
 

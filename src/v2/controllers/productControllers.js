@@ -337,3 +337,24 @@ export const deleteProduct = async (req, res, next) => {
         client.release();
     }
 }
+
+export const setUpdateProduct = async (req, res, next) => {
+    const { ids } = req.body
+    const client = await pool.connect()
+
+    try{
+        await client.query('BEGIN');
+
+        const { rows } = await client.query('UPDATE productos SET update_status = true WHERE id = ANY($1) RETURNING *', [ids]);
+
+        if(rows.length == 0) throw new Error('No se actualizo ningun producto');
+
+        await client.query('COMMIT');
+        res.status(200).send({confirmacion: "Se activaron los productos para actualizar"})
+    }catch(error){
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
