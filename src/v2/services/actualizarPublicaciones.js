@@ -111,7 +111,8 @@ export const actualizarMLForzado = async() => {
         const dataErr = [];
 
 
-        const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538731.7702045538878,7702045593914,7702045900903}')");
+        const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '823981694'");
+        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538731.7702045538878,7702045593914,7702045900903}')");
         //const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '851486802'");
         //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538533,7702045538625,7702045552362,7702045146127,7702045538380,7702045538953,7702045538847,7702045538717,7702045538595,7702045538519,7702045538854,7702045326819}')");
         //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN productos ON productos.id = publicaciones_stock_view.producto_id WHERE publicaciones_stock_view.codigo = '503263690' AND publicaciones_stock_view.active = false");

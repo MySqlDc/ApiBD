@@ -98,7 +98,7 @@ export const getProductPlatform = async (req, res, next) => {
     try {
         await client.query('BEGIN');
         if(id === undefined) throw new Error('No se ingreso un ID');
-        const productData = await client.query('SELECT p.id AS producto_id, p.nombre AS producto_nombre, p.url_imagen AS imagen, bool_or(pub.active AND pl.id = 1) AS Falabella, bool_or(pub.active AND pl.id = 2) AS Rappi, bool_or(pub.active AND pl.id = 3) AS Mercado_Libre FROM productos p LEFT JOIN publicaciones pub ON p.id = pub.producto_id LEFT JOIN plataformas pl ON pub.plataforma_id = pl.id WHERE p.id = $1 GROUP BY p.id, p.nombre ORDER BY p.id', [id]);
+        const productData = await client.query('SELECT p.id AS producto_id, p.nombre AS producto_nombre, p.url_imagen AS imagen, bool_or(pub.active AND pl.id = 1) AS Falabella, bool_or(pub.active AND pl.id = 2) AS Rappi, bool_or(pub.active AND pl.id = 3) AS Mercado_Libre, bool_or(pub.active AND pl.id = 4) AS Shopify, bool_or(pub.active AND pl.id = 5) AS Addi FROM productos p LEFT JOIN publicaciones pub ON p.id = pub.producto_id LEFT JOIN plataformas pl ON pub.plataforma_id = pl.id WHERE p.id = $1 GROUP BY p.id, p.nombre ORDER BY p.id', [id]);
 
         const platformsData = await client.query('SELECT * FROM plataformas');
 

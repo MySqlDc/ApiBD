@@ -7,14 +7,34 @@ export const actualizarReservados = async () => {
     try {
         await client.query("BEGIN");
 
-        await client.query("UPDATE productos pr SET unidades_virtuales = -subquery.total_cantidad FROM ( SELECT pp.producto_id, SUM(pp.cantidad) AS total_cantidad FROM producto_pedido pp JOIN pedidos pd ON pp.pedido_id = pd.id WHERE pd.fecha > '2024-07-07' AND pd.estado_id = 1 AND pd.tipo = 2 GROUP BY pp.producto_id ) AS subquery WHERE pr.id = subquery.producto_id AND pr.unidades_virtuales != -subquery.total_cantidad");
+        const { rows } = await client.query('SELECT id, unidades_virtuales FROM productos WHERE unidades_virtuales <> 0');
+
+        const pedidos = await client.query("SELECT pp.producto_id, SUM(pp.cantidad) AS total_cantidad FROM producto_pedido pp JOIN pedidos pd ON pp.pedido_id = pd.id WHERE pd.fecha > '2024-07-07' AND pd.estado_id = 1 AND pd.tipo = 2 GROUP BY pp.producto_id")
+
+        let sinPedientes = rows;
+
+        for(const pedido of pedidos.rows){
+            const match = rows.filter((row) => row.id == pedido.producto_id)[0];
+
+            if(match.unidades_virtuales != (parseInt(pedido.total_cantidad) * -1)){
+                await client.query("UPDATE productos SET unidades_virtuales = $1 WHERE id = $2", [pedido.producto_id,(parseInt(pedido.total_cantidad) * -1)])
+            }
+
+            if(match) sinPedientes = sinPedientes.filter((pendiente) => pendiente.id != pedido.producto_id)
+        }
+
+        if(sinPedientes.length > 0){
+            for(const sinPendiente of sinPedientes){
+                await client.query("UPDATE productos SET unidades_virtuales = 0 WHERE id = $1", [sinPendiente.id]);
+            }
+        }
 
         await client.query("SELECT agregar_pendientes()");
 
         await client.query("COMMIT");
     } catch (error) {
         await client.query("ROLLBACK")
-        console.log("Error")
+        console.log("Error", error)
     } finally{
         client.release()
     }

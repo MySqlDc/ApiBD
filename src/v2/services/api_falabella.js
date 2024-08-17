@@ -14,19 +14,29 @@ export const actualizarStockFalabella = async (publicaciones, precio = false) =>
 
     let url = 'https://sellercenter-api.falabella.com/?'+encodeURL(parametros);
 
+    console.log(url)
+
     let options = {
         method: 'POST',
         headers: {
+            'accept': 'application/json',
             'Content-Type': 'application/json',
-        }
+        },
+        body: await requestBody(publicaciones, precio)
     }
-    
-    options.body = await requestBody(publicaciones, precio);
+
+    console.log("options", options)
 
     try {
-        await fetch(url, options).then(res => res.json() ).then( response => respuesta = response.SuccessResponse.Head).catch( error => console.error(error) );    
+        await fetch(url, options)
+        .then(res => res.json() )
+        .then( response => {
+            console.log(response)
+            respuesta = response.SuccessResponse.Head
+        })
+        .catch( error => console.error(error) );    
 
-        if(respuesta === '') throw new Error('No se actualizo falabella') ;
+        if(!respuesta) throw new Error('No se actualizo falabella') ;
             
         return {status: "ok"}
     } catch (error) {
@@ -60,7 +70,7 @@ const encodeURL = (parametros) => {
 }
 
 const requestBody = async (publicaciones, price = false) =>{
-    let request = "<Request>";
+    let request = '<?xml version="1.0" encoding="UTF-8" ?><Request>';
 
     for(let i=0; i<publicaciones.length; i++){
         request +="<Product><SellerSku>"+publicaciones[i].codigo+"</SellerSku><BusinessUnits><BusinessUnit><OperatorCode>faco</OperatorCode><Stock>"+publicaciones[i].stock+"</Stock>"
@@ -79,6 +89,5 @@ const requestBody = async (publicaciones, price = false) =>{
 
     request += "</Request>";
     
-    console.log(request);
     return request
 }
