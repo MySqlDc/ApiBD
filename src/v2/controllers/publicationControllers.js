@@ -63,7 +63,7 @@ export const getPublication = async (req, res, next) => {
 }
 
 export const createPublication = async (req, res, next) => {
-    const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin } = req.body;
+    const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin, full } = req.body;
     const client = await pool.connect();
 
     try {
@@ -95,10 +95,11 @@ export const createPublication = async (req, res, next) => {
             precio, 
             descuento, 
             marca_id,
-            medellin
+            medellin,
+            full
         ]
 
-        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *', valores);
+        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *', valores);
 
         if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
 

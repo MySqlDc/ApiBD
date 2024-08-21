@@ -26,6 +26,8 @@ export const actualizarStockML = async (publicacion) => {
     try {
         const response = await axios(options);
 
+        if(publicacion.stock > 0) statusFlex(publicacion)
+
         if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
     } catch (error) {
 
@@ -181,6 +183,42 @@ export const eliminarDescuentoML = async (publicacion, promocion) => {
             await token_ml();
 
             const response = await eliminarDescuentoML(publicacion);
+            
+            return response;
+        }
+
+        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
+    }
+}
+
+export const statusFlex = async(publicacion) => {
+    url = "https://api.mercadolibre.com/sites/MCO/shipping/selfservice/items/MCO"+publicacion.codigo
+
+    let method = 'POST';
+
+    if(publicacion.stock == 0) 'DELETE'
+
+    let options = {
+        method,
+        url, 
+        contentType: 'application/json',
+        headers: {
+            Authorization: `Bearer ${TOKEN}`
+        }
+    }
+
+    try {
+        const response = await axios(options);
+
+        if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
+    } catch (error) {
+
+        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.data.message}
+
+        if(error.response && error.response.status == 403){
+            await token_ml();
+
+            const response = await actualizarPrecioML(publicacion);
             
             return response;
         }
