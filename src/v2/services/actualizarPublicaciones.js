@@ -66,12 +66,13 @@ const actualizarML = async(ids) => {
         const dataOk = [];
         const dataErr = [];
 
-        const { rows } = await client.query('SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids] );
+        const { rows } = await client.query('SELECT codigo, variante, stock, full_bolean FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
         for(const publicacion of rows){
             const response = undefined
+            console.log(publicacion.full_bolean)
             if(publicacion.full_bolean){
                 response = await statusFlex(publicacion);
             } else {
@@ -115,7 +116,7 @@ export const actualizarMLForzado = async() => {
         const dataOk = [];
         const dataErr = [];
 
-        const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{898633316,898677800,898669036,898594464,1157055570,1237265532,1157034129,898562103,1157000783,898562474,904730734,1157000772,898614339,898790250,898614437,898676434,1210942090,1157008250,1899867062,913156751,913202032,1205347163,1206951958,1205369256,1205289480,1205371849,1204207217,2002052242,2209216824,1354846631,1205282136,1205378016,2223796628,1205361124,2183389324,1205370901,1375876909,1412637377,1412678361,2177833486,2617143516,2617181916}')");
+        const { rows } = await client.query("SELECT codigo, variante, stock, full_bolean FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{898633316,898677800,898669036,898594464,1157055570,1237265532,1157034129,898562103,1157000783,898562474,904730734,1157000772,898614339,898790250,898614437,898676434,1210942090,1157008250,1899867062,913156751,913202032,1205347163,1206951958,1205369256,1205289480,1205371849,1204207217,2002052242,2209216824,1354846631,1205282136,1205378016,2223796628,1205361124,2183389324,1205370901,1375876909,1412637377,1412678361,2177833486,2617143516,2617181916}')");
         //const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '823981694'");
         //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538731.7702045538878,7702045593914,7702045900903}')");
         //const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '851486802'");
