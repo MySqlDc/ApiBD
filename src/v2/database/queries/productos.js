@@ -16,7 +16,7 @@ export const actualizarReservados = async () => {
         for(const pedido of pedidos.rows){
             const match = rows.filter((row) => row.id == pedido.producto_id)[0];
 
-            if(match.unidades_virtuales != (parseInt(pedido.total_cantidad) * -1) || !match){
+            if(!match || match.unidades_virtuales != (parseInt(pedido.total_cantidad) * -1)){
                 await client.query("UPDATE productos SET unidades_virtuales = $1 WHERE id = $2", [pedido.producto_id,(parseInt(pedido.total_cantidad) * -1)])
             }
 
