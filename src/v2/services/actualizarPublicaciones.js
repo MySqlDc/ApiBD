@@ -139,16 +139,13 @@ export const actualizarMLForzado = async() => {
                 response = await actualizarStockML(publicacion);
             }
 
-            if(!response) {
-                console.log("Error undefined", publicacion);
-                continue;
-            }
-
             if(response.status === "ok"){
                 dataOk.push(response);continue;
+            } else {
+                console.log("Error", publicacion);
+                dataErr.push(response);
+                continue;
             }
-            
-            dataErr.push(response);
         }
 
         await client.query('COMMIT');

@@ -64,10 +64,11 @@ export const actualizarPrecioML = async (publicacion) => {
     try {
         const response = await axios(options);
 
+        console.log("response",response)
         if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
     } catch (error) {
 
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.data.message}
+        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error}
 
         if(error.response && error.response.status == 403){
             await token_ml();
@@ -111,7 +112,7 @@ export const actualizarDescuentoML = async (publicacion, promocion) => {
         if(error.response && error.response.status == 403){
             await token_ml();
 
-            const response = await actualizarPrecioML(publicacion);
+            const response = await actualizarDescuentoML(publicacion);
             
             return response;
         }
@@ -196,7 +197,7 @@ export const statusFlex = async(publicacion) => {
 
     let method = 'POST';
 
-    if(publicacion.stock == 0) 'DELETE'
+    if(publicacion.stock == 0) method = 'DELETE'
 
     let options = {
         method,
@@ -207,18 +208,19 @@ export const statusFlex = async(publicacion) => {
         }
     }
 
+    console.log(publicacion);
     try {
         const response = await axios(options);
 
-        if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
+        if(response.status === 200 || response.status == 204) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
     } catch (error) {
 
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.data.message}
+        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error}
 
         if(error.response && error.response.status == 403){
             await token_ml();
 
-            const response = await actualizarPrecioML(publicacion);
+            const response = await statusFlex(publicacion);
             
             return response;
         }
