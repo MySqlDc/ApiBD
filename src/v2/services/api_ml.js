@@ -192,7 +192,7 @@ export const eliminarDescuentoML = async (publicacion, promocion) => {
 }
 
 export const statusFlex = async(publicacion) => {
-    url = "https://api.mercadolibre.com/sites/MCO/shipping/selfservice/items/MCO"+publicacion.codigo
+    const url = "https://api.mercadolibre.com/sites/MCO/shipping/selfservice/items/MCO"+publicacion.codigo
 
     let method = 'POST';
 
