@@ -71,7 +71,7 @@ const actualizarML = async(ids) => {
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
         for(const publicacion of rows){
-            const response = undefined
+            let response = undefined
             console.log(publicacion.full_bolean)
             if(publicacion.full_bolean){
                 response = await statusFlex(publicacion);
@@ -132,7 +132,7 @@ export const actualizarMLForzado = async() => {
         console.log("actualizando");
         for(const publicacion of pubs){
             console.log("Entro", publicacion);
-            const response = undefined
+            let response = undefined
             if(publicacion.full_bolean){
                 response = await statusFlex(publicacion);
             } else {
