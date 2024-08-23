@@ -1,250 +1,111 @@
+import APIBase from './api.js'
 import axios from 'axios';
-import {
-    API_CLIENT_ML,
-    API_REFRESH_ML,
-    API_SECRET_ML
-} from '../../config.js'
 
-let TOKEN = '';
-
-export const actualizarStockML = async (publicacion) => {
-    console.log("Consulta ml")
-    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.codigo;
-
-    if(publicacion.variante) url +="/variations/"+publicacion.variante;
-
-    let options = {
-        method: 'put',
-        url,
-        contentType: 'application/json',
-        headers: {
-            Authorization: `Bearer ${TOKEN}`
-        },
-        data:JSON.stringify({ available_quantity: publicacion.stock })
+class APIMl extends APIBase{
+    constructor(credentials){
+        super('https://api.mercadolibre.com', credentials)
     }
 
-    try {
-        const response = await axios(options);
+    async actualizarStock(publicacion){
+        let url = this.baseURL+'/items/MCO'+publicacion.codigo;
 
-        if(publicacion.stock > 0) statusFlex(publicacion)
+        if(publicacion.variante) url += '/variations/'+publicacion.variante;
 
-        if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
-    } catch (error) {
-
-        if(error.response && (error.response.status === 400 || error.response.status === 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.response.statusText}
-
-        if(error.response && error.response.status === 403){
-            await token_ml();
-
-            const response = await actualizarStockML(publicacion);
-            
-            return response;
+        const options = {
+            method:'PUT',
+            url,
+            contentType: 'application/json',
+            headers: {
+                Authorization: `Bearer ${this.credentials.TOKEN}`
+            },
+            data: JSON.stringify({ available_quantity: publicacion.stock})
         }
 
-        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
+        try {
+            const response = await axios(options);
+
+            if(publicacion.stock > 0) this.flex(publicacion);
+
+            if(response.status == 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
+        } catch (error) {
+            console.log('error', error)
+            if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.response.statusText}
+            
+            if(error.response && error.response.status == 403){
+                await this.token_ml();
+
+                const response = await this.actualizarStock(publicacion);
+
+                return response;
+            }
+
+            return {status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message};
+        }
     }
+
+    async flex(publicacion){
+        let method = 'POST';
+
+        if(publicacion.stock == 0) method = 'DELETE'
+
+        let options = {
+            method,
+            url: this.baseURL+'/sites/MCO/shipping/selfservice/items/mco'+publicacion.codigo,
+            contentType: 'application/json',
+            headers: {
+                Authotization: `Bearer ${this.credentials.TOKEN}`
+            }
+        }
+
+        try{
+            const response = await axios(options);
+
+            if(response.status == 204) return {status: 'ok', producto: publicacion.codigo+"-"+publicacion.variante}
+        } catch (error){
+            if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error}
+
+            if(error.response && error.response.status == 403){
+                await this.token_ml();
     
-}
-
-export const actualizarPrecioML = async (publicacion) => {
-    let url = "https://api.mercadolibre.com/items/MCO"+publicacion.codigo;
-
-    if(publicacion.variante) url +="/variations/"+publicacion.variante;
-
-    let options = {
-        method: 'PUT',
-        url,
-        contentType: 'application/json',
-        headers: {
-            Authorization: `Bearer ${TOKEN}`
-        },
-        data: JSON.stringify({ price: publicacion.precio })
-    }
-
-    try {
-        const response = await axios(options);
-
-        console.log("response",response)
-        if(response.status === 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
-    } catch (error) {
-
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error}
-
-        if(error.response && error.response.status == 403){
-            await token_ml();
-
-            const response = await actualizarPrecioML(publicacion);
-            
-            return response;
-        }
-
-        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
-    }
-}
-
-export const actualizarDescuentoML = async (publicacion, promocion) => {
-    const url = "https://api.mercadolibre.com/seller-promotions/items/MCO"+publicacion.codigo+"?app_version=v2";
-
-    let data = {
-        deal_prince: publicacion.descuento,
-        promotion_id: promocion.id,
-        promotion_type: promocion.type
-    }
-
-    const options = {
-        method: 'POST',
-        url,
-        contentType: 'application/json',
-        headers: {
-            'Authorization': `Bearer ${TOKEN}`
-        },
-        data: JSON.stringify(data)
-    }
-
-    try {
-        const response = await axios(options);
-
-        if(response.status === 200) return {status: "Descuento agregado", producto: publicacion.codigo+"-"+publicacion.variante}
-    } catch (error) {
-
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.data.message}
-
-        if(error.response && error.response.status == 403){
-            await token_ml();
-
-            const response = await actualizarDescuentoML(publicacion);
-            
-            return response;
-        }
-
-        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
-    }
-}
-
-export const modificarDescuentoML = async (publicacion, promocion) => {
-    const url = "https://api.mercadolibre.com/seller-promotions/items/MCO"+publicacion.codigo+"?app_version=v2";
-
-    let data = {
-        deal_prince: publicacion.descuento,
-        promotion_id: promocion.id,
-        promotion_type: promocion.type
-    }
-
-    const options = {
-        method: 'PUT',
-        url,
-        contentType: 'application/json',
-        headers: {
-            'Authorization': `Bearer ${TOKEN}`
-        },
-        data: JSON.stringify(data)
-    }
-
-    try {
-        const response = await axios(options);
-
-        if(response.status === 200) return {status: "Descuento actualizado", producto: publicacion.codigo+"-"+publicacion.variante}
-    } catch (error) {
-
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.data.message}
-
-        if(error.response && error.response.status == 403){
-            await token_ml();
-
-            const response = await modificarDescuentoML(publicacion);
-            
-            return response;
-        }
-
-        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
-    }
-}
-
-export const eliminarDescuentoML = async (publicacion, promocion) => {
-    const url = "https://api.mercadolibre.com/seller-promotions/items/MCO"+publicacion.codigo+"?promotion_type="+promocion.type+"&promotion_id"+promocion.id+"?app_version=v2";
-
-    const options = {
-        method: 'DELETE',
-        url,
-        contentType: 'application/json',
-        headers: {
-            'Authorization': `Bearer ${TOKEN}`
+                const response = await this.flex(publicacion);
+                
+                return response;
+            }
+    
+            return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
         }
     }
 
-    try {
-        const response = await axios(options);
-
-        if(response.status === 200) return {status: "Descuento eliminado", producto: publicacion.codigo+"-"+publicacion.variante}
-    } catch (error) {
-
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.data.message}
-
-        if(error.response && error.response.status == 403){
-            await token_ml();
-
-            const response = await eliminarDescuentoML(publicacion);
-            
-            return response;
+    async actualizar(publicacion){
+        let response = undefined;
+        if(publicacion.full_bolean){
+            response = await this.flex(publicacion)
+        } else {
+            response = await this.actualizarStock(publicacion)
         }
 
-        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
+        return response;
+    }
+
+    async token_ml(){
+        const data = {
+            grant_type: 'refresh_token',
+            client_id: this.credentials.API_CLIENT,
+            client_secret: this.credentials.API_SECRET,
+            refresh_token: this.credentials.API_REFRESH
+        }
+
+        const options = {
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            headers:{
+                accept: 'application/json'
+            },
+            body: JSON.stringify(data)
+        }
+
+        await fetch(this.baseURL+'/oauth/token', options).then(res => res.json()).then(response => this.credentials.TOKEN = response.access_token).catch(error => console.log('Fallo crear token', error))
     }
 }
 
-export const statusFlex = async(publicacion) => {
-    const url = "https://api.mercadolibre.com/sites/MCO/shipping/selfservice/items/MCO"+publicacion.codigo
-
-    let method = 'POST';
-
-    if(publicacion.stock == 0) method = 'DELETE'
-
-    let options = {
-        method,
-        url, 
-        contentType: 'application/json',
-        headers: {
-            Authorization: `Bearer ${TOKEN}`
-        }
-    }
-
-    console.log(publicacion);
-    try {
-        const response = await axios(options);
-
-        if(response.status === 200 || response.status == 204) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
-    } catch (error) {
-
-        if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error}
-
-        if(error.response && error.response.status == 403){
-            await token_ml();
-
-            const response = await statusFlex(publicacion);
-            
-            return response;
-        }
-
-        return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
-    }
-}
-
-const token_ml = async() => {
-    const data = {
-        grant_type: 'refresh_token',
-        client_id: API_CLIENT_ML,
-        client_secret: API_SECRET_ML,
-        refresh_token: API_REFRESH_ML
-    }
-
-    const options = {
-        method: 'POST',
-        contentType: 'application/x-www-form-urlencoded',
-        headers: {
-            accept: 'application/json'
-        },
-        body: JSON.stringify(data)
-    }
-
-    await fetch("https://api.mercadolibre.com/oauth/token", options).then(res => res.json()).then(response => TOKEN = response.access_token);
-}
+export default APIMl;

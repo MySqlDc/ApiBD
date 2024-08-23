@@ -19,6 +19,9 @@ export const API_CLIENT_ML = process.env.API_CLIENT_ML;
 export const API_SECRET_ML = process.env.API_SECRET_ML;
 export const API_REFRESH_ML = process.env.API_REFRESH_ML;
 
+//Datos API MercadoLibre Medellin
+export const API_REFRESH_ML_MED = process.env.API_REFRESH_ML_MED;
+
 //Datos API Rappi
 export const API_KEY_RAPPI = process.env.API_KEY_RAPPI;
 export const STORE_ID_RAPPI = process.env.STORE_ID_RAPPI;

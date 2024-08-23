@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { donwloadFile, downloadFile, getPedidos, update_ml, updatePricePublicacion, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
+import { donwloadFile, downloadFile, getPedidos, update_ml, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
 
 const router = Router()
 
@@ -14,8 +14,6 @@ router.get('/rappi/full', updateRappi);
 router.get('/rappi/full/medellin', updateRappiMed);
 
 router.post('/actualizar/stock/:sku', updateStockPublicacion);
-
-router.post('/actualizar/precio/:id', updatePricePublicacion);
 
 router.post('/actualizarStock', updateStockSomes);
 
