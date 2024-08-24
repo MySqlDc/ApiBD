@@ -64,7 +64,6 @@ export const actualizarPublicaciones = async (data) => {
 const actualizarML = async(ids) => {
     const client = await pool.connect();
 
-    console.log('entro')
     try {
         await client.query('BEGIN');
 

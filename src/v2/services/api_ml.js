@@ -26,6 +26,7 @@ class APIMl extends APIBase{
 
             if(publicacion.stock > 0) await this.flex(publicacion, flex);
 
+            console.log({status: "ok", producto: publicacion.codigo+"-"+publicacion.variante})
             if(response.status == 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
         } catch (error) {
             if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.response.statusText}
@@ -38,6 +39,7 @@ class APIMl extends APIBase{
                 return response;
             }
 
+            console.error({status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message})
             return {status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message};
         }
     }
