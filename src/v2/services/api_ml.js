@@ -24,17 +24,16 @@ class APIMl extends APIBase{
         try {
             const response = await axios(options);
 
-            if(publicacion.stock > 0 && flex) this.flex(publicacion);
+            if(publicacion.stock > 0) await this.flex(publicacion, flex);
 
             if(response.status == 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
         } catch (error) {
-            console.log('error', error)
             if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.response.statusText}
             
             if(error.response && error.response.status == 403){
                 await this.token_ml();
 
-                const response = await this.actualizarStock(publicacion);
+                const response = await this.actualizarStock(publicacion, flex);
 
                 return response;
             }
@@ -43,19 +42,21 @@ class APIMl extends APIBase{
         }
     }
 
-    async flex(publicacion){
+    async flex(publicacion, flex = true){
         let method = 'POST';
 
-        if(publicacion.stock == 0) method = 'DELETE'
+        if(!flex || publicacion.stock == 0) method = 'DELETE'
 
         let options = {
             method,
-            url: this.baseURL+'/sites/MCO/shipping/selfservice/items/mco'+publicacion.codigo,
+            url: this.baseURL+'/sites/MCO/shipping/selfservice/items/MCO'+publicacion.codigo,
             contentType: 'application/json',
             headers: {
                 Authorization: `Bearer ${this.credentials.TOKEN}`
             }
         }
+
+        console.log('options', options);
 
         try{
             const response = await axios(options);
@@ -67,7 +68,7 @@ class APIMl extends APIBase{
             if(error.response && error.response.status == 403){
                 await this.token_ml();
     
-                const response = await this.flex(publicacion);
+                const response = await this.flex(publicacion, flex);
                 
                 return response;
             }
@@ -78,9 +79,9 @@ class APIMl extends APIBase{
 
     async actualizar(publicacion, flex = true){
         let response = undefined;
-        if(publicacion.full_bolean && flex){
-            response = await this.flex(publicacion)
-        } else if(!publicacion.full_bolean) {
+        if(publicacion.full_bolean){
+            response = await this.flex(publicacion, flex)
+        } else{
             response = await this.actualizarStock(publicacion, flex)
         }
 

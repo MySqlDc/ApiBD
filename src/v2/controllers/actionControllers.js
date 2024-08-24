@@ -1,7 +1,7 @@
 import fs from 'fs';
 import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
-import { actualizarMLForzado, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
+import { actualizarMLFijo, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
 import { actualizarStockVTEX } from '../services/api_vtex.js';
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
