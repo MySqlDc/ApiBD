@@ -79,7 +79,7 @@ const actualizarML = async(ids) => {
             let response = undefined;
             if(publicacion.medellin){
                 let flex = true;
-                if(publicacion.stock > publicacion.stock_dim && publicacion.stock_dim == 0){
+                if(publicacion.stock_dim == 0 && publicacion.stock > publicacion.stock_dim){
                     flex = false;
                 } else {
                     publicacion.stock = publicacion.stock_dim;
@@ -127,7 +127,7 @@ export const actualizarMLFijo = async() => {
         const { rows } = await client.query('SELECT * FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id');
 
         const pubs = rows.map(row => {
-            return { codigo: row.codigo, variante: row.variante, stock: row.cantidad, full_bolean: row.full_bolean}
+            return { codigo: row.codigo, variante: row.variante, stock: row.cantidad, full_bolean: row.full_bolean, medellin: row.medellin}
         })
 
         for(const publicacion of pubs){
