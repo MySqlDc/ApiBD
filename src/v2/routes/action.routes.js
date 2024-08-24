@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { donwloadFile, downloadFile, getPedidos, update_ml, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
+import { agregarFijos, donwloadFile, downloadFile, getPedidos, update_ml, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
 
 const router = Router()
 
@@ -22,5 +22,7 @@ router.put('/actualizarStock', updateStockFile);
 router.get('/obtenerDatos', getPedidos);
 
 router.get('/forzar/ml', update_ml);
+
+router.post('/fijos', agregarFijos);
 
 export default router

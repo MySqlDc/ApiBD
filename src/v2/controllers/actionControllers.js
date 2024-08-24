@@ -5,6 +5,7 @@ import { actualizarMLFijo, actualizarPublicaciones, actualizarRappiFull } from '
 import { actualizarStockVTEX } from '../services/api_vtex.js';
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
+import { finished } from 'stream';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
@@ -224,4 +225,51 @@ export const update_ml = async (req, res, next) => {
         console.log(error);
         next(error);
     }
+}
+
+export const agregarFijos = async (req, res, next) => {
+    const { datos } = req.body;
+
+    try {
+        const errores = [];
+        const ok = [];
+        for(const dato of datos){
+            const client = await pool.connect();
+            try{
+                await client.query('BEGIN')
+                const {rows} = await client.query('SELECT id FROM publicaciones WHERE plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
+
+                let query = 'INSERT INTO publicaciones_fijas (publicacion_id, cantidad) VALUES';
+                let coma = false
+
+                for(const row of rows){
+                    if(coma){
+                        query += ','
+                    } else {
+                        coma = !coma
+                    }
+                    query += '('+row.id+','+dato.cantidad+')';
+                }
+
+                await client.query(query);
+
+                const ids = rows.map(row => row.id);
+
+                await client.query('UPDATE publicaciones SET active = false WHERE active = true AND id = ANY($1)', [ids]);
+                ok.push(dato);
+                await client.query('COMMIT')
+            } catch (error) {
+                await client.query('ROLLBACK')
+                console.log(error);
+                errores.push(dato);
+            } finally {
+                client.release()
+            }
+        }
+
+        res.send({confirmacion: 'Proceso terminados', ok, errores})
+    } catch (error) {
+        console.log(error);
+        next(error);
+    } 
 }
