@@ -53,7 +53,7 @@ class APIMl extends APIBase{
             url: this.baseURL+'/sites/MCO/shipping/selfservice/items/mco'+publicacion.codigo,
             contentType: 'application/json',
             headers: {
-                Authotization: `Bearer ${this.credentials.TOKEN}`
+                Authorization: `Bearer ${this.credentials.TOKEN}`
             }
         }
 

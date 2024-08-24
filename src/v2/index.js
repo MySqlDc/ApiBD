@@ -1,6 +1,5 @@
 import express from 'express'
 import cron from 'node-cron'
-import cors from 'cors'
 
 import productRoutes from './routes/product.routes.js'
 import skuRoutes from './routes/sku.routes.js'
@@ -18,7 +17,6 @@ import { createOrders } from './services/actualizarStock.js'
 const router = express.Router();
 
 router.use(express.json());
-router.use(cors({origin: 'http://localhost:3000'}))
 router.use(productRoutes);
 router.use(skuRoutes);
 router.use(kitRoutes);
