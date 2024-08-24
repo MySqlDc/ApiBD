@@ -64,14 +64,6 @@ class APIMl extends APIBase{
             if(response.status == 204) return {status: 'ok', producto: publicacion.codigo+"-"+publicacion.variante}
         } catch (error){
             if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error}
-
-            if(error.response && error.response.status == 403){
-                await this.token_ml();
-    
-                const response = await this.flex(publicacion, flex);
-                
-                return response;
-            }
     
             return { status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message };
         }
