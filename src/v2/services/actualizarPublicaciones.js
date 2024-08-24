@@ -78,7 +78,14 @@ const actualizarML = async(ids) => {
         for(const publicacion of rows){
             let response = undefined;
             if(publicacion.medellin){
-                response = await APIMl_Med.actualizar(publicacion);
+                let flex = true;
+                if(publicacion.stock > publicacion.stock_dim && publicacion.stock_dim == 0){
+                    flex = false;
+                } else {
+                    publicacion.stock = publicacion.stock_dim;
+                }
+
+                response = await APIMl_Med.actualizar(publicacion, flex);
             } else {
                 response = await APIMl_Bog.actualizar(publicacion);
             }
@@ -105,6 +112,47 @@ const actualizarML = async(ids) => {
         return {status: "error"};
     } finally {
         client.release();
+    }
+}
+
+export const actualizarMLFijo = async() => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN')
+
+        const dataOk = [];
+        const dataErr = [];
+
+        const { rows } = await client.query('SELECT * FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id');
+
+        const pubs = rows.map(row => {
+            return { codigo: row.codigo, variante: row.variante, stock: row.cantidad, full_bolean: row.full_bolean}
+        })
+
+        for(const publicacion of pubs){
+            const response = APIMl_Bog.actualizar(publicacion);
+
+            if(response.status === "ok"){
+                dataOk.push(response);continue;
+            } else {
+                console.log("Error", publicacion);
+                dataErr.push(response);
+                continue;
+            }
+        }
+
+        await client.query('COMMIT');
+
+        console.log('actualizados', dataOk);
+        console.log('error', dataErr);
+        return {status: "ok"};
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.log('ml fallo', error);
+        return {status: "error"};
+    } finally {
+        client.release()
     }
 }
 

@@ -1,5 +1,6 @@
 import express from 'express'
 import cron from 'node-cron'
+import cors from 'cors'
 
 import productRoutes from './routes/product.routes.js'
 import skuRoutes from './routes/sku.routes.js'
@@ -10,13 +11,14 @@ import actionRoutes from './routes/action.routes.js'
 import facturaRoutes from './routes/factura.routes.js'
 import brandRoutes from './routes/marca.routes.js'
 import { handleError } from './middlewares/errorHandler.js'
-import { actualizar } from './services/actualizarPublicaciones.js'
+import { actualizar, actualizarMLFijo } from './services/actualizarPublicaciones.js'
 import { actualizarDatosGeneral, actualizarReservados } from './database/queries/productos.js'
 import { createOrders } from './services/actualizarStock.js'
 
 const router = express.Router();
 
 router.use(express.json());
+router.use(cors({origin: 'http://localhost:3000'}))
 router.use(productRoutes);
 router.use(skuRoutes);
 router.use(kitRoutes);
@@ -45,6 +47,11 @@ cron.schedule('37 * * * *', async() => {
     await createOrders();
     await actualizarReservados();
     console.log("Fin peticion pedidos")
+})
+
+cron.schedule('0 21 * * *', async() => {
+    await actualizarMLFijo();
+    console.log('Fijos')
 })
 
 export default router;

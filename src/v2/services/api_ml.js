@@ -1,4 +1,4 @@
-import APIBase from './api.js'
+import APIBase from '../models/api.js'
 import axios from 'axios';
 
 class APIMl extends APIBase{
@@ -6,7 +6,7 @@ class APIMl extends APIBase{
         super('https://api.mercadolibre.com', credentials)
     }
 
-    async actualizarStock(publicacion){
+    async actualizarStock(publicacion, flex){
         let url = this.baseURL+'/items/MCO'+publicacion.codigo;
 
         if(publicacion.variante) url += '/variations/'+publicacion.variante;
@@ -24,7 +24,7 @@ class APIMl extends APIBase{
         try {
             const response = await axios(options);
 
-            if(publicacion.stock > 0) this.flex(publicacion);
+            if(publicacion.stock > 0 && flex) this.flex(publicacion);
 
             if(response.status == 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante}
         } catch (error) {
@@ -76,12 +76,12 @@ class APIMl extends APIBase{
         }
     }
 
-    async actualizar(publicacion){
+    async actualizar(publicacion, flex = true){
         let response = undefined;
-        if(publicacion.full_bolean){
+        if(publicacion.full_bolean && flex){
             response = await this.flex(publicacion)
-        } else {
-            response = await this.actualizarStock(publicacion)
+        } else if(!publicacion.full_bolean) {
+            response = await this.actualizarStock(publicacion, flex)
         }
 
         return response;
