@@ -131,7 +131,12 @@ export const actualizarMLFijo = async() => {
         })
 
         for(const publicacion of pubs){
-            const response = APIMl_Bog.actualizar(publicacion);
+            let response = undefined;
+            if(publicacion.medellin){
+                response = await APIMl_Med.actualizar(publicacion, false);
+            } else {
+                response = await APIMl_Bog.actualizar(publicacion);
+            }
 
             if(response.status === "ok"){
                 dataOk.push(response);continue;
