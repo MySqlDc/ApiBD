@@ -56,8 +56,6 @@ class APIMl extends APIBase{
             }
         }
 
-        console.log('options', options);
-
         try{
             const response = await axios(options);
 
