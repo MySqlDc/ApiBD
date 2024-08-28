@@ -9,7 +9,7 @@ router.get('/publicaciones/:id', getPublication);
 
 router.get('/publicaciones/plataforma/:plataforma', getPublicationPlatform);
 
-router.get('/publicaciones/fijas', getPublicationFijas);
+router.get('/publicaciones/fijas/get', getPublicationFijas);
 
 router.post('/publicaciones', createPublication);
 
