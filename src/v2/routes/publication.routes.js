@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPublication, deletePublication, getAllPublication, updatePublication, getPublication, activePublication, inactivePublication, getPublicationPlatform } from '../controllers/publicationControllers.js';
+import { createPublication, deletePublication, getAllPublication, updatePublication, getPublication, activePublication, inactivePublication, getPublicationPlatform, getPublicationFijas } from '../controllers/publicationControllers.js';
 
 const router = Router();
 
@@ -8,6 +8,8 @@ router.get('/publicaciones', getAllPublication);
 router.get('/publicaciones/:id', getPublication);
 
 router.get('/publicaciones/plataforma/:plataforma', getPublicationPlatform);
+
+router.get('/publicaciones/fijas', getPublicationFijas);
 
 router.post('/publicaciones', createPublication);
 

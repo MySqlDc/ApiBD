@@ -219,6 +219,7 @@ export const getPedidos = async (req, res, next) => {
 
 export const update_ml = async (req, res, next) => {
     try {
+        console.log('inicio')
         await actualizarMLFijo();
         res.send({confirmacion: "Actualizar datos"});
     } catch (error) {

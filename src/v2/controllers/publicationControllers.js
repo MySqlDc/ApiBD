@@ -62,6 +62,26 @@ export const getPublication = async (req, res, next) => {
     }
 }
 
+export const getPublicationFijas = async (req, res, next) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const { rows: publicaciones } = await client.query('SELECT id, codigo, variante, cantidad, medellin FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id')
+
+        if (publicaciones.length == 0) throw new Error('No hay publicaciones asociadas a este parametro');
+
+        await client.query('COMMIT');
+        res.status(200).send({data:publicaciones})
+    } catch (error){
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+}
+
 export const createPublication = async (req, res, next) => {
     const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin, full } = req.body;
     const client = await pool.connect();

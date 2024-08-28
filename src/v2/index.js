@@ -48,8 +48,9 @@ cron.schedule('37 * * * *', async() => {
 })
 
 cron.schedule('0 21 * * *', async() => {
+    console.log('inicio fijos');
     await actualizarMLFijo();
-    console.log('Fijos')
+    console.log('Fijos');
 })
 
 export default router;
