@@ -47,10 +47,4 @@ cron.schedule('37 * * * *', async() => {
     console.log("Fin peticion pedidos")
 })
 
-cron.schedule('0 21 * * *', async() => {
-    console.log('inicio fijos');
-    await actualizarMLFijo();
-    console.log('Fijos');
-})
-
 export default router;
