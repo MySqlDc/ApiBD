@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { agregarFijos, donwloadFile, downloadFile, getPedidos, update_ml, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
+import { agregarFijos, donwloadFile, downloadFile, getPedidos, update_ml, updatefijos, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
 
 const router = Router()
 
@@ -13,16 +13,18 @@ router.get('/rappi/full', updateRappi);
 
 router.get('/rappi/full/medellin', updateRappiMed);
 
-router.post('/actualizar/stock/:sku', updateStockPublicacion);
-
-router.post('/actualizarStock', updateStockSomes);
-
-router.put('/actualizarStock', updateStockFile);
-
 router.get('/obtenerDatos', getPedidos);
 
 router.get('/forzar/ml', update_ml);
 
+router.post('/actualizar/stock/:sku', updateStockPublicacion);
+
+router.post('/actualizarStock', updateStockSomes);
+
 router.post('/fijos', agregarFijos);
+
+router.put('/publicaciones/fijas/put', updatefijos);
+
+router.put('/actualizarStock', updateStockFile);
 
 export default router

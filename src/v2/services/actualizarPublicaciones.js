@@ -1,12 +1,13 @@
 import { pool } from "../database/conection.js";
-import { actualizarStockFalabella } from "./api_falabella.js";
+import APIFalabella from "./api_falabella.js";
 import APIMl from "./api_ml.js";
 import { actualizarStockRappi } from "./api_rappi.js";
 import { actualizarStockVTEX } from "./api_vtex.js";
-import { API_CLIENT_ML, API_REFRESH_ML, API_REFRESH_ML_MED, API_SECRET_ML } from "../../config.js";
+import { API_CLIENT_ML, API_KEY_FALABELLA, API_REFRESH_ML, API_REFRESH_ML_MED, API_SECRET_ML, USER_FALABELLA } from "../../config.js";
 
 const APIMl_Bog = new APIMl({TOKEN: '', API_CLIENT: API_CLIENT_ML, API_SECRET: API_SECRET_ML, API_REFRESH: API_REFRESH_ML})
 const APIMl_Med = new APIMl({TOKEN: '', API_CLIENT: API_CLIENT_ML, API_SECRET: API_SECRET_ML, API_REFRESH: API_REFRESH_ML_MED})
+const APIFala = new APIFalabella({USER: USER_FALABELLA, API_KEY: API_KEY_FALABELLA})
 
 export const actualizar = async (urgente = false) => {
     const client = await pool.connect();
@@ -317,7 +318,7 @@ const actualizarFalabella = async(ids) => {
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
         
-        const response = await actualizarStockFalabella(rows);
+        const response = await APIFala.actualizarStock(rows);
 
         await client.query('COMMIT');
         console.log('falabella actualizado');

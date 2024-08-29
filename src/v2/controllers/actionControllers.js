@@ -5,7 +5,6 @@ import { actualizarMLFijo, actualizarPublicaciones, actualizarRappiFull } from '
 import { actualizarStockVTEX } from '../services/api_vtex.js';
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
-import { finished } from 'stream';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
@@ -261,7 +260,7 @@ export const agregarFijos = async (req, res, next) => {
                 await client.query('COMMIT')
             } catch (error) {
                 await client.query('ROLLBACK')
-                console.log(error);
+                console.log('errores publicaciones fijas', error);
                 errores.push(dato);
             } finally {
                 client.release()
@@ -273,4 +272,29 @@ export const agregarFijos = async (req, res, next) => {
         console.log(error);
         next(error);
     } 
+}
+
+export const updatefijos = async (req, res, next) => {
+    const {dato} = req.body;
+
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const {rows} = await client.query('UPDATE publicaciones_fijas SET cantidad = $1 WHERE publicacion_id = ANY(SELECT publicaciones.id FROM publicaciones INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones.producto_id WHERE sku = $2) RETURNING *', dato)
+
+        console.log(rows)
+        if (rows.length == 0) throw new Error('No se actualizo');
+
+
+        await client.query('COMMIT')
+        res.send({confirmacion: 'Update terminado'})
+    } catch (error) {
+        await client.query('ROLLBACK')
+        console.log('Error updatefijos', error);
+        next(error)
+    } finally {
+        client.release()
+    }
 }
