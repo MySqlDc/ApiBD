@@ -237,7 +237,7 @@ export const agregarFijos = async (req, res, next) => {
             const client = await pool.connect();
             try{
                 await client.query('BEGIN')
-                const {rows} = await client.query('SELECT id FROM publicaciones WHERE plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
+                const {rows} = await client.query('SELECT id FROM publicaciones FULL OUTER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE publicacion_id IS NULL AND plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
 
                 let query = 'INSERT INTO publicaciones_fijas (publicacion_id, cantidad) VALUES';
                 let coma = false
@@ -251,6 +251,7 @@ export const agregarFijos = async (req, res, next) => {
                     query += '('+row.id+','+dato.cantidad+')';
                 }
 
+                console.log(query);
                 await client.query(query);
 
                 const ids = rows.map(row => row.id);
