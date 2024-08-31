@@ -10,7 +10,7 @@ import actionRoutes from './routes/action.routes.js'
 import facturaRoutes from './routes/factura.routes.js'
 import brandRoutes from './routes/marca.routes.js'
 import { handleError } from './middlewares/errorHandler.js'
-import { actualizar, actualizarMLFijo } from './services/actualizarPublicaciones.js'
+import { actualizar, actualizarFijo } from './services/actualizarPublicaciones.js'
 import { actualizarDatosGeneral, actualizarReservados } from './database/queries/productos.js'
 import { createOrders } from './services/actualizarStock.js'
 
@@ -45,6 +45,12 @@ cron.schedule('37 * * * *', async() => {
     await createOrders();
     await actualizarReservados();
     console.log("Fin peticion pedidos")
+})
+
+cron.schedule('0 21 * * *', async() => {
+    console.log("comenzo forzado");
+    await actualizarFijo();
+    console.log("termino forzado");
 })
 
 export default router;

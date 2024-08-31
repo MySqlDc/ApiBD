@@ -68,7 +68,7 @@ export const getPublicationFijas = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows: publicaciones } = await client.query('SELECT id, codigo, variante, cantidad, medellin FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id')
+        const { rows: publicaciones } = await client.query('SELECT id, codigo, variante, cantidad, medellin FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3')
 
         if (publicaciones.length == 0) throw new Error('No hay publicaciones asociadas a este parametro');
 

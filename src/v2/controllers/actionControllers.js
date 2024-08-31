@@ -1,7 +1,7 @@
 import fs from 'fs';
 import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
-import { actualizarMLFijo, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
+import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
 import { actualizarStockVTEX } from '../services/api_vtex.js';
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
@@ -219,7 +219,7 @@ export const getPedidos = async (req, res, next) => {
 export const update_ml = async (req, res, next) => {
     try {
         console.log('inicio')
-        await actualizarMLFijo();
+        await actualizarFijo();
         res.send({confirmacion: "Actualizar datos"});
     } catch (error) {
         console.log(error);
@@ -237,7 +237,7 @@ export const agregarFijos = async (req, res, next) => {
             const client = await pool.connect();
             try{
                 await client.query('BEGIN')
-                const {rows} = await client.query('SELECT id FROM publicaciones FULL OUTER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE publicacion_id IS NULL AND plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
+                const {rows} = await client.query('SELECT id FROM publicaciones FULL OUTER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE publicacion_id IS NULL AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
 
                 let query = 'INSERT INTO publicaciones_fijas (publicacion_id, cantidad) VALUES';
                 let coma = false

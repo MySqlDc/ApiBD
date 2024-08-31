@@ -115,100 +115,24 @@ const actualizarML = async(ids) => {
     }
 }
 
-export const actualizarMLFijo = async() => {
+export const actualizarFijo = async() => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN')
 
-        const dataOk = [];
-        const dataErr = [];
+        const { rows } = await client.query('SELECT codigo, cantidad FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1');
 
-        const { rows } = await client.query('SELECT * FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id');
-
-        const pubs = rows.map(row => {
-            return { codigo: row.codigo, variante: row.variante, stock: row.cantidad, full_bolean: row.full_bolean, medellin: row.medellin}
-        })
-
-        for(const publicacion of pubs){
-            let response = undefined;
-            console.log(publicacion)
-            if(publicacion.medellin){
-                response = await APIMl_Med.actualizar(publicacion, false);
-            } else {
-                response = await APIMl_Bog.actualizar(publicacion);
-            }
-
-            if(response.status === "ok"){
-                dataOk.push(response);continue;
-            } else {
-                console.log("Error", publicacion);
-                dataErr.push(response);
-                continue;
-            }
-        }
+        const response = await APIFala.actualizarStock(rows);
 
         await client.query('COMMIT');
-
-        console.log('actualizados', dataOk);
-        console.log('error', dataErr);
-        return {status: "ok"};
+        return response;
     } catch (error) {
         await client.query('ROLLBACK');
         console.log('ml fallo', error);
         return {status: "error"};
     } finally {
         client.release()
-    }
-}
-
-export const actualizarMLForzado = async() => {
-    const client = await pool.connect();
-
-    try {
-        console.log("inicio")
-        await client.query('BEGIN');
-
-        const dataOk = [];
-        const dataErr = [];
-        const { rows } = await client.query("SELECT codigo, variante, stock, full_bolean FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND full_bolean = true AND medellin = false");
-        //const { rows } = await client.query("SELECT codigo, variante, stock, full_bolean FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{898633316,898677800,898669036,898594464,1157055570,1237265532,1157034129,898562103,1157000783,898562474,904730734,1157000772,898614339,898790250,898614437,898676434,1210942090,1157008250,1899867062,913156751,913202032,1205347163,1206951958,1205369256,1205289480,1205371849,1204207217,2002052242,2209216824,1354846631,1205282136,1205378016,2223796628,1205361124,2183389324,1205370901,1375876909,1412637377,1412678361,2177833486,2617143516,2617181916}')");
-        //const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '823981694'");
-        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538731.7702045538878,7702045593914,7702045900903}')");
-        //const {rows} = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE codigo = '851486802'");
-        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN sku_producto ON sku_producto.producto_id = publicaciones_stock_view.producto_id WHERE plataforma_id = 3 AND sku_producto.sku = ANY('{7702045538533,7702045538625,7702045552362,7702045146127,7702045538380,7702045538953,7702045538847,7702045538717,7702045538595,7702045538519,7702045538854,7702045326819}')");
-        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view INNER JOIN productos ON productos.id = publicaciones_stock_view.producto_id WHERE publicaciones_stock_view.codigo = '503263690' AND publicaciones_stock_view.active = false");
-        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id = 3 AND producto_id = ANY(SELECT id FROM productos WHERE (nombre LIKE '%Evolution%' OR nombre LIKE '%Koleston Perfect%') AND unidades < 2 AND tipo_id = 1)");
-        //const { rows } = await client.query("SELECT codigo, variante, stock FROM publicaciones_stock_view WHERE plataforma_id =3 AND producto_id = ANY(SELECT id FROM productos WHERE nombre LIKE '%Royal%' AND nombre LIKE '%Tono%' AND (nombre LIKE '%77%' OR nombre LIKE '%88%' OR nombre LIKE '%99%' OR nombre LIKE '%-0%' OR nombre LIKE '%00%' OR nombre LIKE '%-1%') AND NOT nombre LIKE '%1-1%' AND tipo_id = 1)");
-
-        const pubs = rows.map(row => {
-            return { codigo: row.codigo, variante: row.variante, stock: 0, full_bolean: true}
-        })
-
-        console.log("actualizando");
-        for(const publicacion of pubs){
-            const response = APIMl_Bog.actualizar(publicacion);
-
-            if(response.status === "ok"){
-                dataOk.push(response);continue;
-            } else {
-                console.log("Error", publicacion);
-                dataErr.push(response);
-                continue;
-            }
-        }
-
-        await client.query('COMMIT');
-
-        console.log('actualizados', dataOk);
-        console.log('error', dataErr);
-        return {status: "ok"};
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.log('ml fallo', error);
-        return {status: "error"};
-    } finally {
-        client.release();
     }
 }
 
