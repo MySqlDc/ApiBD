@@ -272,7 +272,42 @@ export const agregarFijos = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         next(error);
-    } 
+    }
+}
+
+export const eliminarFijos = async(req, res, next) => {
+    const { datos } = req.body;
+
+    try {
+        const errores = [];
+        const ok = [];
+        for(const dato of datos){
+            const client = await pool.connect();
+            try{
+                await client.query('BEGIN')
+                const {rows} = await client.query('SELECT id FROM publicaciones WHERE plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
+
+                const ids = rows.map(row => row.id);
+        
+                await client.query('DELETE FROM publicaciones_fijas WHERE publicacion_id = ANY($1)', [ids]);
+
+                await client.query('UPDATE publicaciones SET active = true WHERE active = false AND id = ANY($1)', [ids]);
+                ok.push(dato);
+                await client.query('COMMIT')
+            } catch (error) {
+                await client.query('ROLLBACK')
+                console.log('errores publicaciones fijas', error);
+                errores.push(dato);
+            } finally {
+                client.release()
+            }
+        }
+
+        res.send({confirmacion: 'Proceso terminados', ok, errores})
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
 }
 
 export const updatefijos = async (req, res, next) => {

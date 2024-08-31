@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { agregarFijos, donwloadFile, downloadFile, getPedidos, update_ml, updatefijos, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
+import { agregarFijos, donwloadFile, downloadFile, eliminarFijos, getPedidos, update_ml, updatefijos, updateRappi, updateRappiMed, updateStock, updateStockFile, updateStockPublicacion, updateStockSomes } from '../controllers/actionControllers.js';
 
 const router = Router()
 
@@ -26,5 +26,7 @@ router.post('/fijos', agregarFijos);
 router.put('/publicaciones/fijas/put', updatefijos);
 
 router.put('/actualizarStock', updateStockFile);
+
+router.delete('/fijos', eliminarFijos);
 
 export default router
