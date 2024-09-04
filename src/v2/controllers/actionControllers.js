@@ -240,6 +240,8 @@ export const agregarFijos = async (req, res, next) => {
                 await client.query('BEGIN')
                 const {rows} = await client.query('SELECT id FROM publicaciones FULL OUTER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE publicacion_id IS NULL AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
 
+                if(rows.length == 0) continue;
+
                 let query = 'INSERT INTO publicaciones_fijas (publicacion_id, cantidad) VALUES';
                 let coma = false
 
