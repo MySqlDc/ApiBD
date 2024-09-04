@@ -2,7 +2,6 @@ import fs from 'fs';
 import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
 import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
-import { actualizarStockVTEX } from '../services/api_vtex.js';
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
 
@@ -70,26 +69,28 @@ export const updateStockPublicacion = async(req, res, next) => {
     const { cantidad } = req.body;
     const client = await pool.connect();
 
-    try {
-        await client.query('BEGIN');
-        const {rows} = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 5 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [sku]);
 
-        if(rows.length === 0) throw new Error('No existe una publicacion');
+    res.status(200).send({confirmacion: "funcionalidad por terminar"});
+    // try {
+    //     await client.query('BEGIN');
+    //     const {rows} = await client.query('SELECT * FROM publicaciones_stock_view WHERE producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [sku]);
 
-        if(rows[0].stock === cantidad) throw new Error('El valor es el mismo');
+    //     if(rows.length === 0) throw new Error('No existe una publicacion');
 
-        const response = await actualizarStockVTEX(rows[0]);
+    //     if(rows[0].stock === cantidad) throw new Error('El valor es el mismo');
 
-        if(response.status === 'error') throw new Error('error al actualizar publicacion '+response.mensaje);
+    //     const response = await actualizarPublicaciones(rows);
 
-        await client.query('COMMIT');
-        res.status(200).send({confirmacion: "Actualizado", data: rows[0]});
-    } catch (error) {
-        await client.query('ROLLBACK');
-        next(error);
-    } finally {
-        client.release();
-    }
+    //     if(response.status === 'error') throw new Error('error al actualizar publicacion '+response.mensaje);
+
+    //     await client.query('COMMIT');
+    //     res.status(200).send({confirmacion: "Actualizado", data: rows[0]});
+    // } catch (error) {
+    //     await client.query('ROLLBACK');
+    //     next(error);
+    // } finally {
+    //     client.release();
+    // }
 }
 
 export const updateStockSomes = async (req, res, next) => {

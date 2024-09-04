@@ -28,7 +28,7 @@ router.use(brandRoutes);
 
 router.use(handleError);
 
-cron.schedule('0 13 * * *', async() => {
+cron.schedule('0 18 * * *', async() => {
     console.log("comenzo forzado");
     await actualizarFijo();
     console.log("termino forzado");

@@ -1,13 +1,17 @@
+import { API_CLIENT_ML, API_KEY_FALABELLA, API_KEY_VTEX, API_REFRESH_ML, API_REFRESH_ML_MED, API_SECRET_ML, STORE_NAME_VTEX, TOKEN_VTEX, USER_FALABELLA } from "../../config.js";
+
 import { pool } from "../database/conection.js";
+import { actualizarStockRappi } from "./api_rappi.js";
+
 import APIFalabella from "./api_falabella.js";
 import APIMl from "./api_ml.js";
-import { actualizarStockRappi } from "./api_rappi.js";
-import { actualizarStockVTEX } from "./api_vtex.js";
-import { API_CLIENT_ML, API_KEY_FALABELLA, API_REFRESH_ML, API_REFRESH_ML_MED, API_SECRET_ML, USER_FALABELLA } from "../../config.js";
+import APIVTEX from "./api_vtex.js";
+
 
 const APIMl_Bog = new APIMl({TOKEN: '', API_CLIENT: API_CLIENT_ML, API_SECRET: API_SECRET_ML, API_REFRESH: API_REFRESH_ML})
 const APIMl_Med = new APIMl({TOKEN: '', API_CLIENT: API_CLIENT_ML, API_SECRET: API_SECRET_ML, API_REFRESH: API_REFRESH_ML_MED})
 const APIFala = new APIFalabella({USER: USER_FALABELLA, API_KEY: API_KEY_FALABELLA})
+const APIAddi = new APIVTEX({STORE_NAME: STORE_NAME_VTEX, API_KEY: API_KEY_VTEX, TOKEN: TOKEN_VTEX})
 
 export const actualizar = async (urgente = false) => {
     const client = await pool.connect();
@@ -121,9 +125,13 @@ export const actualizarFijo = async() => {
     try {
         await client.query('BEGIN')
 
-        const { rows } = await client.query('SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1');
+        const { rows: Falabella } = await client.query('SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1');
 
-        const response = await APIFala.actualizarStock(rows);
+        await APIFala.actualizarStock(Falabella);
+
+        const { rows: Addi } = await client.query('SELECT ')
+
+        await APIAddi.actualizarStock(Addi);
 
         await client.query('COMMIT');
         return response;
@@ -150,7 +158,7 @@ export const actualizarAddi = async (ids) => {
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
         for(const publicacion of rows){
-            const response = await actualizarStockVTEX(publicacion);
+            const response = await APIAddi.actualizarStock(publicacion);
             console.log(response);
 
             if(!response) {
@@ -263,12 +271,12 @@ const respuestaGeneral = (responseML, responseRappi, responseFalabella) => {
         return {status: "error", mensaje: "No se actualizo ninguna plataforma"}
     }else if(responseML.status === "error"){
         if(responseRappi.status === "ok" && responseFalabella.status === "ok"){
-            return {status: "warning", mensaje: "Se actualizo Falabella y Rappi"}
+            return {status: "warning", mensaje: "Se actualizo Falabella y Addi"}
         }
         if(responseRappi.status === "error"){
             return {status: "warning", mensaje: "Solo se actualizo Falabella"}
         } else {
-            return {status: "warning", mensaje: "Solo se actualizo Rappi"}
+            return {status: "warning", mensaje: "Solo se actualizo Addi"}
         }
     } else {
         if(responseRappi.status === "error" && responseFalabella.status === "error"){
@@ -277,7 +285,7 @@ const respuestaGeneral = (responseML, responseRappi, responseFalabella) => {
         if(responseRappi.status === "error"){
             return {status: "warning", mensaje: "Se actualizo Mercado Libre y Falabella"}
         } else {
-            return {status: "warning", mensaje: "Se actualizo Mercado Libre y Rappi"}
+            return {status: "warning", mensaje: "Se actualizo Mercado Libre y Addi"}
         }
     }
 }

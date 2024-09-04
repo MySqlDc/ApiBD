@@ -1,72 +1,74 @@
-import {
-    STORE_NAME_VTEX,
-    API_KEY_VTEX,
-    TOKEN_VTEX
-} from '../../config.js';
+import APIBase from '../models/api.js'
 
-export const actualizarStockVTEX = async (publicacion) => {
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("X-VTEX-API-AppKey", API_KEY_VTEX);
-    headers.append("X-VTEX-API-AppToken", TOKEN_VTEX);
-
-    let url = "https://"+STORE_NAME_VTEX+".vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/"+publicacion.codigo+"/warehouses/1_1";
-
-    const data = {
-        quantity: publicacion.stock,
-        unlimitedQuantity: false,
-        leadTime: null
+class APIVTEX extends APIBase {
+    constructor(credentials){
+        super('https://'+credentials.STORE_NAME+'.vtexcommercestable.com.br', credentials)
     }
 
-    const options = {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(data)
-    }
+    async actualizarStock(publicacion){
+        let url = this.baseURL+'/api/logistics/pvt/inventory/skus/'+publicacion.codigo+'/warehouses/1_1';
 
-    try {
-        const response = await fetch(url, options);
+        const data = {
+            quantity: publicacion.stock,
+            unlimitedQuantity: false,
+            leadTime: null
+        }
 
-        if(response.ok){
-            return {status: "ok"}
-        }    
-        
-        return {status: "error", mensaje: JSON.parse(response)}
-    } catch (error) {
-        return {status: "error", mensaje: error}   
-    }
-}
+        const options = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-VTEX-API-AppKey': this.credentials.API_KEY,
+                'X-VTEX-API-AppToken': this.credentials.TOKEN
+            },
+            body: JSON.stringify(data)
+        }
 
-export const actualizarPrecioVTEX = async (publicacion) => {
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("X-VTEX-API-AppKey", API_KEY_VTEX);
-    headers.append("X-VTEX-API-AppToken", TOKEN_VTEX);
-
-    let url = "https://api.vtex.com/"+STORE_NAME_VTEX+"/pricing/prices/"+publicacion.codigo;
-
-    const data = {
-        "markup": 20,
-        "listPrice": publicacion.precio,
-        "basePrice": publicacion.descuento?publicacion.descuento:publicacion.precio
-    }
-
-    const options = {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(data)
-    }
-
-    try {
-        const response = await fetch(url, options);
-
-        if(response.ok){
-            return {status: "ok"}
-        }    
-
-        return {status: "error", mensaje: JSON.parse(response)}
-    } catch (error) {
-        return {status: "error", mensaje: error}   
-    }
+        try {
+            const response = await fetch(url, options);
     
+            if(response.ok){
+                return {status: "ok"}
+            }    
+            
+            return {status: "error", mensaje: JSON.parse(response)}
+        } catch (error) {
+            return {status: "error", mensaje: error}   
+        }
+    }
+
+    async actualizarPrecio(publicacion){
+    
+        let url = "https://api.vtex.com/"+this.credentials.STORE_NAME+"/pricing/prices/"+publicacion.codigo;
+    
+        const data = {
+            "markup": 20,
+            "listPrice": publicacion.precio,
+            "basePrice": publicacion.descuento?publicacion.descuento:publicacion.precio
+        }
+    
+        const options = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-VTEX-API-AppKey': this.credentials.API_KEY,
+                'X-VTEX-API-AppToken': this.credentials.TOKEN
+            },
+            body: JSON.stringify(data)
+        }
+    
+        try {
+            const response = await fetch(url, options);
+    
+            if(response.ok){
+                return {status: "ok"}
+            }    
+    
+            return {status: "error", mensaje: JSON.parse(response)}
+        } catch (error) {
+            return {status: "error", mensaje: error}   
+        }
+    }
 }
+
+export default APIVTEX;

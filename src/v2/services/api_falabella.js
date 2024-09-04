@@ -10,6 +10,8 @@ class APIFalabella extends APIBase{
     async actualizarStock(publicaciones){
         const parametros = this.setParametros('ProductUpdate');
 
+        let respuesta = null;
+
         parametros.set('Signature', CryptoJS.HmacSHA256(this.encodeURL(parametros), this.credentials.API_KEY).toString(CryptoJS.enc.Hex));
 
         const url = this.baseURL+this.encodeURL(parametros);
@@ -27,12 +29,13 @@ class APIFalabella extends APIBase{
             await fetch(url, options)
             .then(res => res.json() )
             .then( response => {
-                console.log(response)
-                return {status: 'ok'}
+                respuesta = response
             })
             .catch( error => console.error(error) );    
     
-            throw new Error('No se actualizo falabella') ;
+            if(!respuesta) throw new Error('No se actualizo falabella') ;
+
+            return {status: 'ok'}
         } catch (error) {
             console.log(error)
             return {status: "error"}
