@@ -28,6 +28,12 @@ router.use(brandRoutes);
 
 router.use(handleError);
 
+cron.schedule('0 13 * * *', async() => {
+    console.log("comenzo forzado");
+    await actualizarFijo();
+    console.log("termino forzado");
+})
+
 cron.schedule('15 * * * *', async() => {
     console.log("comenzo")
     await actualizarDatosGeneral();
@@ -45,12 +51,6 @@ cron.schedule('37 * * * *', async() => {
     await createOrders();
     await actualizarReservados();
     console.log("Fin peticion pedidos")
-})
-
-cron.schedule('30 11 * * *', async() => {
-    console.log("comenzo forzado");
-    await actualizarFijo();
-    console.log("termino forzado");
 })
 
 export default router;
