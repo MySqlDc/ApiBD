@@ -47,7 +47,7 @@ cron.schedule('37 * * * *', async() => {
     console.log("Fin peticion pedidos")
 })
 
-cron.schedule('0 21 * * *', async() => {
+cron.schedule('30 11 * * *', async() => {
     console.log("comenzo forzado");
     await actualizarFijo();
     console.log("termino forzado");
