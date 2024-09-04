@@ -48,7 +48,7 @@ export const crearFactura = async (datosFactura) => {
 
     const productos = await client.query("SELECT * FROM producto_pedido WHERE pedido_id = $1", [pedido.rows[0].id])
 
-    if(productos.rows.length == 0) throw new Error('El pedido no tiene productos');
+    if(productos.rows.length == 0) throw new Error('El pedido no tiene productos', pedido);
 
     const resultado = {...pedido.rows[0], productos: productos.rows}
     await client.query("COMMIT");
