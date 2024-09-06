@@ -149,7 +149,7 @@ export const actualizarFijo = async() => {
         }
 
         await client.query('COMMIT');
-        return response;
+        return {response: 'Ok'};
     } catch (error) {
         await client.query('ROLLBACK');
         console.log('ml fallo', error);
