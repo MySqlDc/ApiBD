@@ -142,7 +142,7 @@ export const actualizarFijo = async() => {
 
         await APIFala.actualizarStock(Falabella);
 
-        const { rows: Addi } = await client.query('SELECT * FROM publicaciones WHERE plataforma_id = 5');
+        const { rows: Addi } = await client.query('SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 5');
 
         await APIAddi.actualizarStock(Addi);
 
