@@ -44,6 +44,19 @@ export const actualizar = async (urgente = false) => {
     }
 }
 
+export const eliminarFlex = async(publicaciones) => {
+    try {
+        await APIMl_Med.token_ml();
+
+        for(const publicacion of publicaciones){
+            const response = await APIMl_Med.flex(publicacion, false)
+            console.log(response)
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 export const actualizarPublicaciones = async (data) => {
     if(data.length === 0) return {status: "error", mensaje: "no hay productos para actualizar"}
 
@@ -129,7 +142,7 @@ export const actualizarFijo = async() => {
 
         await APIFala.actualizarStock(Falabella);
 
-        const { rows: Addi } = await client.query('SELECT ')
+        const { rows: Addi } = await client.query('SELECT * FROM publicaciones WHERE plataforma_id = 5');
 
         await APIAddi.actualizarStock(Addi);
 
