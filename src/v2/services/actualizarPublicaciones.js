@@ -88,7 +88,7 @@ const actualizarML = async(ids) => {
         const dataOk = [];
         const dataErr = [];
 
-        const { rows } = await client.query('SELECT codigo, variante, stock, stock_dim, full_bolean FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids]);
+        const { rows } = await client.query('SELECT codigo, variante, stock, stock_dim, full_bolean, medellin FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids]);
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
