@@ -1,7 +1,7 @@
 import fs from 'fs';
 import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
-import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull } from '../services/actualizarPublicaciones.js'
+import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull, eliminarFlex } from '../services/actualizarPublicaciones.js'
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
 
@@ -288,7 +288,7 @@ export const eliminarFijos = async(req, res, next) => {
             const client = await pool.connect();
             try{
                 await client.query('BEGIN')
-                const {rows} = await client.query('SELECT id FROM publicaciones WHERE plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
+                const {rows} = await client.query('SELECT id FROM publicaciones WHERE producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [dato.sku]);
 
                 const ids = rows.map(row => row.id);
         
