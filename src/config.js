@@ -43,3 +43,6 @@ export const KEY = process.env.KEY;
 //Ducor URL
 export const DUCOR_DATA = process.env.DUCOR_DATA
 export const DUCOR_PLATFOMS = process.env.DUCOR_PLATFOMS
+
+//APP URL
+export const URL_APP = process.env.URL_APP
