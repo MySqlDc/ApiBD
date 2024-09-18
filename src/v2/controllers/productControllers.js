@@ -20,27 +20,17 @@ export const getAllProducts = async (req, res, next) => {
     }
 }
 
-export const getAllProductsPlatform = async (req, res, next) => {
+export const getAllProductsData = async (req, res, next) => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        const productsData = await client.query('SELECT p.id AS producto_id, p.nombre AS producto_nombre, p.url_imagen AS imagen, bool_or(pub.active AND pl.id = 1) AS Falabella, bool_or(pub.active AND pl.id = 2) AS Rappi, bool_or(pub.active AND pl.id = 3) AS Mercado_Libre FROM productos p LEFT JOIN publicaciones pub ON p.id = pub.producto_id LEFT JOIN plataformas pl ON pub.plataforma_id = pl.id GROUP BY p.id, p.nombre ORDER BY p.id');
+        const { rows: productsData} = await client.query("SELECT p.id AS producto_id, p.nombre, p.url_imagen, COALESCE( ARRAY_AGG(jsonb_build_object('codigo', pub.codigo, 'variante', pub.variante, 'plataforma', pub.plataforma_id, 'id', pub.id, 'active', pub.active, 'medellin', pub.medellin, 'fijo', CASE WHEN pf.publicacion_id IS NOT NULL THEN true ELSE false END ) ) FILTER (WHERE pub.id IS NOT NULL), '{}'::jsonb[] ) AS publicaciones, COALESCE( jsonb_agg(DISTINCT replace(sku.sku, 'caracter_problematico', '')) FILTER (WHERE sku.sku IS NOT NULL),  '[]'::jsonb ) AS skus FROM productos p LEFT JOIN publicaciones pub ON p.id = pub.producto_id LEFT JOIN publicaciones_fijas pf ON pub.id = pf.publicacion_id LEFT JOIN sku_producto sku ON p.id = sku.producto_id GROUP BY p.id, p.nombre, p.url_imagen ORDER BY p.id");
 
-        const platformsData = await client.query('SELECT * FROM plataformas');
-
-        const data = productsData.rows.map( product => {
-            let statusPlatforms = platformsData.rows.map( platform => {
-                const active = product[platform.nombre.replace(" ", "_").toLowerCase()];
-
-                return {...platform, active}
-            })
-            return {id: product.producto_id, nombre: product.producto_nombre, imagen: product.imagen, plataformas: statusPlatforms}
-        });
         await client.query('COMMIT');
 
-        res.status(200).send({data});
+        res.status(200).send({data: productsData});
     } catch (error) {
         await client.query('ROLLBACK');
         next(error);
@@ -91,28 +81,17 @@ export const getProductKits = async (req, res, next) => {
     }
 }
 
-export const getProductPlatform = async (req, res, next) => {
+export const getProductData = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
         if(id === undefined) throw new Error('No se ingreso un ID');
-        const productData = await client.query('SELECT p.id AS producto_id, p.nombre AS producto_nombre, p.url_imagen AS imagen, bool_or(pub.active AND pl.id = 1) AS Falabella, bool_or(pub.active AND pl.id = 2) AS Rappi, bool_or(pub.active AND pl.id = 3) AS Mercado_Libre, bool_or(pub.active AND pl.id = 4) AS Shopify, bool_or(pub.active AND pl.id = 5) AS Addi FROM productos p LEFT JOIN publicaciones pub ON p.id = pub.producto_id LEFT JOIN plataformas pl ON pub.plataforma_id = pl.id WHERE p.id = $1 GROUP BY p.id, p.nombre ORDER BY p.id', [id]);
-
-        const platformsData = await client.query('SELECT * FROM plataformas');
-
-        const data = productData.rows.map( product => {
-            let statusPlatforms = platformsData.rows.map( platform => {
-                const active = product[platform.nombre.replace(" ", "_").toLowerCase()];
-
-                return {...platform, active}
-            })
-            return {id: product.producto_id, nombre: product.producto_nombre, imagen: product.imagen, plataformas: statusPlatforms}
-        });
+        const { rows: productData } = await client.query("SELECT p.id AS producto_id, p.nombre, p.url_imagen, COALESCE( ARRAY_AGG( jsonb_build_object( 'codigo', pub.codigo, 'variante', pub.variante, 'plataforma', pub.plataforma_id, 'id', pub.id, 'active', pub.active, 'medellin', pub.medellin, 'fijo', CASE WHEN pf.publicacion_id IS NOT NULL THEN true ELSE false END ) ) FILTER (WHERE pub.id IS NOT NULL), '{}'::jsonb[] ) AS publicaciones, COALESCE( jsonb_agg(DISTINCT replace(sku.sku, 'caracter_problematico', '')) FILTER (WHERE sku.sku IS NOT NULL), '[]'::jsonb ) AS skus FROM productos p LEFT JOIN publicaciones pub ON p.id = pub.producto_id LEFT JOIN publicaciones_fijas pf ON pub.id = pf.publicacion_id LEFT JOIN sku_producto sku ON p.id = sku.producto_id WHERE p.id = $1 GROUP BY p.id, p.nombre, p.url_imagen ORDER BY p.id", [id]);
 
         await client.query('COMMIT');
-        res.status(200).send({data: data})
+        res.status(200).send({data: productData})
     } catch (error) {
         await client.query('ROLLBACK');
         next(error);

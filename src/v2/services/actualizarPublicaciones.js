@@ -101,7 +101,6 @@ const actualizarML = async(ids) => {
                 } else {
                     publicacion.stock = publicacion.stock_dim;
                 }
-
                 response = await APIMl_Med.actualizar(publicacion, flex);
             } else {
                 response = await APIMl_Bog.actualizar(publicacion);

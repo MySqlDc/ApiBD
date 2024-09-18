@@ -4,9 +4,7 @@ import {
     deleteProduct, 
     getAllProducts, 
     getProduct, 
-    updateProduct, 
-    getAllProductsPlatform, 
-    getProductPlatform, 
+    updateProduct,
     updateUnidades, 
     updateUnidadesVirtuales, 
     getProductKits, 
@@ -15,20 +13,22 @@ import {
     inactiveProductPublication, 
     getProductSkus, 
     updateUnidadesMedellin,
-    setUpdateProduct
+    setUpdateProduct,
+    getProductData,
+    getAllProductsData
 } from '../controllers/productControllers.js';
 
 const router = Router();
 
 router.get('/productos', getAllProducts);
 
-router.get('/productos/plataformas', getAllProductsPlatform);
+router.get('/productos/coleccion/datos', getAllProductsData);
 
 router.get('/productos/:id', getProduct);
 
 router.get('/productos/:id/kits', getProductKits);
 
-router.get('/productos/:id/plataformas', getProductPlatform);
+router.get('/productos/:id/coleccion', getProductData);
 
 router.get('/productos/:id/publicaciones', getProductPublication);
 

@@ -116,7 +116,7 @@ export const createPublication = async (req, res, next) => {
             descuento, 
             marca_id,
             medellin,
-            full
+            full?full:false
         ]
 
         const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *', valores);
@@ -188,7 +188,7 @@ export const inactivePublication = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE id = ANY($1)', [ids]);
+        const { rows } = await client.query('UPDATE publicaciones SET active = false WHERE id = ANY($1) RETURNING *', [ids]);
 
         if(rows.length === 0) throw new Error('No se desactivo ninguna publicacion');
 
