@@ -140,13 +140,23 @@ export const getProductSkus = async (req, res, next) => {
 }
 
 export const createProduct = async (req, res, next) => {
-    const { nombre, imagen, marca } = req.body;
+    const { nombre, imagen, marcaNombre } = req.body;
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('INSERT INTO productos (nombre, url_imagen, marca_id) VALUES ($1, $2, $3) RETURNING *', [nombre, imagen, marca]);
+        let marca_id = undefined;
+
+        let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marcaNombre.toString().toUpperCase()]);
+            
+        if(marca.rows.length === 0) {
+            marca = await client.query('INSERT INTO marcas (nombre) VALUES ($1) RETURNING *', [marcaNombre.toString().toUpperCase()])
+        }
+
+        marca_id = marca.rows[0].id;
+
+        const { rows } = await client.query('INSERT INTO productos (nombre, url_imagen, marca_id) VALUES ($1, $2, $3) RETURNING *', [nombre, imagen, marca_id]);
 
         await client.query('COMMIT');
         res.status(200).send({confirmacion: "Se creo correctamente el producto", data: rows})
