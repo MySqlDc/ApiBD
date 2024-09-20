@@ -158,6 +158,56 @@ export const actualizarFijo = async() => {
     }
 }
 
+export const pausarPublicacion = async() => {
+    APIMl_Bog.token_ml()
+    APIMl_Med.token_ml()
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { rows } = await client.query('SELECT * FROM publicaciones WHERE plataforma_id = 3 AND producto_id = ANY(SELECT producto_id FROM pausar)');
+
+        if(rows.length === 0) throw new Error('No hay publicaciones');
+
+        for(const publicacion of rows){
+            let response = undefined;
+            if(publicacion.medellin){
+                response = await APIMl_Med.obtenerStock(publicacion);
+            } else {
+                response = await APIMl_Bog.obtenerStock(publicacion);
+            }
+
+            if(!response) {
+                console.log("Error undefined consultar stock", publicacion);
+                continue;
+            }
+
+            if(response.status === "ok" && response.stock !== 0){
+                response = undefined;
+                if(publicacion.medellin){
+                    response = await APIMl_Med.actualizarStock({...publicacion, stock: 0});
+                } else{
+                    response = await APIMl_Bog.actualizarStock({...publicacion, stock: 0});
+                }
+
+                if(!response) {
+                    console.log("Error undefined actualizar stock", publicacion);
+                    continue;
+                } 
+
+                await client.query('DELETE FROM pausar WHERE producto_id = $1', [publicacion.producto_id])
+            }
+            
+        }
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.log(error);
+    } finally {
+        client.release();
+    }
+}
+
 export const actualizarAddi = async (ids) => {
     const client = await pool.connect();
 

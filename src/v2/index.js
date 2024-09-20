@@ -10,7 +10,7 @@ import actionRoutes from './routes/action.routes.js'
 import facturaRoutes from './routes/factura.routes.js'
 import brandRoutes from './routes/marca.routes.js'
 import { handleError } from './middlewares/errorHandler.js'
-import { actualizar, actualizarFijo } from './services/actualizarPublicaciones.js'
+import { actualizar, actualizarFijo, pausarPublicacion } from './services/actualizarPublicaciones.js'
 import { actualizarDatosGeneral, actualizarReservados } from './database/queries/productos.js'
 import { createOrders } from './services/actualizarStock.js'
 
@@ -29,6 +29,13 @@ router.use(brandRoutes);
 router.use(handleError);
 
 const timeZone = 'America/Bogota';
+
+
+cron.schedule('*/30 * * * *', async() => {
+    console.log("comenzo pausar");
+    await pausarPublicacion();
+    console.log("termino pausar");
+}, {scheduled: true, timezone: timeZone})
 
 cron.schedule('0 18 * * *', async() => {
     console.log("comenzo forzado");

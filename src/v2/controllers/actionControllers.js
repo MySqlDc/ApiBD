@@ -1,7 +1,7 @@
 import fs from 'fs';
 import csv from 'fast-csv';
 import { pool } from '../database/conection.js';
-import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull, eliminarFlex } from '../services/actualizarPublicaciones.js'
+import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull, pausarPublicacion } from '../services/actualizarPublicaciones.js'
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
 
@@ -254,7 +254,6 @@ export const agregarFijos = async (req, res, next) => {
                     query += '('+row.id+','+dato.cantidad+')';
                 }
 
-                console.log(query);
                 await client.query(query);
 
                 const ids = rows.map(row => row.id);
@@ -275,6 +274,34 @@ export const agregarFijos = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         next(error);
+    }
+}
+
+export const pausar = async (req, res, next) => {
+    await pausarPublicacion()
+    res.send({okey: "Si señore"})
+}
+
+export const agregarPausar = async (req, res, next) => {
+    const { sku } = req.body;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const {rows: id} = await client.query('SELECT producto_id FROM sku_producto WHERE sku = $1', [sku]);
+
+        const {rows} = await client.query('INSERT INTO pausar (producto_id) VALUES ($1) RETURNING *', [id[0].producto_id])
+
+        if(rows.length === 0) throw new Error('No se pudo agregar el id');
+
+        await client.query('COMMIT');
+        res.send({confirmacion: "Se agrego correctamente a la lista"});
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
     }
 }
 

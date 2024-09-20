@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev1": "nodemon --watch src/v1 --ignore data/ --env-file=.env src/index.js",
-    "dev2": "nodemon --watch src/v2 --ignore data/ --env-file=.env.development src/index.js",
+    "dev": "nodemon --watch src/v2 --ignore data/ --env-file=.env.development src/index.js",
     "start": "node src/index.js"
   },
   "author": "carlos",

@@ -44,6 +44,41 @@ class APIMl extends APIBase{
         }
     }
 
+    async obtenerStock(publicacion){
+        let url = this.baseURL+'/items/MCO'+publicacion.codigo;
+
+        if(publicacion.variante) url += '/variations/'+publicacion.variante;
+
+        const options = {
+            method:'GET',
+            url,
+            contentType: 'application/json',
+            headers: {
+                Authorization: `Bearer ${this.credentials.TOKEN}`
+            }
+        }
+
+        try {
+            const response = await axios(options);
+
+            console.log({status: "ok", producto: publicacion.codigo+"-"+publicacion.variante, stock: response.data.available_quantity})
+            if(response.status == 200) return {status: "ok", producto: publicacion.codigo+"-"+publicacion.variante, stock: response.data.available_quantity}
+        } catch (error) {
+            if(error.response && (error.response.status == 400 || error.response.status == 404)) return {status: "error", producto: publicacion.codigo+"-"+publicacion.variante, error: error.response.statusText}
+            
+            if(error.response && error.response.status == 403){
+                await this.token_ml();
+
+                const response = await this.actualizarStock(publicacion, flex);
+
+                return response;
+            }
+
+            console.error({status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message})
+            return {status: "error", producto: `${publicacion.codigo}-${publicacion.variante}`, error: error.message};
+        }
+    }
+
     async flex(publicacion, flex = true){
         let method = 'POST';
 
