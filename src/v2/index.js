@@ -31,7 +31,7 @@ router.use(handleError);
 const timeZone = 'America/Bogota';
 
 
-cron.schedule('*/30 * * * *', async() => {
+cron.schedule('*/15 * * * *', async() => {
     console.log("comenzo pausar");
     await pausarPublicacion();
     console.log("termino pausar");
