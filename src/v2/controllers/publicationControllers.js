@@ -133,6 +133,66 @@ export const createPublication = async (req, res, next) => {
     }
 }
 
+export const createPublications = async (req, res, next) => {
+    const { publicaciones } = req.body;
+
+    console.log(publicaciones)
+    for(const publicacion of publicaciones){
+        const client = await pool.connect();
+
+        try {
+            await client.query('BEGIN');
+    
+            if(publicacion.descuento > publicacion.precio) throw new Error('El descuento es mayor que el precio de venta')
+    
+            let marca_id = undefined;
+    
+            const {rows: plataformas} = await client.query('SELECT * FROM plataformas WHERE nombre = $1', [publicacion.plataforma]);
+
+            if(plataformas[0].id === 2){
+                
+                if(!publicacion.marca) throw new Error('No se envio la marca');
+                let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [publicacion.marca.toString().toUpperCase()]);
+        
+                
+                if(marca.rows.length === 0) {
+                    marca = await client.query('INSERT INTO marcas (nombre) VALUES ($1) RETURNING *', [publicacion.marca.toString().toUpperCase()])
+                }
+    
+                marca_id = marca.rows[0].id;
+            }
+
+            const {rows: producto} = await client.query('SELECT * FROM sku_producto WHERE sku = $1', [publicacion.producto_sku])
+    
+            const valores = [
+                publicacion.codigo, 
+                publicacion.variante,
+                plataformas[0].id, 
+                producto[0].producto_id, 
+                publicacion.nombre, 
+                publicacion.precio?parseInt(publicacion.precio):1, 
+                publicacion.descuento?parseInt(publicacion.descuento):null, 
+                marca_id,
+                publicacion.medellin?true:false,
+                publicacion.full?true:false
+            ]
+    
+            const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *', valores);
+    
+            if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
+    
+            await client.query('COMMIT');
+        } catch (error) {
+            console.log(error)
+            await client.query('ROLLBACK');
+        } finally {
+            client.release();
+        }
+    }
+
+    res.status(200).send({confirmacion: "Se craron las publicaciones"})
+}
+
 export const updatePublication = async (req, res, next) => {
     const { active, codigo , variante, plataforma, precio, descuento, marca_nombre, medellin } = req.body;
     const { id } = req.params;

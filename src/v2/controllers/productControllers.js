@@ -171,6 +171,53 @@ export const createProduct = async (req, res, next) => {
     }
 }
 
+export const createProducts = async (req, res, next) => {
+    const { productos } = req.body;
+
+    try {
+        if(!productos || productos.lenght === 0 ) throw new Error('No hay productos para crear')
+
+        res.on('finish', async() => {await actualizarDatosGeneral()})
+    
+        for(const producto of productos){
+            const client = await pool.connect();
+    
+            try {
+                await client.query('BEGIN');
+        
+                let marca_id = undefined;
+        
+                let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [producto.marca.toString().toUpperCase()]);
+                    
+                if(marca.rows.length === 0) {
+                    marca = await client.query('INSERT INTO marcas (nombre) VALUES ($1) RETURNING *', [producto.marca.toString().toUpperCase()])
+                }
+        
+                marca_id = marca.rows[0].id;
+        
+                const { rows: productos } = await client.query('INSERT INTO productos (nombre, url_imagen, marca_id) VALUES ($1, $2, $3) RETURNING *', [producto.nombre, producto.imagen, marca_id]);
+        
+                if(productos.length > 0){
+                    const { rows: sku } = await client.query('INSERT INTO sku_producto (sku, producto_id) VALUES ($1, $2) RETURNING *', [producto.sku, productos[0].id])
+    
+                    if(sku.length === 0) throw new Error('No se creo el sku')
+                }
+                
+                await client.query('COMMIT');
+            } catch (error) {
+                console.log(error)
+                await client.query('ROLLBACK');
+            } finally {
+                client.release();
+            }
+        }        
+
+        res.status(200).send({confirmacion: "Se crearon los productos"})
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const updateProduct = async (req, res, next) => {
     const { nombre, imagen } = req.body;
     const { id } = req.params;

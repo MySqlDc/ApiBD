@@ -15,7 +15,8 @@ import {
     updateUnidadesMedellin,
     setUpdateProduct,
     getProductData,
-    getAllProductsData
+    getAllProductsData,
+    createProducts
 } from '../controllers/productControllers.js';
 
 const router = Router();
@@ -35,6 +36,8 @@ router.get('/productos/:id/publicaciones', getProductPublication);
 router.get('/productos/:id/skus', getProductSkus);
 
 router.post('/productos', createProduct);
+
+router.post('/productos/archivo', createProducts);
 
 router.post('/status/productos', setUpdateProduct);
 

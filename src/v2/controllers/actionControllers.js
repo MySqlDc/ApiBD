@@ -7,32 +7,15 @@ import { createOrders } from '../services/actualizarStock.js';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
-    const regex = /[a-zA-z]/
 
     try {
         if(data.length === 0) throw new Error('No se enviaron datos')
 
-        const arrayObjectData = data.map(arr => {
-            if(!regex.test(arr[0])){
-                return {
-                    id:  parseInt(arr[0]),
-                    nombre: arr[1],
-                    stock: arr[2]?isNaN(parseInt(arr[2]))?0:parseInt(arr[2]):0
-                }
-            } else {
-                console.log("error en la entrada", arr);
-            }
-        }).filter(dato => dato !== undefined)
-
-        if(arrayObjectData.length === 0) throw new Error('No hubo datos correctos');
-
-        const response = await actualizarPublicaciones(arrayObjectData);
+        const response = await actualizarPublicaciones(data);
 
         res.status(200).send(response);    
     } catch (error) {
         next(error);
-    } finally {
-        client.release();
     }
 }
 
