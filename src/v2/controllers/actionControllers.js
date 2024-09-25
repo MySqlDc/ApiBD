@@ -98,13 +98,18 @@ export const updateStockSomes = async (req, res, next) => {
     try {
         const codigos = ids.map(id => {return {id}})
 
-        console.log(codigos)
-
         const response = await actualizarPublicaciones(codigos);
+        
+        const fijasResponse = await actualizarFijo(ids)
 
-        if(response.status === 'error') throw new Error(response.mensaje);
+        if(response.status === 'error' && fijasResponse.status === 'error') throw new Error(response.mensaje);
 
-        res.status(200).send(response);
+        if(response.status === 'error'){
+            res.status(200).send(fijasResponse);
+        } else {
+            res.status(200).send(response);
+        }
+        
     } catch (error) {
         next(error);
     }

@@ -1,4 +1,5 @@
 import { pool } from '../database/conection.js';
+import { actualizarDatosGeneral } from '../database/queries/productos.js';
 
 export const getAllProducts = async (req, res, next) => {
     const client = await pool.connect();
@@ -142,6 +143,8 @@ export const getProductSkus = async (req, res, next) => {
 export const createProduct = async (req, res, next) => {
     const { nombre, imagen, marcaNombre } = req.body;
     const client = await pool.connect();
+
+    res.on('finish', async() => {await actualizarDatosGeneral()})
 
     try {
         await client.query('BEGIN');

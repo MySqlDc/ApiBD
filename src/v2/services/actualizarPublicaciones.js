@@ -131,24 +131,69 @@ const actualizarML = async(ids) => {
     }
 }
 
-export const actualizarFijo = async() => {
+export const actualizarFijo = async(ids = []) => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN')
 
-        const { rows: Falabella } = await client.query('SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1');
+        const dataOk = [];
+        const dataErr = [];
+        const params = [];
 
-        await APIFala.actualizarStock(Falabella);
+        let falabellaQuery = 'SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1';
 
-        const { rows: Addi } = await client.query('SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 5');
+        let AddiQuery = 'SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 5';
 
-        for(const publicacion of Addi){
-            await APIAddi.actualizarStock(publicacion);
+        if(ids.length !== 0){
+            falabellaQuery += ' AND producto_id = ANY($1)';
+            AddiQuery += ' AND producto_id = ANY($1)';
+            params.push(ids)
+
+            const {rows: ML} = await client.query('SELECT codigo, variante, cantidad AS stock, medellin, full_bolean FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3 AND producto_id = ANY($1)', params);
+
+            if(ML.length > 0){
+                for(const publicacion of ML){
+                    let response = undefined;
+                    if(publicacion.medellin){
+                        let flex = true;
+                        if(publicacion.stock_dim == 0 && publicacion.stock > publicacion.stock_dim){
+                            flex = false;
+                        } else {
+                            publicacion.stock = publicacion.stock_dim;
+                        }
+                        response = await APIMl_Med.actualizar(publicacion, flex);
+                    } else {
+                        response = await APIMl_Bog.actualizar(publicacion);
+                    }
+                    if(!response) {
+                        console.log("Error undefined", publicacion);
+                        continue;
+                    }
+        
+                    if(response.status === "ok"){
+                        dataOk.push(response);continue;
+                    }
+                    
+                    dataErr.push(response);
+                }
+            }
+        }
+
+        const { rows: Falabella } = await client.query(falabellaQuery, params);
+
+        if(Falabella.length > 0) await APIFala.actualizarStock(Falabella);
+
+        const { rows: Addi } = await client.query(AddiQuery, params);
+
+        if(Addi.length > 0){
+            for(const publicacion of Addi){
+                await APIAddi.actualizarStock(publicacion);
+            }
         }
 
         await client.query('COMMIT');
-        return {response: 'Ok'};
+        return {response: 'Ok', mensaje: 'Se actualizo las plataformas fijas'};
     } catch (error) {
         await client.query('ROLLBACK');
         console.log('ml fallo', error);
