@@ -11,6 +11,11 @@ export const DB_PORT = process.env.DB_PORT;
 export const DB_PASSWORD = process.env.DB_PASSWORD;
 export const DB_DATABASE = process.env.DB_DATABASE;
 
+//Datos base de datos Redis
+export const REDIS_HOST = process.env.REDIS_HOST;
+export const REDIS_PORT = process.env.REDIS_PORT;
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+
 //Datos de la base de datos - Mongo
 export const DB_URI = process.env.DB_URI;
 
@@ -26,7 +31,6 @@ export const API_REFRESH_ML_MED = process.env.API_REFRESH_ML_MED;
 export const API_KEY_RAPPI = process.env.API_KEY_RAPPI;
 export const STORE_ID_RAPPI = process.env.STORE_ID_RAPPI;
 export const STORE_ID_RAPPI_DIM = process.env.STORE_ID_RAPPI_DIM;
-
 
 //DATOS API falabella
 export const API_KEY_FALABELLA = process.env.API_KEY_FALABELLA;
