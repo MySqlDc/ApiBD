@@ -4,6 +4,7 @@ import { pool } from '../database/conection.js';
 import { actualizarFijo, actualizarPublicaciones, actualizarRappiFull, pausarPublicacion } from '../services/actualizarPublicaciones.js'
 import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
+import { contarPublicaciones } from '../database/queries/publicaciones.js';
 
 export const updateStockFile = async(req, res, next) => {
     const {data} = req.body;
@@ -47,43 +48,18 @@ export const updateStock = async (req, res, next) => {
     }
 }
 
-export const updateStockPublicacion = async(req, res, next) => {
-    const { sku } = req.params;
-    const { cantidad } = req.body;
-    const client = await pool.connect();
-
-
-    res.status(200).send({confirmacion: "funcionalidad por terminar"});
-    // try {
-    //     await client.query('BEGIN');
-    //     const {rows} = await client.query('SELECT * FROM publicaciones_stock_view WHERE producto_id = ANY(SELECT producto_id FROM sku_producto WHERE sku = $1)', [sku]);
-
-    //     if(rows.length === 0) throw new Error('No existe una publicacion');
-
-    //     if(rows[0].stock === cantidad) throw new Error('El valor es el mismo');
-
-    //     const response = await actualizarPublicaciones(rows);
-
-    //     if(response.status === 'error') throw new Error('error al actualizar publicacion '+response.mensaje);
-
-    //     await client.query('COMMIT');
-    //     res.status(200).send({confirmacion: "Actualizado", data: rows[0]});
-    // } catch (error) {
-    //     await client.query('ROLLBACK');
-    //     next(error);
-    // } finally {
-    //     client.release();
-    // }
-}
-
 export const updateStockSomes = async (req, res, next) => {
     const { ids } = req.body;
     try {
+        let fijasResponse = {status: 'error'};
+        let response = {status: 'error'};
         const codigos = ids.map(id => {return {id}})
 
-        const response = await actualizarPublicaciones(codigos);
-        
-        const fijasResponse = await actualizarFijo(ids)
+        const consulta = await contarPublicaciones(ids);
+
+        if(consulta[0].fijas > 0) fijasResponse = await actualizarFijo(ids)
+
+        if(consulta[0].normales > 0) response = await actualizarPublicaciones(codigos);
 
         if(response.status === 'error' && fijasResponse.status === 'error') throw new Error(response.mensaje);
 

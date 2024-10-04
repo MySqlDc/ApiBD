@@ -122,7 +122,7 @@ const agregarML = async(ids) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT codigo, variante, stock, stock_dim, full_bolean, medellin FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids]);
+        const { rows } = await client.query('SELECT codigo, variante, FLOOR(stock/unidades_venta) AS stock, FLOOR(stock_dim/unidades_venta) AS stock_dim, full_bolean, medellin FROM publicaciones_stock_view WHERE plataforma_id = 3 AND active = true AND producto_id = ANY($1)', [ids]);
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
@@ -147,11 +147,11 @@ export const actualizarFijo = async(ids = []) => {
 
         const params = [];
 
-        let falabellaQuery = 'SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1';
+        let falabellaQuery = 'SELECT codigo, FLOOR(cantidad/unidades_venta) AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 1';
 
-        let AddiQuery = 'SELECT codigo, cantidad AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 5';
+        let AddiQuery = 'SELECT codigo, FLOOR(cantidad/unidades_venta) AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 5';
 
-        let mlQuery = 'SELECT codigo, variante, cantidad AS stock, medellin, full_bolean FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3';
+        let mlQuery = 'SELECT codigo, variante, FLOOR(cantidad/unidades_venta) AS stock, medellin, full_bolean FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3';
 
         if(ids.length !== 0){
             falabellaQuery += ' AND producto_id = ANY($1)';
@@ -249,7 +249,7 @@ export const actualizarAddi = async (ids) => {
         const dataOk = [];
         const dataErr = [];
 
-        const { rows } = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 5 AND active = true AND producto_id = ANY($1)', [ids] );
+        const { rows } = await client.query('SELECT codigo, FLOOR(cantidad/unidades_venta) AS stock FROM publicaciones_stock_view WHERE plataforma_id = 5 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
@@ -291,7 +291,7 @@ export const actualizarRappiFull = async(medellin = false)  => {
     try {
         await client.query('BEGIN');
 
-        let query = 'SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2';
+        let query = 'SELECT codigo, nombre, marca, FLOOR(stock/unidades_venta) AS stock, FLOOR(stock_dim/unidades_venta) AS stock_dim, precio, descuento FROM publicaciones_stock_view WHERE plataforma_id = 2';
 
         if(medellin){
             query += ' AND medellin = true'
@@ -324,7 +324,7 @@ const actualizarRappi = async(ids) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT * FROM publicaciones_stock_view WHERE plataforma_id = 2 AND active = true AND producto_id = ANY($1)', [ids] );
+        const { rows } = await client.query('SELECT codigo, nombre, marca, FLOOR(stock/unidades_venta) AS stock, FLOOR(stock_dim/unidades_venta) AS stock_dim, precio, descuento FROM publicaciones_stock_view WHERE plataforma_id = 2 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
 
@@ -352,7 +352,7 @@ const actualizarFalabella = async(ids) => {
     try {
         await client.query('BEGIN');
 
-        const { rows } = await client.query('SELECT codigo, stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
+        const { rows } = await client.query('SELECT codigo, FLOOR(stock/unidades_venta) AS stock FROM publicaciones_stock_view WHERE plataforma_id = 1 AND active = true AND producto_id = ANY($1)', [ids] );
 
         if(rows.length === 0) throw new Error('No hay publicaciones');
         
@@ -376,7 +376,6 @@ const respuestaGeneral = (plataformas) => {
     let booleanY = false;
     let mensaje = 'Se actualizo';
 
-    console.log(plataformas)    
     const estados = plataformas.map(plataforma => plataforma.response.status);
 
     if(estados.every(status => status === "ok")) return {status: "ok", mensaje: "Se actualizaron todas las plataformas"};

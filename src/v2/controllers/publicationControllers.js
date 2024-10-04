@@ -68,7 +68,7 @@ export const getPublicationFijas = async (req, res, next) => {
     try {
         await client.query('BEGIN');
 
-        const { rows: publicaciones } = await client.query('SELECT id, codigo, variante, cantidad, medellin, (SELECT sku_producto.sku FROM sku_producto WHERE sku_producto.producto_id = publicaciones.producto_id LIMIT 1) AS sku FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3')
+        const { rows: publicaciones } = await client.query('SELECT id, codigo, variante, cantidad, medellin, unidades_venta, (SELECT sku_producto.sku FROM sku_producto WHERE sku_producto.producto_id = publicaciones.producto_id LIMIT 1) AS sku FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3')
 
         if (publicaciones.length == 0) throw new Error('No hay publicaciones asociadas a este parametro');
 
@@ -83,7 +83,7 @@ export const getPublicationFijas = async (req, res, next) => {
 }
 
 export const createPublication = async (req, res, next) => {
-    const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin, full } = req.body;
+    const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin, full, unidades } = req.body;
     const client = await pool.connect();
 
     try {
@@ -116,10 +116,11 @@ export const createPublication = async (req, res, next) => {
             descuento, 
             marca_id,
             medellin,
-            full?full:false
+            full?full:false,
+            unidades?unidades:1
         ]
 
-        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *', valores);
+        const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean, unidades_venta) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *', valores);
 
         if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
 
@@ -127,6 +128,7 @@ export const createPublication = async (req, res, next) => {
         res.status(200).send({confirmacion: 'Se ha creado correctamente la publicacion', data: rows})
     } catch (error) {
         await client.query('ROLLBACK');
+        console.log(error)
         next(error);
     } finally {
         client.release();
@@ -174,10 +176,11 @@ export const createPublications = async (req, res, next) => {
                 publicacion.descuento?parseInt(publicacion.descuento):null, 
                 marca_id,
                 publicacion.medellin?true:false,
-                publicacion.full?true:false
+                publicacion.full?true:false,
+                parseInt(publicacion.unidades_venta)>0?parseInt(publicacion.unidades_venta):1
             ]
-    
-            const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *', valores);
+
+            const {rows} = await client.query('INSERT INTO publicaciones (codigo, variante, plataforma_id, producto_id, nombre, precio, descuento, marca_id, medellin, full_bolean, unidades_venta) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *', valores);
     
             if(rows.length === 0) throw new Error('No se pudo crear la publicacion');
     
@@ -194,7 +197,7 @@ export const createPublications = async (req, res, next) => {
 }
 
 export const updatePublication = async (req, res, next) => {
-    const { active, codigo , variante, plataforma, precio, descuento, marca_nombre, medellin } = req.body;
+    const { active, codigo , variante, plataforma, precio, descuento, marca_nombre, medellin, unidades } = req.body;
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -206,7 +209,7 @@ export const updatePublication = async (req, res, next) => {
 
         if(marca_nombre && marcas.rows.length != 0) marca = marcas.rows[0].id;
 
-        const { rows } = await client.query('UPDATE publicaciones SET active = COALESCE($1, active), codigo = COALESCE($2,codigo), variante = COALESCE($3, variante), plataforma_id = COALESCE($4, plataforma_id), precio = COALESCE($5, precio), descuento = COALESCE($6, descuento), marca_id = COALESCE($7, marca_id), medellin = COALESCE($8, medellin) WHERE id = $9 RETURNING *', [active, codigo , variante, plataforma, precio, descuento, marca, medellin, id])
+        const { rows } = await client.query('UPDATE publicaciones SET active = COALESCE($1, active), codigo = COALESCE($2,codigo), variante = COALESCE($3, variante), plataforma_id = COALESCE($4, plataforma_id), precio = COALESCE($5, precio), descuento = COALESCE($6, descuento), marca_id = COALESCE($7, marca_id), medellin = COALESCE($8, medellin), unidades_venta = COALESCE($9, unidades_venta) WHERE id = $10 RETURNING *', [active, codigo , variante, plataforma, precio, descuento, marca, medellin, unidades, id])
 
         if(rows.length === 0) throw new Error('No se actualizo ninguna publicacion')
 
