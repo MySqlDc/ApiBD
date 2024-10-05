@@ -1,5 +1,6 @@
 import { pool } from '../database/conection.js';
 
+//obtiene todas las publicaciones
 export const getAllPublication = async (req, res, next)=> {
     const client = await pool.connect();
 
@@ -20,7 +21,10 @@ export const getAllPublication = async (req, res, next)=> {
     }
 }
 
+//obtiene las publicaciones de una plataforma
 export const getPublicationPlatform = async ( req, res, next ) => {
+    //plataforma: string, nombre de la plataforma
+    //consultar las plataformas en la base de datos
     const { plataforma } = req.params;
     const client = await pool.connect();
 
@@ -41,7 +45,9 @@ export const getPublicationPlatform = async ( req, res, next ) => {
     }
 }
 
+//obtiene una publicacion en especifico
 export const getPublication = async (req, res, next) => {
+    //id: int, identificador de la publicacion
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -62,6 +68,7 @@ export const getPublication = async (req, res, next) => {
     }
 }
 
+//obtiene todas las publicaciones fijas
 export const getPublicationFijas = async (req, res, next) => {
     const client = await pool.connect();
 
@@ -82,6 +89,18 @@ export const getPublicationFijas = async (req, res, next) => {
     }
 }
 
+//crea una publicacion en especifico 
+//codigo: string
+//variante: string
+//plataforma: int
+//producto: int
+//nombre: string
+//marcaNombre: string
+//precio: int
+//descuento: int
+//medellin: bolean
+//full: bolean
+//unidades: int
 export const createPublication = async (req, res, next) => {
     const { codigo, variante, plataforma, producto, nombre, marcaNombre, precio, descuento, medellin, full, unidades } = req.body;
     const client = await pool.connect();
@@ -96,9 +115,10 @@ export const createPublication = async (req, res, next) => {
         if(plataforma === 2){
             
             if(!marcaNombre) throw new Error('No se envio la marca');
+            //Consulta el id de la marca enviada
             let marca = await client.query('SELECT * FROM marcas WHERE nombre = $1', [marcaNombre.toString().toUpperCase()]);
     
-            
+            //En caso de que no exista la crea
             if(marca.rows.length === 0) {
                 marca = await client.query('INSERT INTO marcas (nombre) VALUES ($1) RETURNING *', [marcaNombre.toString().toUpperCase()])
             }
@@ -135,6 +155,10 @@ export const createPublication = async (req, res, next) => {
     }
 }
 
+
+//crear publicaciones
+//recibe un array de publicaciones
+//los datos que debe tener son los de la anterior funcion
 export const createPublications = async (req, res, next) => {
     const { publicaciones } = req.body;
 
@@ -196,6 +220,7 @@ export const createPublications = async (req, res, next) => {
     res.status(200).send({confirmacion: "Se craron las publicaciones"})
 }
 
+///actualizar caracteristicas de una publicacion
 export const updatePublication = async (req, res, next) => {
     const { active, codigo , variante, plataforma, precio, descuento, marca_nombre, medellin, unidades } = req.body;
     const { id } = req.params;
@@ -223,6 +248,7 @@ export const updatePublication = async (req, res, next) => {
     }
 }
 
+//vincular las publicaciones con el inventario del producto
 export const activePublication = async (req, res, next) => {
     const { ids } = req.body;
     const client = await pool.connect();
@@ -244,6 +270,7 @@ export const activePublication = async (req, res, next) => {
     }
 }
 
+//desvincula la publicacion del inventario de la publicacion
 export const inactivePublication = async (req, res, next) => {
     const { ids } = req.body;
     const client = await pool.connect();
@@ -265,6 +292,7 @@ export const inactivePublication = async (req, res, next) => {
     }
 }
 
+//Elimina la publicacion
 export const deletePublication = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();

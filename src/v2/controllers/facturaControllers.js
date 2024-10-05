@@ -1,6 +1,7 @@
 import { pool } from "../database/conection.js";
 import { crearFactura } from "../database/queries/facturas.js"
 
+//se consultan las facturas
 export const getAllBills = async (req, res, next) => {
     const { despuesDe, antesDe, fecha, codigo } = req.query;
 
@@ -37,6 +38,7 @@ export const getAllBills = async (req, res, next) => {
     }
 }
 
+//consulta una factura
 export const getBill = async (req, res, next) => {
     const { id } = req.params;
 
@@ -58,6 +60,7 @@ export const getBill = async (req, res, next) => {
     }
 }
 
+//obtiene las salidas de una plataforma en especifico
 export const getBillPlatform = async(req, res, next) => {
     const { plataforma } = req.params;
     const { despuesDe, estado } = req.query;
@@ -92,7 +95,10 @@ export const getBillPlatform = async(req, res, next) => {
     }
 }
 
+//obtiene los pedidos segun el estado que se envie
 export const getBillEstados = async(req, res, next) => {
+    //estado: strig el nombre del estado 
+    //los estados puede consultarlo en la base de datos
     const {estado} = req.params;
     const { despuesDe } = req.query;
 
@@ -122,6 +128,7 @@ export const getBillEstados = async(req, res, next) => {
     }
 }
 
+//crea un pedido, los datos que recibe estan en la funcion crearFactura
 export const createBill = async (req, res, next) => {
     const { factura } = req.body;
     
@@ -134,6 +141,7 @@ export const createBill = async (req, res, next) => {
     }
 }
 
+//actualiza el estado de un pedido
 export const updateBill = async (req, res, next) => {
     const { estado } = req.body;
     const { id } = req.params;
@@ -156,6 +164,7 @@ export const updateBill = async (req, res, next) => {
     }
 }
 
+//elimina un pedido
 export const deleteBill = async (req, res, next) => {
     const { id } = req.params;
 

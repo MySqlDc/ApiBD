@@ -11,6 +11,7 @@ import {
     DB_URI
 } from '../../config.js';
 
+//datos para generar la coneccion con mongo
 const connectionData = {
     user: DB_USER,
     host: DB_HOST,
@@ -19,6 +20,7 @@ const connectionData = {
     password: DB_PASSWORD
 }
 
+//conexion con mongo, (de ser necesaroi, actualmente no se usa)
 export const connectionMongo = async () => { 
     try {
         await mongoose.connect(DB_URI);

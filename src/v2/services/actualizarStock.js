@@ -2,6 +2,7 @@ import { pool } from "../database/conection.js";
 import { crearFactura, updateFactura } from "../database/queries/facturas.js";
 import { getPedidos } from './api_elian.js'
 
+//actualiza las unidades virtuale segun las salidas
 export const actualizarItems = async (items) => {
     for(const item of items){
         if(item.sku === null) continue;
@@ -30,6 +31,8 @@ export const actualizarItems = async (items) => {
     console.log("items actualizados")
 }
 
+//consultar los pedidos de los ultimos dias y las crea en caso de que no exista
+//y actualiza en caso de que los pedios hayan cambiado de estado
 export const createOrders = async() => {
     let dia = new Date();
     let dataPedidos = [];
@@ -105,6 +108,7 @@ export const createOrders = async() => {
     return {status: 200, confirmacion: "Completado"}
 }
 
+//obtiene los pedidos de salidas
 export const getOrders = async() => {
     const client = await pool.connect();
 

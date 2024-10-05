@@ -1,5 +1,6 @@
 import { pool } from '../database/conection.js';
 
+//obtiene todas las plataformas
 export const getAllPlatform = async (req, res, next) => {
     const client = await pool.connect();
 
@@ -19,7 +20,9 @@ export const getAllPlatform = async (req, res, next) => {
     }
 }
 
+//obtiene una plataforma
 export const getPlatform = async (req, res, next) => {
+    //id: int 
     const {id} = req.params;
     const client = await pool.connect();
         
@@ -39,6 +42,7 @@ export const getPlatform = async (req, res, next) => {
     }
 }
 
+//crear plataformas
 export const createPlatform = async (req, res, next) => {
     const { nombre } = req.body;
     const client = await pool.connect();
@@ -58,6 +62,7 @@ export const createPlatform = async (req, res, next) => {
     }
 }
 
+//actualizar el nombre de las plataformas
 export const updatePlatform = async (req, res, next) => {
     const { nombre } = req.body;
     const { id } = req.params;
@@ -79,6 +84,7 @@ export const updatePlatform = async (req, res, next) => {
     }
 }
 
+//eliminar plataforma
 export const deletePlatform = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();

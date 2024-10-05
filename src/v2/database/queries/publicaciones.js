@@ -1,5 +1,7 @@
 import { pool } from "../conection.js";
 
+//consulta las publicaciones respectivas de los productos
+//y regresa la cantidad de unidades que estan en fijas o estan viculadas al inventario
 export const contarPublicaciones = async(ids) => {
     const client = await pool.connect();
 

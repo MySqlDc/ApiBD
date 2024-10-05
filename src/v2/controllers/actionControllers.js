@@ -6,7 +6,9 @@ import { actualizarReservados } from '../database/queries/productos.js';
 import { createOrders } from '../services/actualizarStock.js';
 import { contarPublicaciones } from '../database/queries/publicaciones.js';
 
+//actualizar publicaciones ´por medio de un archivo
 export const updateStockFile = async(req, res, next) => {
+    //data es un arreglo de objetos [{id: int}]
     const {data} = req.body;
 
     try {
@@ -20,6 +22,9 @@ export const updateStockFile = async(req, res, next) => {
     }
 }
 
+//Actualizar stock en las publicaciones 
+//consulta los productos que tuvieron moviento en la base de datos
+//y envia los ids a actualizarPublicaciones
 export const updateStock = async (req, res, next) => {
     const client = await pool.connect();
     try {
@@ -48,7 +53,10 @@ export const updateStock = async (req, res, next) => {
     }
 }
 
+//actualiza el stock de la publicaciones de algunos productos
+//usa ids para consultar las publicaciones y actualizarlas en su debida funcion
 export const updateStockSomes = async (req, res, next) => {
+    //ids es un arreglo de enteros [int]
     const { ids } = req.body;
     try {
         let fijasResponse = {status: 'error'};
@@ -74,6 +82,8 @@ export const updateStockSomes = async (req, res, next) => {
     }
 }
 
+//obtiene los datos de los productos 
+//y los coloca en un objeto
 export const donwloadFile = async (req, res, next) =>{
     const client = await pool.connect();
     try{
@@ -95,6 +105,7 @@ export const donwloadFile = async (req, res, next) =>{
     }
 }
 
+//funcion para generar un string con la fecha y hora
 function formatDateForFilename(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -106,6 +117,8 @@ function formatDateForFilename(date) {
     return `${year}-${month}-${day}_${hours}:${minutes}:${seconds}`;
 }
 
+//Selecciona la plataforma 
+//y genera un archivo con las publicaciones existentes dentro de la base de datos
 export const downloadFile = async(req, res, next) => {
     const { plataforma } = req.params;
 
@@ -150,6 +163,9 @@ export const downloadFile = async(req, res, next) => {
     }
 }
 
+//Actualiza Rappi full
+//que es el envio de todos los productos
+//que existe de el
 export const updateRappi = async (req, res, next) => {
     try {
         const response = await actualizarRappiFull();
@@ -162,6 +178,7 @@ export const updateRappi = async (req, res, next) => {
     }
 }
 
+//actualiza rappi en medellin
 export const updateRappiMed = async (req, res, next) => {
 
     try {
@@ -175,12 +192,15 @@ export const updateRappiMed = async (req, res, next) => {
     }
 }
 
+//obtiene los pedidos y los genera
+//ademas actualiza las unidades virtuales
 export const getPedidos = async (req, res, next) => {
     await createOrders();
     await actualizarReservados();
     res.send({confirmacion: "Ordenes Actualizadas"});
 }
 
+//actualiza las publicaciones fijas
 export const update_ml = async (req, res, next) => {
     try {
         console.log('inicio')
@@ -192,7 +212,11 @@ export const update_ml = async (req, res, next) => {
     }
 }
 
+//coloca las publicaciones de los productos en fijos
+//y a su vez hace los respectivos cambios en la base de datos
 export const agregarFijos = async (req, res, next) => {
+    //un arreglo de objetos [{sku: string, cantidad: int}]
+    //el sku es para buscar las publicaciones y la cantidad es con la que se actualizara cada dia
     const { datos } = req.body;
 
     try {
@@ -241,11 +265,14 @@ export const agregarFijos = async (req, res, next) => {
     }
 }
 
+//Se ejecuta pausar publicaciones y es la revision de los productos que se vendieron
+//y se consulta en ML para verificar si las unidades de la publicacion si ha cambiado de 0
 export const pausar = async (req, res, next) => {
     await pausarPublicacion()
     res.send({okey: "Si señore"})
 }
 
+//Se obtiene el producto que se vendio y se agrega a la lista de productos a pausar
 export const agregarPausar = async (req, res, next) => {
     const { sku } = req.body;
     const client = await pool.connect();
@@ -269,7 +296,9 @@ export const agregarPausar = async (req, res, next) => {
     }
 }
 
+//elimina las publicaciones de fijas y las asocia a las unidades del inventario
 export const eliminarFijos = async(req, res, next) => {
+    //un arreglo de objetos [{sku: string}]
     const { datos } = req.body;
 
     try {
@@ -304,6 +333,7 @@ export const eliminarFijos = async(req, res, next) => {
     }
 }
 
+//actauliza las unidades de fijas en caso de que desee cambiarlo
 export const updatefijos = async (req, res, next) => {
     const {dato} = req.body;
 

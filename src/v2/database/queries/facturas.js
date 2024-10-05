@@ -63,6 +63,12 @@ export const crearFactura = async (datosFactura) => {
   }
 };
 
+//actualiza el estado del pedido
+//recibe datos Factura
+//{
+//  status: int,
+//  codigo: string
+//}
 export const updateFactura = async (datosFactura) => {
   const client = await pool.connect();
 

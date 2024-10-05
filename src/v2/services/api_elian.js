@@ -1,5 +1,6 @@
 import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
 
+//obtiene los datos del inventario externo
 export const getdatos = async () => {
     try {
         const response = await fetch(DUCOR_DATA);
@@ -32,6 +33,7 @@ export const getdatos = async () => {
     
 }
 
+//obtiene los pedidos de las plataformas al endpoint externo
 export const getPedidos = async (plataforma) => {
     try {
         console.log(DUCOR_PLATFOMS+plataforma)

@@ -1,6 +1,8 @@
 import { getdatos } from "../../services/api_elian.js";
 import { pool } from "../conection.js";
 
+//consulta los pedidos pendientes y coloca la sumatoria en unidades virtuales
+//los pedidos que se tienen en cuenta son los generados despues del 2024-07-07
 export const actualizarReservados = async () => {
     const client = await pool.connect();
 

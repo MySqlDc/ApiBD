@@ -1,5 +1,6 @@
 import { pool } from '../database/conection.js';
 
+//obtienes todas las marcas
 export const getAllBrands = async (req, res, next) => {
     const client = await pool.connect();
 
@@ -20,6 +21,7 @@ export const getAllBrands = async (req, res, next) => {
     }
 }
 
+//obtiene una marca en especifico
 export const getBrand = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
@@ -41,6 +43,7 @@ export const getBrand = async (req, res, next) => {
     }
 }
 
+//crea una marca
 export const createBrand = async (req, res, next) => {
     const { nombre } = req.body;
     const client = await pool.connect();
@@ -62,6 +65,7 @@ export const createBrand = async (req, res, next) => {
     }
 }
 
+//actualiza el nombre de una marca
 export const updateBrand = async (req, res, next) => {
     const { id } = req.params;
     const { nombre } = req.body;

@@ -1,6 +1,8 @@
 import { pool } from '../database/conection.js';
 import { actualizarDatosGeneral } from '../database/queries/productos.js';
 
+//obtienes los datos de los productos
+//id, nombre, url_imagen, unidades, unidades_virtuales, tipo_id, marca_id, update_status, unidades_medellin, unidades_prueba
 export const getAllProducts = async (req, res, next) => {
     const client = await pool.connect();
 
@@ -21,6 +23,8 @@ export const getAllProducts = async (req, res, next) => {
     }
 }
 
+//obtiene todos los datos de los productos
+//los datos del producto y a su vez los skus y publicaciones.
 export const getAllProductsData = async (req, res, next) => {
     const client = await pool.connect();
 
@@ -40,6 +44,7 @@ export const getAllProductsData = async (req, res, next) => {
     }
 }
 
+//obtiene los datos del producto
 export const getProduct = async (req, res, next) => {
     const {id} = req.params;
     const client = await pool.connect();
@@ -61,6 +66,7 @@ export const getProduct = async (req, res, next) => {
     }
 }
 
+//obtiene los kits a los que pertenece un producto
 export const getProductKits = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
@@ -82,6 +88,8 @@ export const getProductKits = async (req, res, next) => {
     }
 }
 
+//obtiene todos los datos del producto
+//los datos del producto y a su vez los skus y publicaciones.
 export const getProductData = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
@@ -101,6 +109,7 @@ export const getProductData = async (req, res, next) => {
     }
 }
 
+//retorna los datos de las publicaciones de un producto
 export const getProductPublication = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
@@ -121,6 +130,7 @@ export const getProductPublication = async (req, res, next) => {
     }
 }
 
+//obtiene los skus de un producto
 export const getProductSkus = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
@@ -140,6 +150,7 @@ export const getProductSkus = async (req, res, next) => {
     }
 }
 
+//crea un producto
 export const createProduct = async (req, res, next) => {
     const { nombre, imagen, marcaNombre } = req.body;
     const client = await pool.connect();
@@ -171,6 +182,8 @@ export const createProduct = async (req, res, next) => {
     }
 }
 
+//crea varios productos
+//y agrega su respectivo sku
 export const createProducts = async (req, res, next) => {
     const { productos } = req.body;
 
@@ -218,6 +231,7 @@ export const createProducts = async (req, res, next) => {
     }
 }
 
+//actualiza los datos de un producto
 export const updateProduct = async (req, res, next) => {
     const { nombre, imagen } = req.body;
     const { id } = req.params;
@@ -240,6 +254,7 @@ export const updateProduct = async (req, res, next) => {
     }
 }
 
+//actualiza la sunidades de un producto
 export const updateUnidades = async (req, res, next) => {
     const { unidades } = req.body;
     const { id } = req.params;
@@ -270,6 +285,7 @@ export const updateUnidades = async (req, res, next) => {
     }
 }
 
+//actualiza las unidades virtuales de un producto
 export const updateUnidadesVirtuales = async (req, res, next) => {
     const { unidades } = req.body;
     const { id } = req.params;
@@ -292,6 +308,7 @@ export const updateUnidadesVirtuales = async (req, res, next) => {
     }
 }
 
+//actualiza las unidades de medellin de un producto
 export const updateUnidadesMedellin = async (req, res, next) => {
     const { unidades } = req.body;
     const { id } = req.params;
@@ -314,6 +331,7 @@ export const updateUnidadesMedellin = async (req, res, next) => {
     }
 }
 
+//vincula las publicaciones con el inventario del producto
 export const activeProductPublication = async (req, res, next) => {
     const { ids } = req.body;
     const client = await pool.connect();
@@ -335,6 +353,7 @@ export const activeProductPublication = async (req, res, next) => {
     }
 }
 
+//desvincula las publicaciones del producto
 export const inactiveProductPublication = async (req, res, next) => {
     const { ids } = req.body;
     const client = await pool.connect();
@@ -356,6 +375,7 @@ export const inactiveProductPublication = async (req, res, next) => {
     }
 }
 
+//elimnina un producto
 export const deleteProduct = async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
@@ -377,6 +397,7 @@ export const deleteProduct = async (req, res, next) => {
     }
 }
 
+//actualiza el update_status a verdadero de un producto
 export const setUpdateProduct = async (req, res, next) => {
     const { ids } = req.body
     const client = await pool.connect()

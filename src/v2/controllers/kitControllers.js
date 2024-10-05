@@ -1,5 +1,6 @@
 import { pool } from "../database/conection.js";
 
+//obtienes todos los kits
 export const getAllKits = async (req, res, next) => {
     const client = await pool.connect();
     try {
@@ -18,7 +19,9 @@ export const getAllKits = async (req, res, next) => {
     }
 }
 
+//obtiene un kit en especifico
 export const getKit = async (req, res, next) => {
+    //id: int 
     const { id } = req.params;
     const client = await pool.connect();
     
@@ -38,7 +41,9 @@ export const getKit = async (req, res, next) => {
     }
 }
 
+//obtiene los productos del kit
 export const getKitProducts = async (req, res, next) => {
+    //id: int 
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -96,6 +101,8 @@ export const createKit = async (req, res, next) => {
     }
 }
 
+//eliminar producto del Kit
+//envia de id: int, id del kit y producto_id: int, id del producto a eliminar
 export const deleteKit = async (req, res, next) => {
     const { id } = req.params;
     const { producto_id } = req.body;

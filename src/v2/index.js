@@ -30,7 +30,6 @@ router.use(handleError);
 
 const timeZone = 'America/Bogota';
 
-
 cron.schedule('*/15 * * * *', async() => {
     console.log("comenzo pausar");
     await pausarPublicacion();
@@ -50,7 +49,7 @@ cron.schedule('15 * * * *', async() => {
     console.log("termino")
 }, { scheduled: true, timezone: timeZone})
 
-cron.schedule('45 10-22/2 * * *', async () => {
+cron.schedule('45 8-20/2 * * *', async () => {
     console.log("comenzo actualizacion publicaciones");
     await actualizar();
 }, { scheduled: true, timezone: timeZone})

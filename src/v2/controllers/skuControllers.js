@@ -1,11 +1,13 @@
 import { pool } from "../database/conection.js";
 
+//obtiene todas los skus
 export const getAllSkus = async (req, res, next) => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
+        //consulta una vista que tiene los datos del producto junto al sku
         const { rows } = await client.query('SELECT * FROM vista_sku_producto');
 
         if(rows.length === 0) throw new Error('No se obtuvo ningun sku');
@@ -20,6 +22,7 @@ export const getAllSkus = async (req, res, next) => {
     }
 }
 
+//obtiene un sku y los datos del producto
 export const getSku = async (req, res, next) => {
     const { sku } = req.params;
     const client = await pool.connect();
@@ -39,8 +42,11 @@ export const getSku = async (req, res, next) => {
     }
 }
 
+//Vincula un sku con el producto
 export const createSku = async (req, res, next) => {
+    //id: int, identificador del producto
     const { id } = req.params;
+    //sku: string, sku a agregar
     const { sku } = req.body;
     const client = await pool.connect();
 
@@ -59,7 +65,9 @@ export const createSku = async (req, res, next) => {
     }
 }
 
+//Eliminar un sku
 export const deleteSku = async (req, res, next) => {
+    //debe enviar el id del producto y el sku que desea eliminar
     const { id } = req.params;
     const { sku } =  req.body;
     const client = await pool.connect();
