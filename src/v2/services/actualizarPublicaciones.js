@@ -151,7 +151,7 @@ export const actualizarFijo = async(ids = []) => {
 
         let AddiQuery = 'SELECT codigo, FLOOR(cantidad/unidades_venta) AS stock FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 5';
 
-        let mlQuery = 'SELECT codigo, variante, FLOOR(cantidad/unidades_venta) AS stock, medellin, full_bolean FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3';
+        let mlQuery = 'SELECT codigo, variante, FLOOR(cantidad/unidades_venta) AS stock, medellin, full_bolean, 0 AS stock_dim FROM publicaciones INNER JOIN publicaciones_fijas ON publicaciones.id = publicaciones_fijas.publicacion_id WHERE plataforma_id = 3';
 
         if(ids.length !== 0){
             falabellaQuery += ' AND producto_id = ANY($1)';
