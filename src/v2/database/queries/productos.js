@@ -62,7 +62,6 @@ export const traerDatos = async () => {
     }
 }
 
-
 export const actualizarDatosGeneral = async () => {
     let productos = [];
     const datos = await getdatos();
