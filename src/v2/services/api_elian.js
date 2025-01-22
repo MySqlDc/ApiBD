@@ -1,5 +1,6 @@
 import { DUCOR_DATA, DUCOR_PLATFOMS } from '../../config.js';
 
+
 //obtiene los datos del inventario externo
 export const getdatos = async () => {
     try {
