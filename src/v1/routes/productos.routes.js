@@ -164,7 +164,7 @@ router.put('/producto/:id', async (req, res) => {
             return res.status(200).json({ status: 200, mensaje: "Valores iguales, no se actualizará" });
 
         // Realizamos la actualización de las unidades
-        const { rows } = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 AND tipo = 'unitario' RETURNING *", [cantidad, req.params.id]);
+        const { rows } = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 AND tipo_id = 1 RETURNING *", [cantidad, req.params.id]);
 
         // Si no se actualizó ninguna fila, retornamos un mensaje de que no se actualizó
         if (rows.length === 0) 
