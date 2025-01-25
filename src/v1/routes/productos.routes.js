@@ -149,7 +149,7 @@ router.patch('/producto/:id', async(req, res) => {
 router.put('/producto/:id', async (req, res) => { 
     const { cantidad, usuario } = req.body;
 
-    if (!cantidad || !Number.isInteger(cantidad)) 
+    if (!Number.isInteger(cantidad)) 
         return res.status(400).json({ status: 400, mensaje: "El dato cantidad no es correcto" });
 
     if (!usuario) 
