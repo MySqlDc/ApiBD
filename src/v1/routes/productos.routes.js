@@ -146,32 +146,40 @@ router.patch('/producto/:id', async(req, res) => {
     }
 });
 
-router.put('/producto/:id', async(req, res) => {
-    const {cantidad, usuario} = req.body;
+router.put('/producto/:id', async (req, res) => { 
+    const { cantidad, usuario } = req.body;
 
-    if(!cantidad || !Number.isInteger(cantidad)) return res.status(400).json({status: 400, mensaje: "el dato cantidad no es correcto"});
+    if (!cantidad || !Number.isInteger(cantidad)) 
+        return res.status(400).json({ status: 400, mensaje: "El dato cantidad no es correcto" });
 
-    if(!usuario) return res.status(400).json({status: 400, mensaje: "Debe dar el nombre de un usuario para registrar"})
+    if (!usuario) 
+        return res.status(400).json({ status: 400, mensaje: "Debe dar el nombre de un usuario para registrar" });
 
     try {
+        // Consultamos el producto con su cantidad y sku
         const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1 AND tipo = 'unitario'", [req.params.id]);
 
-        if(respuesta.rows[0].unidades === cantidad) return res.status(200).json({status: 200, mensaje: "valores iguales no se actualizara"});
+        // Si la cantidad es la misma, no se actualiza
+        if (respuesta.rows[0].unidades === cantidad) 
+            return res.status(200).json({ status: 200, mensaje: "Valores iguales, no se actualizará" });
 
-        const {rows} = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 AND tipo = 'unitario' RETURNING *", [cantidad, req.params.id]);
+        // Realizamos la actualización de las unidades
+        const { rows } = await pool.query("UPDATE productos SET unidades = $1 WHERE id = $2 AND tipo = 'unitario' RETURNING *", [cantidad, req.params.id]);
 
-        if(rows.length === 0) return res.status(200).json({status: 204, mensaje: "no se actualizo ninguna fila"});
+        // Si no se actualizó ninguna fila, retornamos un mensaje de que no se actualizó
+        if (rows.length === 0) 
+            return res.status(204).json({ status: 204, mensaje: "No se actualizó ninguna fila" });
 
-        await pool.query("INSERT INTO registro_ajuste(id, nombre_persona, cantidad_ingresada, cantidad_antigua) VALUES ($1, $2, $3, $4)", [req.params.id, usuario, cantidad, respuesta.rows[0].unidades])
+        // Respuesta exitosa
+        res.status(200).json({ status: 200, data: rows[0] });
 
-        registrarVarios(respuesta.rows);
-
-        res.status(200).json({status: 200, data: rows[0]})
     } catch (error) {
+        // En caso de error con la clave foránea (producto no existe)
+        if (error.constraint === 'fk_producto') 
+            return res.status(400).json({ status: 400, mensaje: "El producto no existe" });
 
-        if(error.constraint === 'fk_producto') return res.status(400).json({status: 400, mensaje: "el producto no existe"});
-
-        res.status(400).json({status: 400, mensaje: error})
+        // En otros casos de error
+        res.status(400).json({ status: 400, mensaje: error.message });
     }
 });
 

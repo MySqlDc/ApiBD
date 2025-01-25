@@ -1,5 +1,5 @@
 //Puerto de ejecucion de express
-export const PORT = process.env.PORT || 3000;
+export const PORT = process.env.PORT || 9000;
 
 //version API
 export const VERSION = process.env.VERSION;
