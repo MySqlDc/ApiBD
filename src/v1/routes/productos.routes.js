@@ -157,7 +157,7 @@ router.put('/producto/:id', async (req, res) => {
 
     try {
         // Consultamos el producto con su cantidad y sku
-        const respuesta = await pool.query("SELECT unidades, sku FROM productos INNER JOIN sku_producto ON sku_producto.producto_id = productos.id WHERE id = $1 AND tipo_id = 1", [req.params.id]);
+        const respuesta = await pool.query("SELECT unidades FROM productos WHERE id = $1 AND tipo_id = 1", [req.params.id]);
 
         // Si la cantidad es la misma, no se actualiza
         if (respuesta.rows[0].unidades === cantidad) 
