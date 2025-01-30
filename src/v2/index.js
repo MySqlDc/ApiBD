@@ -30,35 +30,35 @@ router.use(handleError);
 
 const timeZone = 'America/Bogota';
 
-cron.schedule('*/15 * * * *', async() => {
-    console.log("comenzo pausar");
-    await pausarPublicacion();
-    console.log("termino pausar");
-}, {scheduled: true, timezone: timeZone})
+// cron.schedule('*/15 * * * *', async() => {
+//     console.log("comenzo pausar");
+//     await pausarPublicacion();
+//     console.log("termino pausar");
+// }, {scheduled: true, timezone: timeZone})
 
-cron.schedule('0 18 * * *', async() => {
-    console.log("comenzo forzado");
-    await actualizarFijo();
-    console.log("termino forzado");
-}, { scheduled: true, timezone: timeZone})
+// cron.schedule('0 18 * * *', async() => {
+//     console.log("comenzo forzado");
+//     await actualizarFijo();
+//     console.log("termino forzado");
+// }, { scheduled: true, timezone: timeZone})
 
-cron.schedule('15 * * * *', async() => {
-    console.log("comenzo")
-    await actualizarDatosGeneral();
-    await actualizar(true);
-    console.log("termino")
-}, { scheduled: true, timezone: timeZone})
+// cron.schedule('15 * * * *', async() => {
+//     console.log("comenzo")
+//     await actualizarDatosGeneral();
+//     await actualizar(true);
+//     console.log("termino")
+// }, { scheduled: true, timezone: timeZone})
 
-cron.schedule('45 8-20/2 * * *', async () => {
-    console.log("comenzo actualizacion publicaciones");
-    await actualizar();
-}, { scheduled: true, timezone: timeZone})
+// cron.schedule('45 8-20/2 * * *', async () => {
+//     console.log("comenzo actualizacion publicaciones");
+//     await actualizar();
+// }, { scheduled: true, timezone: timeZone})
 
-cron.schedule('37 * * * *', async() => {
-    console.log("comenzo peticion pedidos");
-    await createOrders();
-    await actualizarReservados();
-    console.log("Fin peticion pedidos")
-}, { scheduled: true, timezone: timeZone})
+// cron.schedule('37 * * * *', async() => {
+//     console.log("comenzo peticion pedidos");
+//     await createOrders();
+//     await actualizarReservados();
+//     console.log("Fin peticion pedidos")
+// }, { scheduled: true, timezone: timeZone})
 
 export default router;
